@@ -2,8 +2,8 @@
 
 // Importa el modelo Trabajo para interactuar con la base de datos
 import TrabajoModel from '../models/Trabajo.model.js';
-// Importa otros modelos para validación de claves foráneas
-import CotizacionModel from '../models/Cotizacion.model.js';
+// Importa otros modelos para validación de claves foráneas y actualización
+import CotizacionModel from '../models/Cotizacion.model.js'; // Necesitamos este modelo
 import EmpleadoModel from '../models/Empleado.model.js';
 
 class TrabajoService {
@@ -59,6 +59,8 @@ class TrabajoService {
 
     /**
      * Actualiza los datos de un trabajo.
+     * Incluye lógica para actualizar automáticamente el estado de la cotización asociada
+     * si el trabajo alcanza un estado final (Completado/Entregado).
      * @param {string} id_trabajo - ID del trabajo a actualizar.
      * @param {object} updateData - Datos a actualizar.
      * @returns {Promise<object>} El trabajo actualizado.
@@ -82,6 +84,25 @@ class TrabajoService {
         if (!success) {
             throw new Error('No se pudo actualizar el trabajo.');
         }
+
+        // --- Lógica de Actualización Automática de Cotización ---
+        // Si el estado del trabajo se actualiza a 'Entregado' o 'Completado'
+        if (updateData.estado && (updateData.estado === 'Entregado' || updateData.estado === 'Completada')) {
+            if (existingTrabajo.cotizacion_id) {
+                // Actualizar el estado de la cotización asociada a 'Completada'
+                const quoteUpdateSuccess = await CotizacionModel.update(
+                    existingTrabajo.cotizacion_id,
+                    { estado: 'Completada' }
+                );
+                if (!quoteUpdateSuccess) {
+                    console.warn(`Advertencia: No se pudo actualizar el estado de la cotización ${existingTrabajo.cotizacion_id} al completar el trabajo ${id_trabajo}.`);
+                    // Podrías lanzar un error aquí si esto es crítico, o solo registrar la advertencia.
+                }
+            } else {
+                console.warn(`Advertencia: Trabajo ${id_trabajo} completado/entregado, pero no tiene una cotización asociada para actualizar.`);
+            }
+        }
+        // --- Fin Lógica de Actualización Automática ---
 
         const updatedTrabajo = await TrabajoModel.findById(id_trabajo);
         return updatedTrabajo;
