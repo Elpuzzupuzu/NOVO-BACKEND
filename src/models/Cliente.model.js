@@ -8,12 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 
 // Define el número de 'rounds' (costo) para el hashing de bcrypt.
-// Un valor más alto es más seguro pero más lento. 10 es un buen equilibrio para la mayoría de apps.
 const SALT_ROUNDS = 10;
 
 class Cliente {
     /**
-     * Crea un nuevo cliente en la base de datos.
+     * Crea un nuevo cliente en la base de datos, incluyendo su rol.
      * Hashea la contraseña antes de guardarla.
      * @param {object} clienteData - Objeto con los datos del nuevo cliente.
      * @param {string} clienteData.nombre - Nombre del cliente.
@@ -23,12 +22,15 @@ class Cliente {
      * @param {string} [clienteData.direccion] - Dirección del cliente (opcional).
      * @param {string} clienteData.username - Nombre de usuario (único).
      * @param {string} clienteData.password - Contraseña en texto plano.
+     * @param {string} [clienteData.role='cliente'] - Rol del cliente (por defecto 'cliente').
      * @returns {Promise<object>} El objeto del cliente creado (sin la contraseña hasheada para seguridad).
      * @throws {Error} Si el contacto o el username ya están registrados o hay un error.
      */
     static async create(clienteData) {
         const id_cliente = uuidv4();
         const { nombre, apellido, contacto, email, direccion, username, password } = clienteData;
+        // El rol se toma de clienteData, o se usa 'cliente' si no se proporciona (la DB también tiene un DEFAULT)
+        const role = clienteData.role || 'cliente';
 
         // Validar que username y password no sean nulos o vacíos
         if (!username || !password) {
@@ -39,16 +41,16 @@ class Cliente {
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const query = `
-            INSERT INTO clientes (id_cliente, nombre, apellido, contacto, email, direccion, username, password)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO clientes (id_cliente, nombre, apellido, contacto, email, direccion, username, password, role)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [id_cliente, nombre, apellido, contacto, email, direccion, username, hashedPassword];
+        const values = [id_cliente, nombre, apellido, contacto, email, direccion, username, hashedPassword, role];
 
         try {
             await pool.query(query, values);
             // Retorna el cliente creado, excluyendo la contraseña hasheada por seguridad
             const { password: _, ...clientWithoutPassword } = clienteData; // Destructuring para excluir password
-            return { id_cliente, ...clientWithoutPassword };
+            return { id_cliente, role, ...clientWithoutPassword };
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
                 if (error.message.includes('for key \'contacto\'')) {
@@ -70,7 +72,8 @@ class Cliente {
      * @returns {Promise<object|null>} El objeto del cliente si se encuentra, o null si no.
      */
     static async findById(id_cliente, includePassword = false) {
-        const selectFields = includePassword ? '*' : 'id_cliente, nombre, apellido, contacto, email, direccion, username, fecha_registro, fecha_actualizacion';
+        // Asegúrate de seleccionar el campo 'role'
+        const selectFields = includePassword ? '*' : 'id_cliente, nombre, apellido, contacto, email, direccion, username, role, fecha_registro, fecha_actualizacion';
         const query = `SELECT ${selectFields} FROM clientes WHERE id_cliente = ?`;
         try {
             const [rows] = await pool.query(query, [id_cliente]);
@@ -85,10 +88,11 @@ class Cliente {
      * Obtiene un cliente por su nombre de usuario.
      * Este método es crucial para la autenticación (login).
      * @param {string} username - El nombre de usuario del cliente a buscar.
-     * @returns {Promise<object|null>} El objeto del cliente (incluyendo contraseña hasheada) si se encuentra, o null si no.
+     * @returns {Promise<object|null>} El objeto del cliente (incluyendo contraseña hasheada y rol) si se encuentra, o null si no.
      */
     static async findByUsername(username) {
-        const query = 'SELECT * FROM clientes WHERE username = ?'; // Se necesita la contraseña para comparar
+        // Se necesita la contraseña para comparar y el rol para el JWT payload
+        const query = 'SELECT * FROM clientes WHERE username = ?';
         try {
             const [rows] = await pool.query(query, [username]);
             return rows[0] || null;
@@ -114,7 +118,8 @@ class Cliente {
      * @returns {Promise<object|null>} El objeto del cliente si se encuentra, o null si no.
      */
     static async findByContacto(contacto) {
-        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, fecha_registro, fecha_actualizacion FROM clientes WHERE contacto = ?';
+        // Asegúrate de seleccionar el campo 'role'
+        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, role, fecha_registro, fecha_actualizacion FROM clientes WHERE contacto = ?';
         try {
             const [rows] = await pool.query(query, [contacto]);
             return rows[0] || null;
@@ -129,7 +134,8 @@ class Cliente {
      * @returns {Promise<Array<object>>} Un array de objetos de clientes.
      */
     static async findAll() {
-        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, fecha_registro, fecha_actualizacion FROM clientes';
+        // Asegúrate de seleccionar el campo 'role'
+        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, role, fecha_registro, fecha_actualizacion FROM clientes';
         try {
             const [rows] = await pool.query(query);
             return rows;

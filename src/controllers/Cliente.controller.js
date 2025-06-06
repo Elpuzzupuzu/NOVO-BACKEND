@@ -2,6 +2,7 @@
 
 // Importa el servicio Cliente para acceder a la lógica de negocio
 import ClienteService from '../services/Cliente.service.js';
+// NOTA: loginCliente ya no está aquí, ahora está en AuthController
 
 class ClienteController {
     /**
@@ -30,38 +31,7 @@ class ClienteController {
         }
     }
 
-    /**
-     * Maneja la autenticación (login) de un cliente y devuelve un JWT.
-     * @param {object} req - Objeto de solicitud (contiene req.body.username y req.body.password).
-     * @param {object} res - Objeto de respuesta.
-     */
-    async loginCliente(req, res) {
-        try {
-            const { username, password } = req.body;
-
-            // Validación básica de entrada para el login
-            if (!username || !password) {
-                return res.status(400).json({ message: 'Username y password son campos requeridos para el login.' });
-            }
-
-            // Llama al servicio para intentar el login y obtener el cliente y el token
-            const { cliente, token } = await ClienteService.loginCliente(username, password);
-
-            // Si el login es exitoso, envía los datos del cliente (sin contraseña) y el token JWT
-            res.status(200).json({
-                message: 'Login exitoso.',
-                cliente, // Datos del cliente
-                token    // JSON Web Token
-            });
-
-        } catch (error) {
-            if (error.message.includes('Credenciales inválidas')) {
-                return res.status(401).json({ message: error.message }); // 401 Unauthorized
-            }
-            console.error('Error en ClienteController.loginCliente:', error);
-            res.status(500).json({ message: 'Error interno del servidor durante el login.', error: error.message });
-        }
-    }
+    // ELIMINADO: El método loginCliente ya no está aquí. Se movió a AuthController.
 
     /**
      * Maneja la obtención de todos los clientes.

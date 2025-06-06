@@ -11,19 +11,20 @@ dotenv.config(); // Carga las variables de entorno
 class ClienteService {
     /**
      * Crea un nuevo cliente. Incluye lógica de negocio como verificar si el contacto o username ya existen.
-     * @param {object} clienteData - Datos del cliente (nombre, apellido, contacto, email, direccion, username, password).
+     * @param {object} clienteData - Datos del cliente (nombre, apellido, contacto, email, direccion, username, password, [role]).
      * @returns {Promise<object>} El cliente creado (sin la contraseña hasheada).
      * @throws {Error} Si el contacto o username ya están registrados o hay un error al crear el cliente.
      */
     async createCliente(clienteData) {
         // El modelo ya maneja la verificación de contacto y username duplicados
-        // y el hasheo de la contraseña.
+        // y el hasheo de la contraseña. El rol por defecto es 'cliente'.
         const newCliente = await ClienteModel.create(clienteData);
         return newCliente; // El modelo ya devuelve el cliente sin la contraseña hasheada
     }
 
     /**
      * Autentica a un cliente y genera un JSON Web Token (JWT).
+     * El JWT incluye el ID del cliente y su rol.
      * @param {string} username - Nombre de usuario del cliente.
      * @param {string} password - Contraseña en texto plano del cliente.
      * @returns {Promise<object|null>} Un objeto que contiene el cliente (sin contraseña) y el token JWT si la autenticación es exitosa, o null si falla.
@@ -47,18 +48,16 @@ class ClienteService {
         }
 
         // 3. Generar el JSON Web Token (JWT)
-        // El payload del token debería contener información suficiente para identificar al usuario
-        // pero no datos sensibles. id_cliente es suficiente para este propósito.
+        // El payload del token DEBE contener el ID del cliente y su rol para la autorización
         const tokenPayload = {
             id: cliente.id_cliente,
             username: cliente.username,
-            // Puedes añadir otros roles o permisos aquí si los tuvieras
-            // role: cliente.role
+            role: cliente.role // <-- ¡Importante: Incluir el rol aquí!
         };
 
         // Firma el token con la clave secreta y establece una expiración
         const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN // Ej: '1h', '7d', '24h'
+            expiresIn: process.env.JWT_EXPIRES_IN
         });
 
         // Si la autenticación es exitosa, retornar el cliente (sin contraseña) y el token

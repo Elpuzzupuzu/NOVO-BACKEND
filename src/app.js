@@ -1,29 +1,21 @@
 // src/app.js
 
-// Importa Express, el framework web para Node.js
 import express from 'express';
-// Importa CORS para permitir peticiones desde diferentes orígenes (frontend)
 import cors from 'cors';
+import clienteRoutes from './routes/Cliente.routes.js';
+import materialRoutes from './routes/Material.routes.js';
+import empleadoRoutes from './routes/Empleado.routes.js';
+// Importa las nuevas rutas de autenticación
+import authRoutes from './routes/Auth.routes.js';
 
-/// --- Rutas ---
-// ¡IMPORTANTE! Esta línea es la que te falta.
-// Importa las rutas de clientes desde su archivo correspondiente.
-import clienteRoutes from './routes/cliente.routes.js';
 
-
-// Crea una instancia de la aplicación Express
 const app = express();
 
 // --- Middleware ---
-// Habilita CORS para todas las peticiones
 app.use(cors());
-
-// Habilita el parser de JSON para que Express pueda leer cuerpos de peticiones en formato JSON
 app.use(express.json());
 
 // --- Rutas de Prueba ---
-// Define una ruta simple para verificar que el servidor está funcionando
-// Cuando accedes a http://localhost:3000/api/status
 app.get('/api/status', (req, res) => {
     res.status(200).json({
         message: 'Servidor Express de Novo funcionando correctamente!',
@@ -33,10 +25,17 @@ app.get('/api/status', (req, res) => {
 
 
 /// RUTAS PRINCIPALES ///
-// --- Integración de Rutas de Clientes ---
-// Todas las rutas definidas en cliente.routes.js serán prefijadas con '/NOVO/clientes'
-// Ahora clienteRoutes ya estará definido gracias a la importación de arriba.
+// Rutas de autenticación (login para clientes y empleados)
+app.use('/NOVO/auth', authRoutes); // Prefijo '/NOVO/auth' para los logins
+
+// Rutas de clientes (registro y CRUD protegido)
 app.use('/NOVO/clientes', clienteRoutes);
 
-// Exporta la instancia de la aplicación Express
+// Rutas de materiales (CRUD protegido)
+app.use('/NOVO/materiales', materialRoutes);
+
+// Rutas de empleados (CRUD protegido)
+app.use('/NOVO/empleados', empleadoRoutes);
+
+
 export default app;
