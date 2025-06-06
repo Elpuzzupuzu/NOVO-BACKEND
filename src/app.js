@@ -5,6 +5,8 @@ import cors from 'cors';
 import clienteRoutes from './routes/Cliente.routes.js';
 import materialRoutes from './routes/Material.routes.js';
 import empleadoRoutes from './routes/Empleado.routes.js';
+import peticionMaterialRoutes from './routes/PeticionMaterial.routes.js';
+
 // Importa las nuevas rutas de autenticación
 import authRoutes from './routes/Auth.routes.js';
 
@@ -26,7 +28,7 @@ app.get('/api/status', (req, res) => {
 
 /// RUTAS PRINCIPALES ///
 // Rutas de autenticación (login para clientes y empleados)
-app.use('/NOVO/auth', authRoutes); // Prefijo '/NOVO/auth' para los logins
+app.use('/NOVO/auth', authRoutes); // Prefijo '/NOVO/auth' <----ESTOS SON PARA LOS EMPLEADOS OJO
 
 // Rutas de clientes (registro y CRUD protegido)
 app.use('/NOVO/clientes', clienteRoutes);
@@ -37,5 +39,7 @@ app.use('/NOVO/materiales', materialRoutes);
 // Rutas de empleados (CRUD protegido)
 app.use('/NOVO/empleados', empleadoRoutes);
 
+// Todas las rutas de peticiones de material serán prefijadas con '/NOVO/peticiones-material'
+app.use('/NOVO/peticiones-material', peticionMaterialRoutes)
 
 export default app;

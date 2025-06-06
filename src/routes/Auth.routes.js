@@ -9,9 +9,9 @@ const router = Router();
 // Rutas de autenticación (públicas)
 
 // POST /NOVO/auth/client/login - Login para clientes
-router.post('/client/login', AuthController.loginCliente);
+router.post('/cliente/login', AuthController.loginCliente);
 
 // POST /NOVO/auth/employee/login - Login para empleados
-router.post('/employee/login', AuthController.loginEmpleado);
+router.post('/empleado/login', AuthController.loginEmpleado);
 
 export default router;
