@@ -6,6 +6,12 @@ import clienteRoutes from './routes/Cliente.routes.js';
 import materialRoutes from './routes/Material.routes.js';
 import empleadoRoutes from './routes/Empleado.routes.js';
 import peticionMaterialRoutes from './routes/PeticionMaterial.routes.js';
+import cotizacionRoutes from './routes/Cotizacion.routes.js';
+import trabajoRoutes from './routes/Trabajo.routes.js';
+import reporteRoutes from './routes/Reporte.routes.js';
+
+
+
 
 // Importa las nuevas rutas de autenticación
 import authRoutes from './routes/Auth.routes.js';
@@ -41,5 +47,16 @@ app.use('/NOVO/empleados', empleadoRoutes);
 
 // Todas las rutas de peticiones de material serán prefijadas con '/NOVO/peticiones-material'
 app.use('/NOVO/peticiones-material', peticionMaterialRoutes)
+
+
+// rutas para cotizar '/NOVO/cotizaciones'
+app.use('/NOVO/cotizaciones', cotizacionRoutes);
+
+// --- Integración de Rutas de Trabajos ---
+// Todas las rutas de trabajos serán prefijadas con '/NOVO/trabajos'
+app.use('/NOVO/trabajos', trabajoRoutes);
+
+// Todas las rutas de reportes serán prefijadas con '/NOVO/reports'
+app.use('/NOVO/reports', reporteRoutes);
 
 export default app;
