@@ -10,7 +10,7 @@ const AboutSection = () => {
         <div className={styles.imageGallery}>
           {/* Aquí irían las imágenes de la parte inferior */}
           <div className={styles.imagePlaceholder}>
-            {/* <img src="/public/project1.jpg" alt="Interior de Lujo Restaurado" /> */}
+            {/* <img src="/public/project1.jpg" alt="Interior de Lujo Restaurado" /> }
             <p>Restauración de Piel</p>
           </div>
           <div className={styles.imagePlaceholder}>
