@@ -1,0 +1,62 @@
+/* client/src/components/Header/Header.module.css */
+.header {
+  background-color: #000;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  position: relative;
+  z-index: 100;
+}
+
+.logoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.mainLogo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.subLogo {
+  font-size: 0.8rem;
+  font-weight: normal;
+  color: #ccc;
+}
+
+.navList {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+.navLink {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.navLink:hover {
+  color: #ffd700;
+}
+
+.ctaButton {
+  background-color: #ffd700;
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.ctaButton:hover {
+  background-color: #e0b300;
+  transform: translateY(-2px);
+}

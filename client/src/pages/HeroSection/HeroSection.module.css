@@ -1,0 +1,157 @@
+/* client/src/pages/HeroSection/HeroSection.module.css */
+.heroSection {
+  position: relative;
+  width: 100%;
+  height: 700px;
+  background-image: url('/car-interior.jpg'); /* ¡La imagen DEBE estar en client/public/ */
+  background-size: cover;
+  background-position: center center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-align: left;
+  overflow: hidden;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 3rem;
+}
+
+.textContainer {
+  flex: 1;
+  padding-right: 2rem;
+}
+
+.mainTitle {
+  font-size: 3.5rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.description {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  color: #ccc;
+}
+
+.buttons {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.ctaButtonPrimary,
+.ctaButtonSecondary {
+  padding: 1rem 2.5rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.ctaButtonPrimary:hover {
+  background-color: #e0b300;
+  transform: translateY(-2px);
+}
+
+.ctaButtonSecondary {
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
+.ctaButtonSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #ffd700;
+  transform: translateY(-2px);
+}
+
+.formWrapper {
+  flex-shrink: 0;
+  margin-left: 2rem;
+}
+
+/* Media Queries para Responsividad Básica */
+@media (max-width: 992px) {
+  .heroSection {
+    height: auto;
+    padding: 4rem 0;
+  }
+  .content {
+    flex-direction: column;
+    text-align: center;
+    padding: 0 1.5rem;
+  }
+  .textContainer {
+    padding-right: 0;
+    margin-bottom: 3rem;
+  }
+  .mainTitle {
+    font-size: 2.5rem;
+  }
+  .description {
+    font-size: 1rem;
+  }
+  .buttons {
+    justify-content: center;
+  }
+  .formWrapper {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .mainTitle {
+    font-size: 2rem;
+  }
+  .ctaButtonPrimary,
+  .ctaButtonSecondary {
+    padding: 0.8rem 1.8rem;
+    font-size: 1rem;
+  }
+  .header {
+    flex-direction: column;
+    padding: 1rem 1.5rem;
+  }
+  .logoContainer {
+    margin-bottom: 1rem;
+  }
+  .navList {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .navItem {
+    width: 100%;
+    text-align: center;
+  }
+  .navLink, .ctaButton {
+    width: 100%;
+    display: block;
+    padding: 0.5rem;
+  }
+}

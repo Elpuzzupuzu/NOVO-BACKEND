@@ -1,0 +1,141 @@
+/* client/src/pages/AboutSection/AboutSection.module.css */
+.aboutSection {
+  background-color: #1a1a1a; /* Fondo oscuro similar al cuerpo */
+  padding: 5rem 3rem;
+  text-align: center;
+  color: #fff;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 4rem;
+  text-transform: uppercase;
+  color: #ccc;
+}
+
+.contentGrid {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start; /* Alinea los elementos al inicio */
+}
+
+.imageGallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas para las imágenes */
+  gap: 1rem;
+  flex: 1; /* Ocupa el espacio disponible */
+}
+
+.imagePlaceholder {
+  width: 100%;
+  padding-bottom: 100%; /* Para hacer el contenedor cuadrado */
+  background-color: #333; /* Color de fondo para las imágenes */
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #888;
+  overflow: hidden; /* Oculta el contenido si las imágenes son grandes */
+}
+
+.imagePlaceholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.textContent {
+  flex: 1; /* Ocupa el espacio disponible */
+  text-align: left;
+  padding-left: 3rem; /* Espacio entre la galería y el texto */
+}
+
+.description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: #ccc;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.featureIcon {
+  font-size: 2rem; /* Tamaño del icono/emoji */
+  color: #ffd700; /* Color dorado */
+  line-height: 1;
+}
+
+.featureItem p {
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #ddd;
+}
+
+.imageWithText {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.smallImage {
+  width: 80px; /* Tamaño de la imagen pequeña */
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+  background-color: #555; /* Placeholder */
+}
+
+.imageTextPlaceholder {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.imageTextPlaceholder p {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Media Queries para Responsividad */
+@media (max-width: 992px) {
+  .contentGrid {
+    flex-direction: column; /* Apila las columnas */
+    gap: 2rem;
+  }
+  .textContent {
+    padding-left: 0;
+    text-align: center;
+  }
+  .imageGallery {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Más flexible para imágenes */
+  }
+}
+
+@media (max-width: 576px) {
+  .aboutSection {
+    padding: 3rem 1.5rem;
+  }
+  .sectionTitle {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+  .imageGallery {
+    grid-template-columns: 1fr; /* Una columna en móvil */
+  }
+  .imageWithText {
+    justify-content: center; /* Centra la imagen con texto */
+  }
+}
