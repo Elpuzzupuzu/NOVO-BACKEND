@@ -2,16 +2,19 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api', // Asegúrate de que esta URL coincida con tu backend
+  // *** CAMBIO CLAVE AQUÍ: baseURL apunta a la raíz de tu backend ***
+  // Asume que tu backend corre en http://localhost:3000 en desarrollo.
+  // En producción, VITE_BACKEND_URL debería ser el dominio de tu backend (ej: https://api.tu-dominio.com)
+  baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Opcional: Interceptores para añadir tokens de autenticación
+// Interceptor para añadir el token de autenticación a cada solicitud
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token'); // Asume que guardas el token aquí
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

@@ -1,6 +1,7 @@
 // client/src/pages/HeroSection/HeroSection.jsx
 import React, { useState, useEffect } from 'react';
-import ServicesForm from '../../components/ServicesForm/ServicesForm';
+// import ServicesForm from '../../components/ServicesForm/ServicesForm'; // ¡Ya no importamos ServicesForm aquí!
+import LoginForm from '../../components/Auth/LoginForm'; // <--- ¡Importa el nuevo LoginForm!
 import styles from './HeroSection.module.css';
 
 const HeroSection = () => {
@@ -24,6 +25,13 @@ const HeroSection = () => {
   const handleCTAClick = (action) => {
     // Aquí puedes agregar lógica para manejar los clicks
     console.log(`Acción: ${action}`);
+    // Ejemplo: Si el botón de cotización debe desplazar al formulario de servicios
+    if (action === 'cotización') {
+        const formElement = document.getElementById('services-form-section'); // Asegúrate de añadir un ID al ServicesForm
+        if (formElement) {
+            formElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
   };
 
   return (
@@ -104,8 +112,9 @@ const HeroSection = () => {
 
         <div className={styles.formWrapper}>
           <div className={styles.formContainer}>
-            <h3 className={styles.formTitle}>Cotización Instantánea</h3>
-            <ServicesForm /> */aqui voy a hacer las pruebas*/
+            {/* Aquí es donde se cambia el componente */}
+            {/* <h3 className={styles.formTitle}>Cotización Instantánea</h3> */}
+            <LoginForm /> {/* <--- ¡Ahora usamos el LoginForm aquí! */}
           </div>
         </div>
       </div>

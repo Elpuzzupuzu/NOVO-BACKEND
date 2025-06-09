@@ -1,0 +1,7 @@
+/* client/src/App.module.css */
+.appContainer {
+  min-height: 100vh; /* Asegura que ocupe al menos toda la altura de la vista */
+  display: flex;
+  flex-direction: column;
+  /* Puedes añadir aquí estilos globales de layout, pero para componentes específicos, usa sus propios módulos */
+}

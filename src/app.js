@@ -31,6 +31,13 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+const corsOptions = {
+  origin: 'http://localhost:5173', // O 'http://localhost:5173' para desarrollo
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true, // Si usas cookies, encabezados de autorización, etc.
+  optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
 
 /// RUTAS PRINCIPALES ///
 // Rutas de autenticación (login para clientes y empleados)
