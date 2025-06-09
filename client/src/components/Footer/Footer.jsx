@@ -62,7 +62,7 @@ const Footer = () => {
         <div className={styles.footerBottom}>
           <p>&copy; {new Date().getFullYear()} NOVO Tapicería. Todos los derechos reservados.</p>
           <p className={styles.footerCredits}>
-            Desarrollado con ❤️ en Yucatán
+            By Mimitos ❤️
           </p>
         </div>
       </div>

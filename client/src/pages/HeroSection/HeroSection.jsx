@@ -105,7 +105,7 @@ const HeroSection = () => {
         <div className={styles.formWrapper}>
           <div className={styles.formContainer}>
             <h3 className={styles.formTitle}>Cotización Instantánea</h3>
-            <ServicesForm />
+            <ServicesForm /> */aqui voy a hacer las pruebas*/
           </div>
         </div>
       </div>

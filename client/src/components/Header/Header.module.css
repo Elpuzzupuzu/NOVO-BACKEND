@@ -1,62 +1,442 @@
 /* client/src/components/Header/Header.module.css */
+
+/* Clase para aplicar al body o contenedor principal */
+.headerOffset {
+  padding-top: 120px; /* Ajusta según la altura de tu header */
+}
+
 .header {
-  background-color: #000;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 20, 20, 0.95));
+  backdrop-filter: blur(10px);
   padding: 1.5rem 3rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: #fff;
-  position: relative;
-  z-index: 100;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  height: 90px; /* Aumenté la altura para dar más espacio al logo */
+}
+
+.header.scrolled {
+  background: rgba(0, 0, 0, 0.98);
+  padding: 1rem 3rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  height: 75px; /* Altura reducida cuando está scrolled */
 }
 
 .logoContainer {
   display: flex;
+  align-items: center;
+  gap: 1.2rem; /* Aumenté el gap */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.logoContainer:hover {
+  transform: scale(1.08); /* Efecto hover más pronunciado */
+}
+
+.logoContainer::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1), transparent 70%);
+  border-radius: 50%;
+  transition: all 0.4s ease;
+  z-index: -1;
+}
+
+.logoContainer:hover::before {
+  width: 120px;
+  height: 120px;
+}
+
+.logoImage {
+  width: 60px; /* Aumenté el tamaño */
+  height: 60px;
+  object-fit: contain;
+  border-radius: 12px; /* Border radius más pronunciado */
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2); /* Sombra dorada sutil */
+  border: 2px solid rgba(255, 215, 0, 0.3); /* Borde dorado sutil */
+}
+
+.scrolled .logoImage {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+}
+
+.logoImage:hover {
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+  border-color: rgba(255, 215, 0, 0.6);
+}
+
+.logoText {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
+  position: relative;
 }
 
 .mainLogo {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 2.2rem; /* Aumenté el tamaño */
+  font-weight: 800; /* Más bold */
   color: #ffd700;
+  letter-spacing: 3px; /* Más espaciado */
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 10px rgba(255, 215, 0, 0.3); /* Sombra de resplandor */
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.mainLogo::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ffd700, #e0b300, #ffd700);
+  border-radius: 1px;
+  opacity: 0.7;
+}
+
+.scrolled .mainLogo {
+  font-size: 1.8rem;
+  letter-spacing: 2px;
 }
 
 .subLogo {
+  font-size: 0.95rem; /* Aumenté ligeramente el tamaño */
+  font-weight: 400; /* Más peso */
+  color: #e8e8e8; /* Color más claro */
+  letter-spacing: 2px; /* Más espaciado */
+  margin-top: -3px;
+  transition: all 0.3s ease;
+  text-transform: uppercase; /* Mayúsculas para más impacto */
+  opacity: 0.9;
+}
+
+.scrolled .subLogo {
   font-size: 0.8rem;
-  font-weight: normal;
-  color: #ccc;
+  letter-spacing: 1.5px;
+}
+
+.logoContainer:hover .mainLogo {
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.logoContainer:hover .subLogo {
+  color: #ffd700;
+  opacity: 1;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
 }
 
 .navList {
   list-style: none;
   display: flex;
-  gap: 2rem;
+  gap: 2.5rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.navItem {
+  position: relative;
 }
 
 .navLink {
+  background: none;
+  border: none;
   color: #fff;
   text-decoration: none;
   font-size: 1rem;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: all 0.3s ease;
+  position: relative;
+  letter-spacing: 0.5px;
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #ffd700, #e0b300);
+  transition: width 0.3s ease;
 }
 
 .navLink:hover {
   color: #ffd700;
+  transform: translateY(-1px);
+}
+
+.navLink:hover::after {
+  width: 100%;
 }
 
 .ctaButton {
-  background-color: #ffd700;
+  background: linear-gradient(135deg, #ffd700, #e0b300);
   color: #000;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 5px;
+  padding: 0.85rem 2rem;
+  border-radius: 25px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
 }
 
 .ctaButton:hover {
-  background-color: #e0b300;
+  background: linear-gradient(135deg, #e0b300, #d4af37);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.ctaButton:hover::before {
+  left: 100%;
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+/* Hamburger Menu */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+.hamburger span {
+  width: 25px;
+  height: 3px;
+  background: #ffd700;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem 1.5rem;
+    height: 80px;
+  }
+
+  .header.scrolled {
+    padding: 0.8rem 1.5rem;
+    height: 70px;
+  }
+
+  .logoContainer {
+    gap: 0.8rem;
+  }
+
+  .logoImage {
+    width: 50px;
+    height: 50px;
+  }
+
+  .scrolled .logoImage {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mainLogo {
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+  }
+
+  .scrolled .mainLogo {
+    font-size: 1.5rem;
+    letter-spacing: 1.5px;
+  }
+
+  .subLogo {
+    font-size: 0.8rem;
+    letter-spacing: 1.5px;
+  }
+
+  .scrolled .subLogo {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    height: 100vh;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(20, 20, 20, 0.98));
+    backdrop-filter: blur(20px);
+    transition: right 0.3s ease;
+    padding-top: 5rem;
+  }
+
+  .nav.mobileMenuOpen {
+    right: 0;
+    box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .navList {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    align-items: stretch;
+  }
+
+  .navItem {
+    width: 100%;
+  }
+
+  .navLink {
+    width: 100%;
+    text-align: left;
+    padding: 1rem 0;
+    font-size: 1.1rem;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+  }
+
+  .navLink::after {
+    bottom: 0;
+    height: 1px;
+  }
+
+  .ctaButton {
+    width: 100%;
+    padding: 1rem 2rem;
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 1rem;
+    height: 75px;
+  }
+
+  .header.scrolled {
+    padding: 0.8rem 1rem;
+    height: 65px;
+  }
+
+  .logoContainer {
+    gap: 0.6rem;
+  }
+
+  .logoImage {
+    width: 45px;
+    height: 45px;
+  }
+
+  .scrolled .logoImage {
+    width: 35px;
+    height: 35px;
+  }
+
+  .mainLogo {
+    font-size: 1.6rem;
+    letter-spacing: 1.5px;
+  }
+
+  .scrolled .mainLogo {
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+  }
+
+  .subLogo {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+  }
+
+  .scrolled .subLogo {
+    font-size: 0.7rem;
+  }
+
+  .nav {
+    width: 85%;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .logoContainer,
+  .logoImage,
+  .mainLogo,
+  .subLogo,
+  .navLink,
+  .ctaButton,
+  .hamburger span,
+  .nav,
+  .logoContainer::before {
+    transition: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.navLink:focus,
+.ctaButton:focus {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+}
+
+.hamburger:focus {
+  outline: 2px solid #ffd700;
+  outline-offset: 4px;
+}
+
+.logoContainer:focus {
+  outline: 2px solid #ffd700;
+  outline-offset: 4px;
+  border-radius: 8px;
 }

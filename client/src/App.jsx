@@ -10,10 +10,9 @@ function App() {
   return (
     <div className={styles.appContainer}>
       <Header />
-      <main> {/* Usa la etiqueta <main> para el contenido principal */}
+      <main> {/*<main> para el contenido principal */}
         <HeroSection />
         <AboutSection />
-        {/* Aquí podrías añadir más secciones si el diseño lo requiere */}
       </main>
       <Footer />
     </div>

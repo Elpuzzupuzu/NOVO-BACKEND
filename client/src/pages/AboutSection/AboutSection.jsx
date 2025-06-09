@@ -191,8 +191,8 @@ const AboutSection = () => {
               <img src="/founder.jpg" alt="Fundador NOVO Tapicería" />
             </div>
             <div className={styles.founderInfo}>
-              <h4 className={styles.founderName}>Carlos Mendoza</h4>
-              <p className={styles.founderTitle}>Maestro Artesano & Fundador</p>
+              <h4 className={styles.founderName}>Diego Armando Aguilar Perez</h4>
+              <p className={styles.founderTitle}>Fundador</p>
               <p className={styles.founderQuote}>
                 "Cada proyecto es una oportunidad de crear algo extraordinario"
               </p>
