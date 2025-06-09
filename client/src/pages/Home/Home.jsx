@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../../features/auth/authSlice';
 import Header from '../../components/Header/Header'; // <--- ¡Importa el Header!
 import styles from './Home.module.css';
+import AuthHeader from '../../components/User/AuthHeader/AuthHeader';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -30,7 +31,7 @@ const Home = () => {
   return (
     // Envuelve el contenido en un contenedor, por ejemplo, un div principal
     <div className={styles.homeWrapper}> {/* Puedes añadir un nuevo estilo para este wrapper si lo necesitas */}
-      <Header/> {/* <--- ¡Coloca el Header aquí! */}
+      <AuthHeader/> {/* <--- ¡Coloca el Header aquí! */}
       <div className={styles.homeContainer}> {/* Tu contenedor actual de contenido */}
         <h1 className={styles.welcomeTitle}>
           ¡Bienvenido, {user?.nombre || user?.username}!
