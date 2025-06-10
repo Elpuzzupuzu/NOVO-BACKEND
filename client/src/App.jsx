@@ -4,15 +4,10 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import { useSelector } from 'react-redux';
 
 // Importa los componentes de tus páginas
-import LandingPageContent from './pages/LandingPage/LandingPageContent'; // <--- ¡Tu antigua App.jsx renombrada!
+import LandingPageContent from './pages/LandingPage/LandingPageContent'; // Tu antigua App.jsx renombrada
 import Home from './pages/Home/Home'; // Tu Home para usuarios logeados
+import ServicePage from './pages/ServicePage/ServicePage'; // <--- ¡Importa la nueva ServicePage!
 
-// No necesitas Header/Footer aquí si ya están dentro de LandingPageContent
-// import Header from './components/Header/Header';
-// import Footer from './components/Footer/Footer';
-
-// No necesitas styles aquí si los estilos generales están en index.css o global.css
-// import styles from './App.module.css'; // Eliminar o renombrar si solo son estilos de layout
 
 // Componente para proteger rutas (mantén el mismo de antes)
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -53,6 +48,20 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Nueva ruta para la página de servicios (protegida si solo usuarios logeados la pueden ver) */}
+        {/* Si SOLO usuarios autenticados deben verla: */}
+        <Route
+          path="/servicios"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'empleado', 'cliente']}> {/* Si es para todos los logeados */}
+              <ServicePage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Si cualquier visitante puede ver el formulario de cotización (aunque sea para clientes): */}
+        {/* <Route path="/servicios" element={<ServicePage />} /> */}
+
 
         {/* Ruta para acceso denegado (opcional) */}
         <Route path="/acceso-denegado" element={

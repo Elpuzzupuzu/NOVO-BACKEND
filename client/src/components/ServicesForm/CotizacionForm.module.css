@@ -1,0 +1,142 @@
+/* client/src/components/ServicesForm/CotizacionForm.module.css */
+/* Este archivo CSS debe tener el nombre que corresponde a tu importación en CotizacionForm.jsx */
+/* Es decir, si importas styles from './CotizacionForm.module.css';, este es el nombre del archivo. */
+
+.cotizacionContainer { /* Esto era 'formContainer' en tu CSS base */
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 2rem;
+    border-radius: 10px;
+    color: #fff;
+    width: 100%;
+    max-width: 500px; /* Incrementado para mejor espacio en formulario de cotización */
+    margin: 40px auto; /* Centrar el formulario y añadir espacio vertical */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    border: 1px solid #ff9900; /* Borde sutil del color de acento */
+}
+
+.title { /* Esto era 'formTitle' en tu CSS base */
+    font-size: 2rem; /* Aumentado ligeramente para mayor impacto */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1.8rem; /* Aumentado ligeramente */
+    color: #ffd700; /* Un dorado brillante para el título */
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); /* Sutil brillo */
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem; /* Espaciado entre grupos de formulario */
+}
+
+.formGroup {
+    margin-bottom: 1rem; /* Espacio debajo de cada grupo de entrada */
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #e0e0e0; /* Color claro para las etiquetas */
+    font-weight: bold;
+}
+
+.input, /* Esto era 'inputField' en tu CSS base */
+.select, /* Esto era 'selectField' en tu CSS base */
+.textarea { /* Añadido para el textarea */
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #444; /* Borde un poco más oscuro */
+    border-radius: 5px;
+    background-color: #2a2a2a; /* Fondo más oscuro */
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    border-color: #ffcc00; /* Un color de enfoque más vibrante */
+    box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.3); /* Resplandor al enfocar */
+}
+
+.select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 20 20%22 fill%3D%22%23ccc%22%3E%3Cpath d%3D%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule%3D%22evenodd%22 fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%;
+    background-size: 0.65em auto;
+    padding-right: 2.5rem;
+}
+
+.checkbox {
+    margin-right: 0.5rem;
+    accent-color: #ff9900; /* Color del checkbox al seleccionarlo */
+    transform: scale(1.2); /* Hacer el checkbox un poco más grande */
+}
+
+.labelCheckbox {
+    color: #e0e0e0;
+    font-size: 1rem;
+    vertical-align: middle; /* Alinea el texto con el checkbox */
+}
+
+.helpText {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-top: 0.4rem;
+    display: block; /* Asegura que ocupe su propia línea */
+}
+
+.submitButton {
+    background-color: #ff9900; /* Naranja fuerte */
+    color: #fff;
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    margin-top: 1.5rem; /* Espacio superior */
+    box-shadow: 0 2px 8px rgba(255, 153, 0, 0.4); /* Sombra para el botón */
+}
+
+.submitButton:hover {
+    background-color: #cc7a00; /* Naranja más oscuro al pasar el ratón */
+    transform: translateY(-3px); /* Efecto de "levantar" */
+    box-shadow: 0 6px 15px rgba(255, 153, 0, 0.6); /* Sombra más pronunciada al pasar el ratón */
+}
+
+.submitButton:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.message {
+    text-align: center;
+    color: #ffeb3b; /* Amarillo claro para mensajes de carga */
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+.errorMessage {
+    text-align: center;
+    color: #ff6b6b; /* Rojo para errores */
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.successMessage {
+    text-align: center;
+    color: #6bff6b; /* Verde para éxito */
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+}

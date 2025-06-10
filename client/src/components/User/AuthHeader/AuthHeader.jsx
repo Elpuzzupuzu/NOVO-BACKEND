@@ -68,7 +68,7 @@ const AuthHeader = () => {
         <li><Link to="/home" className={styles.secondaryNavLink}>INICIO</Link></li>
         <li><Link to="/about-us" className={styles.secondaryNavLink}>ACERCA DE</Link></li> {/* Puedes crear estas rutas */}
         <li><Link to="/products" className={styles.secondaryNavLink}>PRODUCTOS</Link></li>
-        <li><Link to="/services" className={styles.secondaryNavLink}>SERVICIOS</Link></li>
+        <li><Link to="/servicios" className={styles.secondaryNavLink}>SERVICIOS</Link></li>
         <li><Link to="/contact" className={styles.secondaryNavLink}>CONTACTO</Link></li>
       </ul>
     </nav>
@@ -193,3 +193,4 @@ const AuthHeader = () => {
 };
 
 export default AuthHeader;
+

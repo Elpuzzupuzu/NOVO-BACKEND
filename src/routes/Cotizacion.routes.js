@@ -11,7 +11,7 @@ const router = Router();
 
 // POST /NOVO/cotizaciones - Crear una nueva cotización
 // Solo empleados, gerentes, o admins pueden crear cotizaciones
-router.post('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin'), CotizacionController.createCotizacion);
+router.post('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin','cliente'), CotizacionController.createCotizacion);
 
 // GET /NOVO/cotizaciones - Obtener todas las cotizaciones (con filtros)
 // Solo gerentes y admins pueden ver TODAS las cotizaciones

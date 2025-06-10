@@ -1,6 +1,5 @@
 // src/controllers/Cotizacion.controller.js
 
-// Import the CotizacionService to access business logic
 import CotizacionService from '../services/Cotizacion.service.js';
 
 class CotizacionController {
