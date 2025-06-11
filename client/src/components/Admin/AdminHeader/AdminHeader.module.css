@@ -1,0 +1,446 @@
+/* client/src/components/Admin/AdminHeader/AdminHeader.module.css */
+
+/* HEADER CONTAINER GLOBAL */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #222; /* Color de fondo inicial */
+    color: #fff;
+    display: flex;
+    flex-direction: column; /* Cambiado a columna para dos filas */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: background-color 0.3s ease, padding 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.scrolled {
+    background-color: rgba(0, 0, 0, 0.9); /* Más oscuro cuando se hace scroll */
+}
+
+/* SECCIÓN SUPERIOR DEL HEADER (LOGO, BÚSQUEDA, ICONOS) */
+.headerTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 30px;
+    max-width: 1200px;
+    box-sizing: border-box;
+}
+
+/* LOGO */
+.logoContainer {
+    display: flex;
+    align-items: center;
+}
+
+.logoLink {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logoImage {
+    height: 50px;
+    margin-right: 10px;
+}
+
+.logoText {
+    display: flex;
+    flex-direction: column;
+}
+
+.mainLogo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ffd700; /* Dorado - puedes usar #ffc107 para un tono ligeramente diferente si deseas diferenciarlo */
+}
+
+.subLogo {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* SECCIÓN CENTRAL (BARRA DE BÚSQUEDA) */
+.centerSection {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 20px;
+}
+
+/* El botón de menú de cuadrícula puede no ser tan relevante en AdminHeader,
+   pero mantengo sus estilos si se decide usar para herramientas rápidas. */
+.gridMenuButton {
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.gridMenuButton:hover {
+    color: #ffd700;
+}
+
+.searchBar {
+    display: flex;
+    align-items: center;
+    border-radius: 25px;
+    background-color: #333;
+    overflow: hidden;
+    flex-grow: 1;
+    max-width: 400px;
+}
+
+.searchInput {
+    border: none;
+    background: transparent;
+    padding: 10px 20px;
+    color: #f0f0f0;
+    outline: none;
+    flex-grow: 1;
+}
+
+.searchInput::placeholder {
+    color: #aaa;
+}
+
+.searchButton {
+    background: none;
+    border: none;
+    color: #ffd700;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+/* ICONOS DE USUARIO Y CARRITO */
+.userIcons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.navIcon {
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    font-size: 1.6rem;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.navIcon:hover {
+    color: #ffd700;
+}
+
+.profileSection {
+    position: relative;
+}
+
+.profileName {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.profileDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 180px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+}
+
+.dropdownItem,
+.dropdownItemLogout {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #f0f0f0;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.dropdownItem:hover {
+    background-color: #3a3a3a;
+    color: #ffd700;
+}
+
+.dropdownItemLogout {
+    color: #ff4d4d;
+    border-top: 1px solid #444;
+    margin-top: 5px;
+    padding-top: 10px;
+}
+
+.dropdownItemLogout:hover {
+    background-color: #cc3333;
+    color: #fff;
+}
+
+
+/* SEGUNDO NIVEL DE NAVEGACIÓN (DEBAJO DEL HEADER PRINCIPAL) */
+.secondaryNav {
+    width: 100%;
+    background-color: #1a1a1a; /* Fondo más oscuro para la barra de navegación */
+    padding: 8px 30px;
+    box-sizing: border-box;
+    border-top: 1px solid #333;
+    max-width: 100%;
+}
+
+.secondaryNavList {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 30px;
+}
+
+.secondaryNavLink {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 5px 0;
+    transition: color 0.3s ease;
+}
+
+.secondaryNavLink:hover {
+    color: #ffd700;
+}
+
+/* ASIDE DEL CARRITO (mantener por si se reutiliza para algo en admin) */
+.cartAside, .gridMenuAside {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background-color: #2a2a2a;
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transform: translateX(0);
+    transition: transform 0.3s ease-out;
+}
+
+.closeCartButton, .closeGridMenuButton {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.closeCartButton:hover, .closeGridMenuButton:hover {
+    color: #ff4d4d;
+}
+
+.checkoutButton { /* Puede ser un botón genérico en un aside de admin */
+    background-color: #ffd700;
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: auto;
+    align-self: center;
+}
+
+.checkoutButton:hover {
+    background-color: #e0b800;
+}
+
+.gridMenuNavList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.gridMenuNavList li a {
+    display: block;
+    padding: 10px 0;
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #444;
+}
+
+.gridMenuNavList li a:hover {
+    color: #ffd700;
+    background-color: #3a3a3a;
+}
+
+/* HAMBURGUESA Y MENÚ MÓVIL */
+.hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1010;
+    margin-left: 15px;
+}
+
+.hamburger span {
+    display: block;
+    width: 28px;
+    height: 3px;
+    background-color: #f0f0f0;
+    margin-bottom: 6px;
+    transition: all 0.3s ease;
+}
+.hamburger span:last-child {
+    margin-bottom: 0;
+}
+
+.mobileMenuOpen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1999;
+    transform: translateX(0);
+    transition: transform 0.3s ease-out;
+}
+
+.mobileMenuOpen .navList {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mobileMenuOpen .navLink {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1.6rem;
+    padding: 15px;
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.mobileMenuOpen .navLink:hover {
+    color: #ffd700;
+}
+
+/* MEDIA QUERIES */
+@media (max-width: 1024px) {
+    .headerTop {
+        padding: 10px 20px;
+    }
+    .secondaryNav {
+        padding: 8px 20px;
+    }
+    .secondaryNavList {
+        gap: 20px;
+        font-size: 0.95rem;
+    }
+    .searchBar {
+        max-width: 300px;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .headerTop {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        padding: 10px 15px;
+    }
+
+    .logoContainer {
+        flex-basis: 100%;
+        justify-content: center;
+    }
+
+    .centerSection {
+        flex-basis: 100%;
+        justify-content: center;
+        order: 3;
+        margin: 10px 0;
+    }
+
+    .userIcons {
+        order: 2;
+        justify-content: flex-end;
+        flex-grow: 1;
+        margin-left: auto;
+        gap: 10px;
+    }
+    .profileName {
+        display: none;
+    }
+
+    .hamburger {
+        display: block;
+    }
+
+    .secondaryNav {
+        display: none;
+    }
+
+    .cartAside, .gridMenuAside {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .logoImage {
+        height: 40px;
+    }
+    .mainLogo {
+        font-size: 1.5rem;
+    }
+    .subLogo {
+        font-size: 0.7rem;
+    }
+    .navIcon {
+        font-size: 1.3rem;
+    }
+    .searchBar {
+        width: 100%;
+        max-width: none;
+    }
+}

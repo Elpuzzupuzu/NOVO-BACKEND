@@ -1,0 +1,232 @@
+/* client/src/pages/Admin/Cotizaciones/CotizacionEditPage.module.css */
+
+.pageContainer {
+    background-color: #2a2a2a; /* Fondo oscuro principal del contenido */
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    max-width: 800px; /* Un poco más ancho que el formulario de cotización */
+    margin: 40px auto; /* Centrar y dar espacio */
+    color: #f0f0f0; /* Color de texto claro */
+    font-family: 'Inter', sans-serif; /* Usar Inter como fuente principal */
+}
+
+.pageTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-align: center;
+    color: #4CAF50; /* Verde brillante para el título, similar al panel de la imagen */
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px rgba(76, 175, 80, 0.5); /* Sutil resplandor verde */
+}
+
+.cotizacionId {
+    font-size: 1.5rem;
+    color: #bbb;
+    margin-left: 10px;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas para campos en pantallas grandes */
+    gap: 20px; /* Espacio entre campos */
+}
+
+@media (max-width: 768px) {
+    .form {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    }
+}
+
+.formGroup {
+    margin-bottom: 0.5rem; /* Menos margen porque usamos gap en el grid */
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    font-weight: 600;
+}
+
+.input,
+.select,
+.textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #555; /* Borde más oscuro */
+    border-radius: 8px; /* Bordes más redondeados */
+    background-color: #3a3a3a; /* Fondo para inputs */
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    border-color: #4CAF50; /* Borde verde al enfocar */
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3); /* Resplandor verde */
+}
+
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+    background-color: #4a4a4a;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 20 20%22 fill%3D%22%23ccc%22%3E%3Cpath d%3D%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule%3D%22evenodd%22 fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%;
+    background-size: 0.65em auto;
+    padding-right: 2.5rem;
+}
+
+.checkbox {
+    margin-right: 0.5rem;
+    accent-color: #4CAF50; /* Color del checkbox al seleccionarlo */
+    transform: scale(1.1);
+}
+
+.labelCheckbox {
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+/* Estilos para mensajes */
+.message {
+    padding: 10px;
+    margin-bottom: 1rem;
+    border-radius: 5px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.successMessage {
+    background-color: rgba(76, 175, 80, 0.2); /* Verde claro */
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.errorMessage {
+    background-color: rgba(244, 67, 54, 0.2); /* Rojo claro */
+    color: #F44336;
+    border: 1px solid #F44336;
+}
+
+/* Botones */
+.submitButton, .cancelButton {
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    width: 100%; /* Ocupa el ancho completo en su columna */
+}
+
+.submitButton {
+    background-color: #4CAF50; /* Verde principal */
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+    grid-column: span 2; /* Ocupa ambas columnas en el grid */
+    margin-top: 1rem;
+}
+
+.submitButton:hover {
+    background-color: #43A047; /* Verde más oscuro al hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.6);
+}
+
+.submitButton:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.cancelButton {
+    background-color: #666; /* Gris oscuro */
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    grid-column: span 2; /* Ocupa ambas columnas */
+    margin-top: -10px; /* Reducir espacio entre botones */
+}
+
+.cancelButton:hover {
+    background-color: #777;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cancelButton:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Estilos para estados de carga/error de la página completa */
+.loadingContainer, .errorContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 120px); /* Ajusta a la altura de la pantalla menos el header */
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 40px auto;
+    max-width: 600px;
+}
+
+.loadingText {
+    font-size: 1.5rem;
+    color: #4CAF50;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.errorTitle {
+    font-size: 2rem;
+    color: #F44336;
+    margin-bottom: 1rem;
+}
+
+.errorMessage {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.backButton {
+    background-color: #ffd700;
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.backButton:hover {
+    background-color: #e0b800;
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}

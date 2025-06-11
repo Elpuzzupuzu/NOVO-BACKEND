@@ -36,8 +36,10 @@ export const fetchCotizaciones = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get('/NOVO/cotizaciones');
-      // Asume que el backend devuelve { cotizaciones: [...] }
-      return response.data.cotizaciones;
+      // CAMBIO CLAVE AQUÍ: Retorna response.data directamente si el backend devuelve un array raíz.
+      // Si tu backend realmente devuelve { cotizaciones: [...] }, entonces necesitarías response.data.cotizaciones.
+      // Pero basándonos en tu controller, asumo que es response.data.
+      return response.data;
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         return rejectWithValue(error.response.data.message);
@@ -106,7 +108,7 @@ const cotizacionesSlice = createSlice({
     // Reducers síncronos si los necesitas (ej. para resetear el estado o limpiar errores)
     resetCotizacionesStatus: (state) => {
       state.status = 'idle';
-      // state.error = null; // Decides si quieres que esto también limpie el error
+      state.error = null; // Limpiar el error al resetear el estado
     },
     clearCotizacionesError: (state) => {
       state.error = null;
@@ -122,7 +124,7 @@ const cotizacionesSlice = createSlice({
       .addCase(createCotizacion.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.cotizaciones.push(action.payload); // Añade la nueva cotización
-        state.error = null; // Limpiar errores previos si los hubiera
+        state.error = null;
       })
       .addCase(createCotizacion.rejected, (state, action) => {
         state.status = 'failed';
@@ -135,7 +137,7 @@ const cotizacionesSlice = createSlice({
       })
       .addCase(fetchCotizaciones.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.cotizaciones = action.payload; // Sobrescribe con las cotizaciones obtenidas
+        state.cotizaciones = action.payload; // <--- ¡ASIGNACIÓN DIRECTA DE action.payload AQUÍ!
         state.error = null;
       })
       .addCase(fetchCotizaciones.rejected, (state, action) => {
