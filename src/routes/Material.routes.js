@@ -15,7 +15,7 @@ const router = Router();
 router.post('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin'), MaterialController.createMaterial);
 
 // GET /NOVO/materiales - Obtener todos los materiales
-router.get('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin'), MaterialController.getAllMaterials);
+router.get('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin','cliente'), MaterialController.getAllMaterials);
 
 // GET /NOVO/materiales/:id_material - Obtener un material por su ID
 router.get('/:id_material', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin'), MaterialController.getMaterialById);

@@ -1,16 +1,19 @@
+// client/src/store/index.js
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
-import cotizacionesReducer from '../features/cotizaciones/cotizacionesSlice'; // ¡Importa tu nuevo slice!
+import cotizacionesReducer from '../features/cotizaciones/cotizacionesSlice';
+import materialsReducer from '../features/materiales/materialsSlice'; // ¡Importa el nuevo slice de materiales!
 
 const store = configureStore({
   reducer: {
-    auth: authReducer, // El slice de autenticación
-    cotizaciones: cotizacionesReducer, // ¡Aquí registras el slice de cotizaciones!
+    auth: authReducer,
+    cotizaciones: cotizacionesReducer,
+    materials: materialsReducer, // ¡Registra el slice de materiales aquí!
     // Puedes añadir más reducers aquí a medida que crees más slices
   },
-  // Middleware opcional para desarrollo (desactivar en producción si no es necesario)
+  // Middleware opcional para desarrollo
   // middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(myLogger),
-  // devTools: process.env.NODE_ENV !== 'production', // Habilitar Redux DevTools solo en desarrollo
+  // devTools: process.env.NODE_ENV !== 'production',
 });
 
 export default store;
