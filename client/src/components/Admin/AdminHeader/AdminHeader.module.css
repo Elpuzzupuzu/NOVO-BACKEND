@@ -209,7 +209,7 @@
     background-color: #1a1a1a; /* Fondo más oscuro para la barra de navegación */
     padding: 8px 30px;
     box-sizing: border-box;
-    border-top: 1px solid #333;
+    border-top: .5px solid #333;
     max-width: 100%;
 }
 

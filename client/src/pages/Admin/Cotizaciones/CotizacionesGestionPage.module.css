@@ -29,7 +29,9 @@
     gap: 15px;
     flex-wrap: wrap; /* Permitir que los elementos se envuelvan en pantallas pequeñas */
     justify-content: center;
+    padding-top: 20px;
 }
+
 
 .searchInput,
 .filterSelect { /* Este estilo se aplica ahora también al select de "items por página" */

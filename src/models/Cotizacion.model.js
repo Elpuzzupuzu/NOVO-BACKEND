@@ -105,13 +105,13 @@ class Cotizacion {
             JOIN
                 clientes cl ON c.cliente_id = cl.id_cliente
             LEFT JOIN
-                materiales m ON c.material_base_id = m.id_material
+                materiales m ON c.material_base_id = m.id_material -- <-- REVISADO: Se mantiene id_material aquí
         `;
-        let countQuery = 'SELECT COUNT(c.id_cotizacion) as total FROM cotizaciones c JOIN clientes cl ON c.cliente_id = cl.id_cliente'; // Join for count as well if filtering by client name
+        let countQuery = 'SELECT COUNT(c.id_cotizacion) as total FROM cotizaciones c JOIN clientes cl ON c.cliente_id = cl.id_cliente';
 
         const conditions = [];
         const values = [];
-        const countValues = []; // Separate values for count query if needed, although here they will be the same
+        const countValues = [];
 
         // Filter by cliente_id (exact match for UUIDs)
         if (filters.cliente_id) {
@@ -127,39 +127,58 @@ class Cotizacion {
             countValues.push(filters.estado);
         }
 
-        // Search by client name/apellido or partial ID (new logic for searchTerm)
+        // >>> INICIO DEL CAMBIO CLAVE: Lógica refinada para searchTerm
         if (filters.searchTerm) {
-            const searchTermLike = `%${filters.searchTerm}%`;
-            // Add conditions for client name/apellido or partial UUID match
-            conditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ? OR c.id_cotizacion LIKE ? OR c.cliente_id LIKE ?)');
-            values.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike);
-            countValues.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike);
+            // Limpia y divide el término de búsqueda por uno o más espacios
+            const cleanedSearchTerm = filters.searchTerm.trim();
+            const searchTermsArray = cleanedSearchTerm.split(/\s+/).filter(s => s.length > 0);
+
+            if (searchTermsArray.length > 0) {
+                // Si hay múltiples palabras (ej. "yael ruiz")
+                if (searchTermsArray.length > 1) {
+                    const multiWordConditions = [];
+                    searchTermsArray.forEach(term => {
+                        const termLike = `%${term}%`;
+                        multiWordConditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ?)'); // Solo buscar en nombre/apellido para varias palabras
+                        values.push(termLike, termLike);
+                        countValues.push(termLike, termLike);
+                    });
+                    // Combina las condiciones de varias palabras con AND
+                    conditions.push(`(${multiWordConditions.join(' AND ')})`);
+                } else {
+                    // Si hay solo una palabra (ej. "yael", "ruiz", o un ID parcial)
+                    const termLike = `%${searchTermsArray[0]}%`;
+                    conditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ? OR c.id_cotizacion LIKE ? OR c.cliente_id LIKE ?)');
+                    values.push(termLike, termLike, termLike, termLike);
+                    countValues.push(termLike, termLike, termLike, termLike);
+                }
+            }
         }
+        // >>> FIN DEL CAMBIO CLAVE
 
         if (conditions.length > 0) {
             const whereClause = ' WHERE ' + conditions.join(' AND ');
             query += whereClause;
-            countQuery += whereClause; // Apply the same WHERE clause to the count query
+            countQuery += whereClause;
         }
 
         query += ' ORDER BY c.fecha_solicitud DESC';
 
         const offset = (page - 1) * limit;
         query += ` LIMIT ? OFFSET ?`;
-        values.push(limit, offset); // Limit and offset are only for the main query, not count
+        values.push(limit, offset);
 
         // --- ADD THESE CONSOLE.LOGS ---
         console.log("--- Debugging Cotizacion.findAll (Backend) ---");
         console.log("Final Data Query:", query);
         console.log("Values for Data Query:", values);
         console.log("Final Count Query:", countQuery);
-        console.log("Values for Count Query:", countValues); // Use countValues for count query
+        console.log("Values for Count Query:", countValues);
         console.log("--- End Debugging ---");
-        // --- END CONSOLE.LOGS ---
 
         try {
             const [rows] = await pool.query(query, values);
-            const [countResult] = await pool.query(countQuery, countValues); // Pass countValues to count query
+            const [countResult] = await pool.query(countQuery, countValues);
 
             const total = countResult[0].total;
             const totalPages = Math.ceil(total / limit);
