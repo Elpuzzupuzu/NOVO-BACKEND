@@ -6,6 +6,14 @@ const initialState = {
   cotizaciones: [], // Un array para almacenar las cotizaciones
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,    // Almacena cualquier mensaje de error
+  pagination: {   // Nuevo objeto para la información de paginación
+    total: 0,
+    page: 1,
+    limit: 3,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
 };
 
 // =========================================================
@@ -30,16 +38,15 @@ export const createCotizacion = createAsyncThunk(
   }
 );
 
-// Thunk para obtener todas las cotizaciones
+// Thunk para obtener todas las cotizaciones CON FILTROS Y PAGINACIÓN
 export const fetchCotizaciones = createAsyncThunk(
   'cotizaciones/fetchCotizaciones',
-  async (_, { rejectWithValue }) => {
+  // Acepta un objeto 'params' que puede incluir filtros, page y limit
+  async (params = {}, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get('/NOVO/cotizaciones');
-      // CAMBIO CLAVE AQUÍ: Retorna response.data directamente si el backend devuelve un array raíz.
-      // Si tu backend realmente devuelve { cotizaciones: [...] }, entonces necesitarías response.data.cotizaciones.
-      // Pero basándonos en tu controller, asumo que es response.data.
-      return response.data;
+      const response = await axiosInstance.get('/NOVO/cotizaciones', { params });
+      // Ahora el backend devuelve { data: [...], pagination: {...} }
+      return response.data; // Esto contendrá { data, pagination }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         return rejectWithValue(error.response.data.message);
@@ -137,12 +144,16 @@ const cotizacionesSlice = createSlice({
       })
       .addCase(fetchCotizaciones.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.cotizaciones = action.payload; // <--- ¡ASIGNACIÓN DIRECTA DE action.payload AQUÍ!
+        // ASIGNACIÓN CLAVE AQUÍ: Actualiza tanto las cotizaciones como la información de paginación
+        state.cotizaciones = action.payload.data;
+        state.pagination = action.payload.pagination;
         state.error = null;
       })
       .addCase(fetchCotizaciones.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload || 'Error al obtener las cotizaciones.';
+        // Opcional: Reiniciar paginación a valores por defecto en caso de error
+        state.pagination = { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPrevPage: false };
       })
       // fetchCotizacionById
       .addCase(fetchCotizacionById.pending, (state) => {
@@ -191,6 +202,8 @@ const cotizacionesSlice = createSlice({
         // Filtra la cotización eliminada del estado
         state.cotizaciones = state.cotizaciones.filter(cot => cot.id_cotizacion !== action.payload);
         state.error = null;
+        // Opcional: ajustar `total` en la paginación si se elimina un elemento
+        state.pagination.total = Math.max(0, state.pagination.total - 1);
       })
       .addCase(deleteCotizacion.rejected, (state, action) => {
         state.status = 'failed';
@@ -209,5 +222,7 @@ export default cotizacionesSlice.reducer;
 export const selectAllCotizaciones = (state) => state.cotizaciones.cotizaciones;
 export const selectCotizacionesStatus = (state) => state.cotizaciones.status;
 export const selectCotizacionesError = (state) => state.cotizaciones.error;
+export const selectCotizacionesPagination = (state) => state.cotizaciones.pagination; // Nuevo selector para la paginación
+
 export const selectCotizacionById = (state, cotizacionId) =>
   state.cotizaciones.cotizaciones.find(cot => cot.id_cotizacion === cotizacionId);

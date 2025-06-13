@@ -44,9 +44,10 @@ class CotizacionService {
      * @param {object} filters - Object with filters for the search.
      * @returns {Promise<Array<object>>} An array of quote objects.
      */
-    async getAllCotizaciones(filters) {
-        const cotizaciones = await CotizacionModel.findAll(filters);
-        return cotizaciones;
+        async getAllCotizaciones(filters, page, limit) {
+        // Pasa los parámetros de paginación al modelo
+        const { data, pagination } = await CotizacionModel.findAll(filters, page, limit);
+        return { data, pagination };
     }
 
     /**

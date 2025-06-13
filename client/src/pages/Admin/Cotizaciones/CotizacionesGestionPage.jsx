@@ -1,70 +1,81 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     fetchCotizaciones,
     selectAllCotizaciones,
     selectCotizacionesStatus,
     selectCotizacionesError,
-    // updateCotizacion, // Podríamos usarlo directamente aquí o en el modal
+    selectCotizacionesPagination,
 } from '../../../features/cotizaciones/cotizacionesSlice';
 import { selectUser } from '../../../features/auth/authSlice';
-import CotizacionDetailModal from './CotizacionDetailModal'; // Importa el modal que crearemos
+import CotizacionDetailModal from './CotizacionDetailModal';
 import styles from './CotizacionesGestionPage.module.css';
 
 const CotizacionesGestionPage = () => {
     const dispatch = useDispatch();
-    // Añadimos un valor predeterminado de array vacío para `cotizaciones` en caso de que sea undefined
-    const cotizaciones = useSelector(selectAllCotizaciones) || []; 
+
+    const cotizaciones = useSelector(selectAllCotizaciones) || [];
     const status = useSelector(selectCotizacionesStatus);
     const error = useSelector(selectCotizacionesError);
     const user = useSelector(selectUser);
+    const pagination = useSelector(selectCotizacionesPagination);
 
     // Estados para la búsqueda y filtrado
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'pendiente', 'aprobada', etc.
+    const [filterStatus, setFilterStatus] = useState('all');
 
-    // Estados para la paginación
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10); // Puedes ajustar esto
+    // **Nuevo estado para el número de registros por página**
+    const [localItemsPerPage, setLocalItemsPerPage] = useState(pagination.limit); // Usa el límite inicial del Redux store
 
-    // Estado para el modal de detalle
+    // Estados para el modal de detalle
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCotizacion, setSelectedCotizacion] = useState(null);
 
-    // Cargar cotizaciones al montar el componente
-    useEffect(() => {
-        // Solo cargar si el estado es 'idle' para evitar múltiples cargas
-        if (status === 'idle') {
-            dispatch(fetchCotizaciones());
+    // Función para despachar la carga de cotizaciones con filtros y paginación
+    const loadCotizaciones = useCallback((page = 1, limit = 10, filters = {}) => {
+        const queryParams = {
+            page,
+            limit,
+            ...filters,
+        };
+        if (queryParams.estado === 'all') {
+            delete queryParams.estado;
         }
-    }, [status, dispatch]); // Dependencia: solo se ejecuta si 'status' cambia a 'idle' o al montar por primera vez
+        if (searchTerm) {
+            queryParams.cliente_id = searchTerm; // O un filtro de búsqueda más general como `search`
+        }
+        dispatch(fetchCotizaciones(queryParams));
+    }, [dispatch, searchTerm]); // `searchTerm` como dependencia
 
-    // ************* DEBUGGING: LOGGING THE VALUE OF COTIZACIONES *************
-    // Este console.log te mostrará el valor de `cotizaciones` justo antes de que se intente filtrar.
-    // Revisa la consola de tu navegador cuando cargues esta página para ver qué valor tiene.
-    console.log('Value of cotizaciones in CotizacionesGestionPage:', cotizaciones);
-    // ************************************************************************
+    // Cargar cotizaciones al montar el componente y cuando cambien los filtros o la paginación
+    useEffect(() => {
+        // Usa `localItemsPerPage` como el límite cuando se despacha la acción
+        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
+    }, [loadCotizaciones, pagination.page, localItemsPerPage, filterStatus]); // `localItemsPerPage` como dependencia
 
+    const handlePageChange = (newPage) => {
+        loadCotizaciones(newPage, localItemsPerPage, { estado: filterStatus });
+    };
 
-    // Filtrar cotizaciones basado en búsqueda y estado
-    const filteredCotizaciones = cotizaciones.filter(cotizacion => {
-        const matchesSearchTerm = cotizacion.tipo_producto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                  cotizacion.descripcion_diseno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                  cotizacion.notas_adicionales?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                  cotizacion.cliente_id.toLowerCase().includes(searchTerm.toLowerCase()); // Búsqueda por ID de cliente
+    const handleFilterChange = (e) => {
+        setFilterStatus(e.target.value);
+        // Siempre vuelve a la página 1 cuando se aplica un nuevo filtro
+        loadCotizaciones(1, localItemsPerPage, { estado: e.target.value });
+    };
 
-        const matchesFilterStatus = filterStatus === 'all' || cotizacion.estado === filterStatus;
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        // Siempre vuelve a la página 1 cuando se aplica una nueva búsqueda
+        loadCotizaciones(1, localItemsPerPage, { estado: filterStatus, cliente_id: e.target.value });
+    };
 
-        return matchesSearchTerm && matchesFilterStatus;
-    });
-
-    // Paginación de las cotizaciones filtradas
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredCotizaciones.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredCotizaciones.length / itemsPerPage);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    // **Nuevo manejador para el cambio de items por página**
+    const handleItemsPerPageChange = (e) => {
+        const newLimit = parseInt(e.target.value);
+        setLocalItemsPerPage(newLimit);
+        // Al cambiar el número de elementos por página, volvemos a la primera página
+        loadCotizaciones(1, newLimit, { estado: filterStatus, cliente_id: searchTerm });
+    };
 
     const handleOpenModal = (cotizacion) => {
         setSelectedCotizacion(cotizacion);
@@ -74,11 +85,10 @@ const CotizacionesGestionPage = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedCotizacion(null);
-        // Opcional: Refrescar la lista de cotizaciones si se hicieron cambios en el modal
-        dispatch(fetchCotizaciones()); // Volver a cargar para reflejar posibles cambios
+        // Después de cerrar el modal, recargar la lista con los filtros y paginación actuales
+        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
     };
 
-    // Permisos de usuario para ver esta página (asegúrate de que el user.role exista y sea correcto)
     const canView = user?.role === 'admin' || user?.role === 'empleado' || user?.role === 'gerente';
 
     if (!canView) {
@@ -106,21 +116,15 @@ const CotizacionesGestionPage = () => {
                 <div className={styles.searchFilterGroup}>
                     <input
                         type="text"
-                        placeholder="Buscar por tipo de producto, cliente ID, etc."
+                        placeholder="Buscar por ID de cliente"
                         className={styles.searchInput}
                         value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setCurrentPage(1); // Resetear a la primera página al buscar
-                        }}
+                        onChange={handleSearchChange}
                     />
                     <select
                         className={styles.filterSelect}
                         value={filterStatus}
-                        onChange={(e) => {
-                            setFilterStatus(e.target.value);
-                            setCurrentPage(1); // Resetear a la primera página al filtrar
-                        }}
+                        onChange={handleFilterChange}
                     >
                         <option value="all">Todos los estados</option>
                         <option value="pendiente">Pendiente</option>
@@ -129,6 +133,18 @@ const CotizacionesGestionPage = () => {
                         <option value="rechazada">Rechazada</option>
                         <option value="completada">Completada</option>
                         <option value="cancelada">Cancelada</option>
+                    </select>
+
+                    {/* **Nuevo Select para Registros por Página** */}
+                    <select
+                        className={styles.filterSelect} // Reutiliza el estilo del select de filtro
+                        value={localItemsPerPage}
+                        onChange={handleItemsPerPageChange}
+                    >
+                        <option value={5}>5 por página</option>
+                        <option value={10}>10 por página</option>
+                        <option value={20}>20 por página</option>
+                        <option value={50}>50 por página</option>
                     </select>
                 </div>
             </div>
@@ -148,8 +164,8 @@ const CotizacionesGestionPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.length > 0 ? (
-                            currentItems.map(cotizacion => (
+                        {cotizaciones.length > 0 ? (
+                            cotizaciones.map(cotizacion => (
                                 <tr key={cotizacion.id_cotizacion} onClick={() => handleOpenModal(cotizacion)} className={styles.tableRow}>
                                     <td>{cotizacion.id_cotizacion.substring(0, 8)}...</td>
                                     <td>{cotizacion.cliente_id.substring(0, 8)}...</td>
@@ -161,7 +177,6 @@ const CotizacionesGestionPage = () => {
                                             {cotizacion.estado.replace(/_/g, ' ')}
                                         </span>
                                     </td>
-                                    {/* FIX: Asegura que total_estimado es un número antes de llamar a toFixed */}
                                     <td>${parseFloat(cotizacion.total_estimado)?.toFixed(2) || '0.00'}</td>
                                     <td>
                                         <button onClick={(e) => { e.stopPropagation(); handleOpenModal(cotizacion); }} className={styles.actionButton}>
@@ -180,31 +195,34 @@ const CotizacionesGestionPage = () => {
             </div>
 
             {/* Paginación */}
-            {totalPages > 1 && (
+            {pagination.totalPages > 1 && (
                 <div className={styles.pagination}>
                     <button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={!pagination.hasPrevPage}
                         className={styles.paginationButton}
                     >
                         Anterior
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => (
+                    {Array.from({ length: pagination.totalPages }, (_, i) => (
                         <button
                             key={i + 1}
-                            onClick={() => paginate(i + 1)}
-                            className={`${styles.paginationButton} ${currentPage === i + 1 ? styles.activePage : ''}`}
+                            onClick={() => handlePageChange(i + 1)}
+                            className={`${styles.paginationButton} ${pagination.page === i + 1 ? styles.activePage : ''}`}
                         >
                             {i + 1}
                         </button>
                     ))}
                     <button
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={!pagination.hasNextPage}
                         className={styles.paginationButton}
                     >
                         Siguiente
                     </button>
+                    <span className={styles.pageInfo}>
+                        Página {pagination.page} de {pagination.totalPages} (Total: {pagination.total})
+                    </span>
                 </div>
             )}
 

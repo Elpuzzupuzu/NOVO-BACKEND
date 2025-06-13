@@ -91,8 +91,9 @@ class Cotizacion {
      * @param {object} [filters={}] - Optional filters object (e.g., { cliente_id: 'abc', estado: 'Completada' }).
      * @returns {Promise<Array<object>>} An array of quote objects.
      */
-    static async findAll(filters = {}) {
+       static async findAll(filters = {}, page = 1, limit = 10) {
         let query = 'SELECT * FROM cotizaciones';
+        let countQuery = 'SELECT COUNT(*) as total FROM cotizaciones';
         const conditions = [];
         const values = [];
 
@@ -104,19 +105,45 @@ class Cotizacion {
             conditions.push('estado = ?');
             values.push(filters.estado);
         }
-        // Add more filters as needed (e.g., date ranges, material_base_id)
+        // Agrega más filtros según sea necesario (ej. rangos de fecha, material_base_id)
 
         if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause;
         }
-        query += ' ORDER BY fecha_solicitud DESC'; // Order by request date
+
+        query += ' ORDER BY fecha_solicitud DESC'; // Ordenar por fecha de solicitud
+
+        // Añadir paginación
+        const offset = (page - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset);
 
         try {
+            // Ejecutar la consulta de datos paginados
             const [rows] = await pool.query(query, values);
-            return rows;
+
+            // Ejecutar la consulta para el conteo total de registros (sin paginación)
+            const [countResult] = await pool.query(countQuery, values.slice(0, conditions.length)); // Solo los valores de las condiciones
+
+            const total = countResult[0].total;
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                data: rows,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+            };
         } catch (error) {
-            console.error('Error retrieving quotes:', error.message);
-            throw new Error('Could not retrieve quotes.');
+            console.error('Error al recuperar cotizaciones:', error.message);
+            throw new Error('No se pudieron recuperar las cotizaciones.');
         }
     }
 

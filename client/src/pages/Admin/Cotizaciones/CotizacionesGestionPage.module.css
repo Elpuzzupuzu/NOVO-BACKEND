@@ -32,7 +32,7 @@
 }
 
 .searchInput,
-.filterSelect {
+.filterSelect { /* Este estilo se aplica ahora también al select de "items por página" */
     padding: 12px 18px;
     border: 1px solid #444;
     border-radius: 8px;
@@ -201,6 +201,12 @@
     color: #fff;
     font-weight: bold;
 }
+
+.pageInfo { /* Estilo para el texto "Página X de Y" */
+    color: #ccc;
+    font-size: 1rem;
+}
+
 
 /* Mensajes de carga y error */
 .loading, .error, .permissionDenied {
