@@ -120,6 +120,16 @@ class Cotizacion {
         }
     }
 
+
+
+
+
+
+
+
+
+    
+
     /**
      * Updates an existing quote's data.
      * @param {string} id_cotizacion - The ID of the quote to update.
