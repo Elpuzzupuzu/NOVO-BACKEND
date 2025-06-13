@@ -272,7 +272,7 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                 <button className={styles.closeButton} onClick={onClose}>&times;</button>
                 <h2 className={styles.modalTitle}>
                     {editMode ? 'Editar Cotización' : 'Detalle de Cotización'}
-                    <span className={styles.cotizacionId}>#{cotizacion.id_cotizacion.substring(0, 8)}...</span>
+                    {/* <span className={styles.cotizacionId}>#{cotizacion.id_cotizacion.substring(0, 8)}...</span> */}
                 </h2>
 
                 {localMessage && (
