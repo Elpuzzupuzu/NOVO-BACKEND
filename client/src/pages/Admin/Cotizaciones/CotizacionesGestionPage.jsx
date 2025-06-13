@@ -24,7 +24,7 @@ const CotizacionesGestionPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
 
-    // **Nuevo estado para el número de registros por página**
+    // Estado para el número de registros por página
     const [localItemsPerPage, setLocalItemsPerPage] = useState(pagination.limit); // Usa el límite inicial del Redux store
 
     // Estados para el modal de detalle
@@ -42,7 +42,11 @@ const CotizacionesGestionPage = () => {
             delete queryParams.estado;
         }
         if (searchTerm) {
-            queryParams.cliente_id = searchTerm; // O un filtro de búsqueda más general como `search`
+            // Si el searchTerm es para buscar por cliente_id, asegúrate que el backend lo reciba como tal.
+            // Si la búsqueda se va a hacer por nombre/apellido del cliente, aquí deberías enviar un filtro diferente
+            // por ejemplo, `queryParams.search_client_name = searchTerm;` y manejarlo en el backend.
+            // Por ahora, lo mantenemos como cliente_id para compatibilidad con el backend actual.
+            queryParams.cliente_id = searchTerm;
         }
         dispatch(fetchCotizaciones(queryParams));
     }, [dispatch, searchTerm]); // `searchTerm` como dependencia
@@ -69,7 +73,7 @@ const CotizacionesGestionPage = () => {
         loadCotizaciones(1, localItemsPerPage, { estado: filterStatus, cliente_id: e.target.value });
     };
 
-    // **Nuevo manejador para el cambio de items por página**
+    // Manejador para el cambio de items por página
     const handleItemsPerPageChange = (e) => {
         const newLimit = parseInt(e.target.value);
         setLocalItemsPerPage(newLimit);
@@ -86,7 +90,7 @@ const CotizacionesGestionPage = () => {
         setIsModalOpen(false);
         setSelectedCotizacion(null);
         // Después de cerrar el modal, recargar la lista con los filtros y paginación actuales
-        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
+        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus, cliente_id: searchTerm });
     };
 
     const canView = user?.role === 'admin' || user?.role === 'empleado' || user?.role === 'gerente';
@@ -135,9 +139,9 @@ const CotizacionesGestionPage = () => {
                         <option value="cancelada">Cancelada</option>
                     </select>
 
-                    {/* **Nuevo Select para Registros por Página** */}
+                    {/* Select para Registros por Página */}
                     <select
-                        className={styles.filterSelect} // Reutiliza el estilo del select de filtro
+                        className={styles.filterSelect}
                         value={localItemsPerPage}
                         onChange={handleItemsPerPageChange}
                     >
@@ -153,10 +157,10 @@ const CotizacionesGestionPage = () => {
                 <table className={styles.table}>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Cliente ID</th>
+                            <th>ID Cotización</th> 
+                            <th>Cliente</th>      
                             <th>Tipo de Producto</th>
-                            <th>Material</th>
+                            <th>Material</th>      
                             <th>Fecha Agendada</th>
                             <th>Estado</th>
                             <th>Total Estimado</th>
@@ -168,9 +172,11 @@ const CotizacionesGestionPage = () => {
                             cotizaciones.map(cotizacion => (
                                 <tr key={cotizacion.id_cotizacion} onClick={() => handleOpenModal(cotizacion)} className={styles.tableRow}>
                                     <td>{cotizacion.id_cotizacion.substring(0, 8)}...</td>
-                                    <td>{cotizacion.cliente_id.substring(0, 8)}...</td>
+                                    {/* Muestra el nombre y apellido del cliente */}
+                                    <td>{`${cotizacion.cliente_nombre || ''} ${cotizacion.cliente_apellido || ''}`.trim()}</td>
                                     <td>{cotizacion.tipo_producto}</td>
-                                    <td>{cotizacion.material_base_id || 'N/A'}</td>
+                                    {/* Muestra el nombre del material */}
+                                    <td>{cotizacion.material_nombre || 'N/A'}</td>
                                     <td>{cotizacion.fecha_agendada ? new Date(cotizacion.fecha_agendada).toLocaleDateString() : 'N/A'}</td>
                                     <td>
                                         <span className={`${styles.statusBadge} ${styles[cotizacion.estado.toLowerCase().replace(/ /g, '_')]}`}>

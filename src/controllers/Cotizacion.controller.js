@@ -1,241 +1,137 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-    fetchCotizaciones,
-    selectAllCotizaciones,
-    selectCotizacionesStatus,
-    selectCotizacionesError,
-    selectCotizacionesPagination,
-} from '../../../features/cotizaciones/cotizacionesSlice';
-import { selectUser } from '../../../features/auth/authSlice';
-import CotizacionDetailModal from './CotizacionDetailModal';
-import styles from './CotizacionesGestionPage.module.css';
+// src/controllers/Cotizacion.controller.js
 
-const CotizacionesGestionPage = () => {
-    const dispatch = useDispatch();
+import CotizacionService from '../services/Cotizacion.service.js';
 
-    const cotizaciones = useSelector(selectAllCotizaciones) || [];
-    const status = useSelector(selectCotizacionesStatus);
-    const error = useSelector(selectCotizacionesError);
-    const user = useSelector(selectUser);
-    const pagination = useSelector(selectCotizacionesPagination);
+class CotizacionController {
+    /**
+     * Handles the creation of a new quote.
+     * @param {object} req - Request object (contains req.body).
+     * @param {object} res - Response object.
+     */
+    async createCotizacion(req, res) {
+        try {
+            const cotizacionData = req.body;
 
-    // Estados para la búsqueda y filtrado
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all');
+            // Basic input validation
+            if (!cotizacionData.cliente_id || !cotizacionData.tipo_producto || cotizacionData.total_estimado === undefined) {
+                return res.status(400).json({ message: 'Client ID, product type, and estimated total are required fields.' });
+            }
+            if (isNaN(cotizacionData.total_estimado) || cotizacionData.total_estimado <= 0) {
+                return res.status(400).json({ message: 'Estimated total must be a positive number.' });
+            }
 
-    // **Nuevo estado para el número de registros por página**
-    const [localItemsPerPage, setLocalItemsPerPage] = useState(pagination.limit); // Usa el límite inicial del Redux store
-
-    // Estados para el modal de detalle
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCotizacion, setSelectedCotizacion] = useState(null);
-
-    // Función para despachar la carga de cotizaciones con filtros y paginación
-    const loadCotizaciones = useCallback((page = 1, limit = 10, filters = {}) => {
-        const queryParams = {
-            page,
-            limit,
-            ...filters,
-        };
-        if (queryParams.estado === 'all') {
-            delete queryParams.estado;
+            const newCotizacion = await CotizacionService.createCotizacion(cotizacionData);
+            res.status(201).json({ message: 'Cotizacion created successfully.', cotizacion: newCotizacion });
+        } catch (error) {
+            console.error('Error in CotizacionController.createCotizacion:', error);
+            if (error.message.includes('Client not found') || error.message.includes('Base material not found')) {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error.message.includes('required')) { // For calculated fields error
+                return res.status(400).json({ message: error.message });
+            }
+            res.status(500).json({ message: 'Internal server error while creating quote.', error: error.message });
         }
-        if (searchTerm) {
-            queryParams.cliente_id = searchTerm; // O un filtro de búsqueda más general como `search`
+    }
+
+    /**
+     * Handles retrieving all quotes.
+     * Allows filtering by client_id or estado.
+     * @param {object} req - Request object (contains req.query for filters).
+     * @param {object} res - Response object.
+     */
+    
+    
+        async getAllCotizaciones(req, res) {
+        try {
+            const filters = req.query; // Los filtros se pasan como parámetros de consulta
+            
+            // Extraer parámetros de paginación y convertirlos a números
+            const page = parseInt(req.query.page) || 1; // Página por defecto: 1
+            const limit = parseInt(req.query.limit) || 10; // Límite por defecto: 10
+
+            // Eliminar 'page' y 'limit' de los filtros para no pasarlos como condiciones SQL
+            delete filters.page;
+            delete filters.limit;
+
+            const { data, pagination } = await CotizacionService.getAllCotizaciones(filters, page, limit);
+            
+            res.status(200).json({
+                data,
+                pagination
+            });
+        } catch (error) {
+            console.error('Error en CotizacionController.getAllCotizaciones:', error);
+            res.status(500).json({ message: 'Error interno del servidor al recuperar cotizaciones.', error: error.message });
         }
-        dispatch(fetchCotizaciones(queryParams));
-    }, [dispatch, searchTerm]); // `searchTerm` como dependencia
-
-    // Cargar cotizaciones al montar el componente y cuando cambien los filtros o la paginación
-    useEffect(() => {
-        // Usa `localItemsPerPage` como el límite cuando se despacha la acción
-        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
-    }, [loadCotizaciones, pagination.page, localItemsPerPage, filterStatus]); // `localItemsPerPage` como dependencia
-
-    const handlePageChange = (newPage) => {
-        loadCotizaciones(newPage, localItemsPerPage, { estado: filterStatus });
-    };
-
-    const handleFilterChange = (e) => {
-        setFilterStatus(e.target.value);
-        // Siempre vuelve a la página 1 cuando se aplica un nuevo filtro
-        loadCotizaciones(1, localItemsPerPage, { estado: e.target.value });
-    };
-
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-        // Siempre vuelve a la página 1 cuando se aplica una nueva búsqueda
-        loadCotizaciones(1, localItemsPerPage, { estado: filterStatus, cliente_id: e.target.value });
-    };
-
-    // **Nuevo manejador para el cambio de items por página**
-    const handleItemsPerPageChange = (e) => {
-        const newLimit = parseInt(e.target.value);
-        setLocalItemsPerPage(newLimit);
-        // Al cambiar el número de elementos por página, volvemos a la primera página
-        loadCotizaciones(1, newLimit, { estado: filterStatus, cliente_id: searchTerm });
-    };
-
-    const handleOpenModal = (cotizacion) => {
-        setSelectedCotizacion(cotizacion);
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedCotizacion(null);
-        // Después de cerrar el modal, recargar la lista con los filtros y paginación actuales
-        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
-    };
-
-    const canView = user?.role === 'admin' || user?.role === 'empleado' || user?.role === 'gerente';
-
-    if (!canView) {
-        return (
-            <div className={styles.permissionDenied}>
-                <h2>Acceso Denegado</h2>
-                <p>No tienes permisos para ver la gestión de cotizaciones.</p>
-            </div>
-        );
     }
 
-    if (status === 'loading' && cotizaciones.length === 0) {
-        return <div className={styles.loading}>Cargando cotizaciones...</div>;
+    /**
+     * Handles retrieving a quote by its ID.
+     * @param {object} req - Request object (contains req.params.id_cotizacion).
+     * @param {object} res - Response object.
+     */
+    async getCotizacionById(req, res) {
+        try {
+            const { id_cotizacion } = req.params;
+            const cotizacion = await CotizacionService.getCotizacionById(id_cotizacion);
+            res.status(200).json(cotizacion);
+        } catch (error) {
+            if (error.message.includes('Quote not found')) {
+                return res.status(404).json({ message: error.message });
+            }
+            console.error('Error in CotizacionController.getCotizacionById:', error);
+            res.status(500).json({ message: 'Internal server error while retrieving quote.', error: error.message });
+        }
     }
 
-    if (error) {
-        return <div className={styles.error}>Error al cargar cotizaciones: {error}</div>;
+    /**
+     * Handles updating a quote.
+     * @param {object} req - Request object (contains req.params.id_cotizacion and req.body).
+     * @param {object} res - Response object.
+     */
+    async updateCotizacion(req, res) {
+        try {
+            const { id_cotizacion } = req.params;
+            const updateData = req.body;
+
+            if (updateData.id_cotizacion) {
+                return res.status(400).json({ message: 'Cannot update the quote ID.' });
+            }
+
+            const updatedCotizacion = await CotizacionService.updateCotizacion(id_cotizacion, updateData);
+            res.status(200).json({ message: 'Quote updated successfully.', cotizacion: updatedCotizacion });
+        } catch (error) {
+            if (error.message.includes('Quote not found')) {
+                return res.status(404).json({ message: error.message });
+            }
+            if (error.message.includes('valid') || error.message.includes('deposit')) { // For ENUM status or deposit validation
+                return res.status(400).json({ message: error.message });
+            }
+            console.error('Error in CotizacionController.updateCotizacion:', error);
+            res.status(500).json({ message: 'Internal server error while updating quote.', error: error.message });
+        }
     }
 
-    return (
-        <div className={styles.container}>
-            <h1 className={styles.title}>Gestión de Cotizaciones</h1>
+    /**
+     * Handles deleting a quote.
+     * @param {object} req - Request object (contains req.params.id_cotizacion).
+     * @param {object} res - Response object.
+     */
+    async deleteCotizacion(req, res) {
+        try {
+            const { id_cotizacion } = req.params;
+            await CotizacionService.deleteCotizacion(id_cotizacion);
+            res.status(200).json({ message: 'Quote deleted successfully.' });
+        } catch (error) {
+            if (error.message.includes('Quote not found')) {
+                return res.status(404).json({ message: error.message });
+            }
+            console.error('Error in CotizacionController.deleteCotizacion:', error);
+            res.status(500).json({ message: 'Internal server error while deleting quote.', error: error.message });
+        }
+    }
+}
 
-            <div className={styles.controls}>
-                <div className={styles.searchFilterGroup}>
-                    <input
-                        type="text"
-                        placeholder="Buscar por ID de cliente"
-                        className={styles.searchInput}
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                    />
-                    <select
-                        className={styles.filterSelect}
-                        value={filterStatus}
-                        onChange={handleFilterChange}
-                    >
-                        <option value="all">Todos los estados</option>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_revision">En Revisión</option>
-                        <option value="aprobada">Aprobada</option>
-                        <option value="rechazada">Rechazada</option>
-                        <option value="completada">Completada</option>
-                        <option value="cancelada">Cancelada</option>
-                    </select>
-
-                    {/* **Nuevo Select para Registros por Página** */}
-                    <select
-                        className={styles.filterSelect} // Reutiliza el estilo del select de filtro
-                        value={localItemsPerPage}
-                        onChange={handleItemsPerPageChange}
-                    >
-                        <option value={5}>5 por página</option>
-                        <option value={10}>10 por página</option>
-                        <option value={20}>20 por página</option>
-                        <option value={50}>50 por página</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente ID</th>
-                            <th>Tipo de Producto</th>
-                            <th>Material</th>
-                            <th>Fecha Agendada</th>
-                            <th>Estado</th>
-                            <th>Total Estimado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {cotizaciones.length > 0 ? (
-                            cotizaciones.map(cotizacion => (
-                                <tr key={cotizacion.id_cotizacion} onClick={() => handleOpenModal(cotizacion)} className={styles.tableRow}>
-                                    <td>{cotizacion.id_cotizacion.substring(0, 8)}...</td>
-                                    <td>{cotizacion.cliente_id.substring(0, 8)}...</td>
-                                    <td>{cotizacion.tipo_producto}</td>
-                                    <td>{cotizacion.material_base_id || 'N/A'}</td>
-                                    <td>{cotizacion.fecha_agendada ? new Date(cotizacion.fecha_agendada).toLocaleDateString() : 'N/A'}</td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${styles[cotizacion.estado.toLowerCase().replace(/ /g, '_')]}`}>
-                                            {cotizacion.estado.replace(/_/g, ' ')}
-                                        </span>
-                                    </td>
-                                    <td>${parseFloat(cotizacion.total_estimado)?.toFixed(2) || '0.00'}</td>
-                                    <td>
-                                        <button onClick={(e) => { e.stopPropagation(); handleOpenModal(cotizacion); }} className={styles.actionButton}>
-                                            Ver Detalles
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="8" className={styles.noResults}>No se encontraron cotizaciones.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Paginación */}
-            {pagination.totalPages > 1 && (
-                <div className={styles.pagination}>
-                    <button
-                        onClick={() => handlePageChange(pagination.page - 1)}
-                        disabled={!pagination.hasPrevPage}
-                        className={styles.paginationButton}
-                    >
-                        Anterior
-                    </button>
-                    {Array.from({ length: pagination.totalPages }, (_, i) => (
-                        <button
-                            key={i + 1}
-                            onClick={() => handlePageChange(i + 1)}
-                            className={`${styles.paginationButton} ${pagination.page === i + 1 ? styles.activePage : ''}`}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => handlePageChange(pagination.page + 1)}
-                        disabled={!pagination.hasNextPage}
-                        className={styles.paginationButton}
-                    >
-                        Siguiente
-                    </button>
-                    <span className={styles.pageInfo}>
-                        Página {pagination.page} de {pagination.totalPages} (Total: {pagination.total})
-                    </span>
-                </div>
-            )}
-
-            {/* Modal de Detalle */}
-            {selectedCotizacion && (
-                <CotizacionDetailModal
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    cotizacion={selectedCotizacion}
-                />
-            )}
-        </div>
-    );
-};
-
-export default CotizacionesGestionPage;
+// Export an instance of the class as a singleton
+export default new CotizacionController();

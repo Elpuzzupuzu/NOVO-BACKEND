@@ -92,40 +92,56 @@ class Cotizacion {
      * @returns {Promise<Array<object>>} An array of quote objects.
      */
        static async findAll(filters = {}, page = 1, limit = 10) {
-        let query = 'SELECT * FROM cotizaciones';
-        let countQuery = 'SELECT COUNT(*) as total FROM cotizaciones';
+        // Step 1: Modify the SELECT statement to include JOINs and select desired fields.
+        let query = `
+            SELECT
+                c.*,
+                cl.nombre AS cliente_nombre,    -- Alias for client's first name
+                cl.apellido AS cliente_apellido, -- Alias for client's last name
+                m.nombre AS material_nombre     -- Alias for material's name
+            FROM
+                cotizaciones c
+            JOIN
+                clientes cl ON c.cliente_id = cl.id_cliente
+            LEFT JOIN               -- Use LEFT JOIN because material_base_id can be NULL
+                materiales m ON c.material_base_id = m.id_material
+        `;
+        let countQuery = 'SELECT COUNT(*) as total FROM cotizaciones'; // Count still on cotizaciones table for total
+
         const conditions = [];
         const values = [];
 
+        // Your existing filters remain the same
         if (filters.cliente_id) {
-            conditions.push('cliente_id = ?');
+            conditions.push('c.cliente_id = ?'); // Use 'c.' prefix for clarity after JOIN
             values.push(filters.cliente_id);
         }
         if (filters.estado) {
-            conditions.push('estado = ?');
+            conditions.push('c.estado = ?'); // Use 'c.' prefix for clarity
             values.push(filters.estado);
         }
-        // Agrega más filtros según sea necesario (ej. rangos de fecha, material_base_id)
+        // Add more filters as needed
 
         if (conditions.length > 0) {
             const whereClause = ' WHERE ' + conditions.join(' AND ');
             query += whereClause;
-            countQuery += whereClause;
+            countQuery += whereClause; // Apply conditions to the count query too
         }
 
-        query += ' ORDER BY fecha_solicitud DESC'; // Ordenar por fecha de solicitud
+        query += ' ORDER BY c.fecha_solicitud DESC'; // Order by date, using 'c.' prefix
 
-        // Añadir paginación
+        // Add pagination
         const offset = (page - 1) * limit;
         query += ` LIMIT ? OFFSET ?`;
         values.push(limit, offset);
 
         try {
-            // Ejecutar la consulta de datos paginados
+            // Execute the paginated data query
             const [rows] = await pool.query(query, values);
 
-            // Ejecutar la consulta para el conteo total de registros (sin paginación)
-            const [countResult] = await pool.query(countQuery, values.slice(0, conditions.length)); // Solo los valores de las condiciones
+            // Execute the query for the total count of records (without pagination LIMIT/OFFSET)
+            // Ensure values for countQuery only include filter values, not limit/offset values.
+            const [countResult] = await pool.query(countQuery, values.slice(0, conditions.length));
 
             const total = countResult[0].total;
             const totalPages = Math.ceil(total / limit);
