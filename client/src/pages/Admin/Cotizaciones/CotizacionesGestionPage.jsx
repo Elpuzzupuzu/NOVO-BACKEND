@@ -131,12 +131,12 @@ const CotizacionesGestionPage = () => {
                         onChange={handleFilterChange}
                     >
                         <option value="all">Todos los estados</option>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_revision">En Revisión</option>
-                        <option value="aprobada">Aprobada</option>
-                        <option value="rechazada">Rechazada</option>
-                        <option value="completada">Completada</option>
-                        <option value="cancelada">Cancelada</option>
+                        <option value="Pendiente de Anticipo">Pendiente de Anticipo</option>
+                        <option value="Anticipo Pagado - Agendado">Anticipo Pagado - Agendado</option>
+                        <option value="Anticipo Pagado - En Cola">Anticipo Pagado - En Cola</option>
+                        <option value="Rechazada">Rechazada</option>
+                        <option value="Completada">Completada</option>
+                        <option value="Cancelada">Cancelada</option>
                     </select>
 
                     {/* Select para Registros por Página */}

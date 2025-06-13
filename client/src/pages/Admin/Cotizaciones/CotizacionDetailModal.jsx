@@ -373,17 +373,17 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                         {renderField('Fecha Agendada', 'fecha_agendada', formData.fecha_agendada, 'date')}
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.modalLabel}>Estado:</label>
-                        {renderField('Estado', 'estado', formData.estado, 'select', [
-                            { value: 'Pendiente de Anticipo', label: 'Pendiente de Anticipo' },
-                            { value: 'Anticipo Pagado - Agendado', label: 'Anticipo Pagado - Agendado' },
-                            { value: 'Anticipo Pagado - En Cola', label: 'Anticipo Pagado - En Cola' },
-                            { value: 'Rechazada', label: 'Rechazada' },
-                            { value: 'Completada', label: 'Completada' },
-                            { value: 'Cancelada', label: 'Cancelada' },
-                        ])}
-                    </div>
+                            <div className={styles.formGroup}>
+                            <label className={styles.modalLabel}>Estado:</label>
+                            {renderField('Estado', 'estado', formData.estado, 'select', [
+                                { value: 'Pendiente de Anticipo', label: 'Pendiente de Anticipo' },
+                                { value: 'Anticipo Pagado - Agendado', label: 'Anticipo Pagado - Agendado' },
+                                { value: 'Anticipo Pagado - En Cola', label: 'Anticipo Pagado - En Cola' },
+                                { value: 'Rechazada', label: 'Rechazada' },
+                                { value: 'Completada', label: 'Completada' },
+                                { value: 'Cancelada', label: 'Cancelada' }, // Asegúrate que 'Cancelada' también es un ENUM en tu DB
+                            ])}
+                        </div>
 
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Total Estimado:</label>

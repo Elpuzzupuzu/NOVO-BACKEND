@@ -86,82 +86,85 @@ class Cotizacion {
         }
     }
 
+    ///____________________________________________________///
+
     /**
      * Retrieves all quotes, with optional filters.
      * @param {object} [filters={}] - Optional filters object (e.g., { cliente_id: 'abc', estado: 'Completada' }).
      * @returns {Promise<Array<object>>} An array of quote objects.
      */
-       static async findAll(filters = {}, page = 1, limit = 10) {
-        // Step 1: Modify the SELECT statement to include JOINs and select desired fields.
-        let query = `
-            SELECT
-                c.*,
-                cl.nombre AS cliente_nombre,    -- Alias for client's first name
-                cl.apellido AS cliente_apellido, -- Alias for client's last name
-                m.nombre AS material_nombre     -- Alias for material's name
-            FROM
-                cotizaciones c
-            JOIN
-                clientes cl ON c.cliente_id = cl.id_cliente
-            LEFT JOIN               -- Use LEFT JOIN because material_base_id can be NULL
-                materiales m ON c.material_base_id = m.id_material
-        `;
-        let countQuery = 'SELECT COUNT(*) as total FROM cotizaciones'; // Count still on cotizaciones table for total
+    static async findAll(filters = {}, page = 1, limit = 10) {
+    let query = `
+        SELECT
+            c.*,
+            cl.nombre AS cliente_nombre,
+            cl.apellido AS cliente_apellido,
+            m.nombre AS material_nombre
+        FROM
+            cotizaciones c
+        JOIN
+            clientes cl ON c.cliente_id = cl.id_cliente
+        LEFT JOIN
+            materiales m ON c.material_base_id = m.id_material
+    `;
+    let countQuery = 'SELECT COUNT(*) as total FROM cotizaciones c';
 
-        const conditions = [];
-        const values = [];
+    const conditions = [];
+    const values = [];
 
-        // Your existing filters remain the same
-        if (filters.cliente_id) {
-            conditions.push('c.cliente_id = ?'); // Use 'c.' prefix for clarity after JOIN
-            values.push(filters.cliente_id);
-        }
-        if (filters.estado) {
-            conditions.push('c.estado = ?'); // Use 'c.' prefix for clarity
-            values.push(filters.estado);
-        }
-        // Add more filters as needed
-
-        if (conditions.length > 0) {
-            const whereClause = ' WHERE ' + conditions.join(' AND ');
-            query += whereClause;
-            countQuery += whereClause; // Apply conditions to the count query too
-        }
-
-        query += ' ORDER BY c.fecha_solicitud DESC'; // Order by date, using 'c.' prefix
-
-        // Add pagination
-        const offset = (page - 1) * limit;
-        query += ` LIMIT ? OFFSET ?`;
-        values.push(limit, offset);
-
-        try {
-            // Execute the paginated data query
-            const [rows] = await pool.query(query, values);
-
-            // Execute the query for the total count of records (without pagination LIMIT/OFFSET)
-            // Ensure values for countQuery only include filter values, not limit/offset values.
-            const [countResult] = await pool.query(countQuery, values.slice(0, conditions.length));
-
-            const total = countResult[0].total;
-            const totalPages = Math.ceil(total / limit);
-
-            return {
-                data: rows,
-                pagination: {
-                    total,
-                    page,
-                    limit,
-                    totalPages,
-                    hasNextPage: page < totalPages,
-                    hasPrevPage: page > 1,
-                },
-            };
-        } catch (error) {
-            console.error('Error al recuperar cotizaciones:', error.message);
-            throw new Error('No se pudieron recuperar las cotizaciones.');
-        }
+    if (filters.cliente_id) {
+        conditions.push('c.cliente_id = ?');
+        values.push(filters.cliente_id);
     }
+    if (filters.estado) {
+        conditions.push('c.estado = ?'); // Still 'c.estado' as confirmed
+        values.push(filters.estado);
+    }
+
+    if (conditions.length > 0) {
+        const whereClause = ' WHERE ' + conditions.join(' AND ');
+        query += whereClause;
+        countQuery += whereClause;
+    }
+
+    query += ' ORDER BY c.fecha_solicitud DESC';
+
+    const offset = (page - 1) * limit;
+    query += ` LIMIT ? OFFSET ?`;
+    values.push(limit, offset);
+
+    // --- ADD THESE CONSOLE.LOGS ---
+    console.log("--- Debugging findAll ---");
+    console.log("Final Data Query:", query);
+    console.log("Values for Data Query:", values);
+    console.log("Final Count Query:", countQuery);
+    console.log("Values for Count Query:", values.slice(0, conditions.length));
+    console.log("--- End Debugging ---");
+    // --- END CONSOLE.LOGS ---
+
+    try {
+        const [rows] = await pool.query(query, values);
+        const [countResult] = await pool.query(countQuery, values.slice(0, conditions.length));
+
+        const total = countResult[0].total;
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: rows,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1,
+            },
+        };
+    } catch (error) {
+        console.error('Error al recuperar cotizaciones:', error.message);
+        throw new Error('No se pudieron recuperar las cotizaciones.');
+    }
+}
 
 
 
