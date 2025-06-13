@@ -1,5 +1,3 @@
-// src/models/Trabajo.model.js
-
 // Importa el pool de conexiones a la base de datos
 import { pool } from '../config/db.js';
 // Importa la librería uuid para generar IDs únicos (UUIDs)
@@ -97,7 +95,23 @@ class Trabajo {
      * @returns {Promise<object|null>} El objeto del trabajo si se encuentra, o null si no.
      */
     static async findById(id_trabajo) {
-        const query = 'SELECT * FROM trabajos WHERE id_trabajo = ?';
+        const query = `
+            SELECT 
+                t.*,
+                cl.nombre AS cliente_nombre,
+                cl.apellido AS cliente_apellido,
+                e.nombre AS empleado_nombre,
+                e.apellido AS empleado_apellido
+            FROM 
+                trabajos t
+            LEFT JOIN 
+                cotizaciones co ON t.cotizacion_id = co.id_cotizacion
+            LEFT JOIN
+                clientes cl ON co.cliente_id = cl.id_cliente
+            LEFT JOIN
+                empleados e ON t.empleado_id = e.id_empleado
+            WHERE t.id_trabajo = ?
+        `;
         try {
             const [rows] = await pool.query(query, [id_trabajo]);
             if (rows[0]) {
@@ -120,41 +134,128 @@ class Trabajo {
     }
 
     /**
-     * Obtiene todos los trabajos, con opciones de filtrado.
-     * @param {object} [filters={}] - Objeto con filtros opcionales (ej: { estado: 'En Proceso', empleado_id: 'abc' }).
-     * @returns {Promise<Array<object>>} Un array de objetos de trabajos.
+     * Obtiene todos los trabajos, con opciones de filtrado y paginación.
+     * @param {object} [filters={}] - Objeto con filtros opcionales (ej: { estado: 'En Proceso', empleado_id: 'abc', searchTerm: 'algo' }).
+     * @param {number} page - Número de página actual (por defecto 1).
+     * @param {number} limit - Número de resultados por página (por defecto 10).
+     * @returns {Promise<object>} Un objeto con los datos de los trabajos y la información de paginación.
      */
-    static async findAll(filters = {}) {
-        let query = 'SELECT * FROM trabajos';
+    static async findAll(filters = {}, page = 1, limit = 10) {
+        let query = `
+            SELECT
+                t.*,
+                cl.nombre AS cliente_nombre,
+                cl.apellido AS cliente_apellido,
+                e.nombre AS empleado_nombre,
+                e.apellido AS empleado_apellido
+            FROM
+                trabajos t
+            LEFT JOIN
+                cotizaciones co ON t.cotizacion_id = co.id_cotizacion
+            LEFT JOIN
+                clientes cl ON co.cliente_id = cl.id_cliente
+            LEFT JOIN
+                empleados e ON t.empleado_id = e.id_empleado
+        `;
+        let countQuery = `
+            SELECT COUNT(t.id_trabajo) as total 
+            FROM trabajos t
+            LEFT JOIN cotizaciones co ON t.cotizacion_id = co.id_cotizacion
+            LEFT JOIN clientes cl ON co.cliente_id = cl.id_cliente
+            LEFT JOIN empleados e ON t.empleado_id = e.id_empleado
+        `;
+
         const conditions = [];
         const values = [];
+        const countValues = [];
 
+        // Filter by estado
         if (filters.estado) {
-            conditions.push('estado = ?');
+            conditions.push('t.estado = ?');
             values.push(filters.estado);
+            countValues.push(filters.estado);
         }
+        // Filter by empleado_id
         if (filters.empleado_id) {
-            conditions.push('empleado_id = ?');
+            conditions.push('t.empleado_id = ?');
             values.push(filters.empleado_id);
+            countValues.push(filters.empleado_id);
         }
+        // Filter by cotizacion_id
         if (filters.cotizacion_id) {
-            conditions.push('cotizacion_id = ?');
+            conditions.push('t.cotizacion_id = ?');
             values.push(filters.cotizacion_id);
+            countValues.push(filters.cotizacion_id);
+        }
+
+        // Search by client name/apellido, employee name/apellido, or partial ID (trabajo_id, cotizacion_id, cliente_id, empleado_id)
+        if (filters.searchTerm) {
+            const cleanedSearchTerm = filters.searchTerm.trim();
+            const searchTermsArray = cleanedSearchTerm.split(/\s+/).filter(s => s.length > 0);
+
+            if (searchTermsArray.length > 0) {
+                const searchConditions = [];
+                const searchValues = [];
+
+                searchTermsArray.forEach(term => {
+                    const termLike = `%${term}%`;
+                    searchConditions.push(`
+                        (
+                            cl.nombre LIKE ? OR cl.apellido LIKE ? OR
+                            e.nombre LIKE ? OR e.apellido LIKE ? OR
+                            t.id_trabajo LIKE ? OR
+                            t.cotizacion_id LIKE ? OR
+                            t.empleado_id LIKE ? OR
+                            co.cliente_id LIKE ? -- Permite buscar cliente_id a través de la cotización
+                        )
+                    `);
+                    searchValues.push(termLike, termLike, termLike, termLike, termLike, termLike, termLike, termLike);
+                });
+                conditions.push(`(${searchConditions.join(' AND ')})`);
+                values.push(...searchValues);
+                countValues.push(...searchValues);
+            }
         }
 
         if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause;
         }
-        query += ' ORDER BY fecha_creacion DESC';
+
+        query += ' ORDER BY t.fecha_creacion DESC';
+
+        const offset = (page - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset);
+
+        // --- Debugging Console Logs ---
+        console.log("--- Debugging Trabajo.findAll (Backend) ---");
+        console.log("Final Data Query:", query);
+        console.log("Values for Data Query:", values);
+        console.log("Final Count Query:", countQuery);
+        console.log("Values for Count Query:", countValues);
+        console.log("--- End Debugging ---");
 
         try {
             const [rows] = await pool.query(query, values);
+            const [countResult] = await pool.query(countQuery, countValues);
+
+            const total = countResult[0].total;
+            const totalPages = Math.ceil(total / limit);
+
             // Procesar cada fila para convertir materiales_usados de string a objeto
             // y convertir fechas a formato ISO string
-            return rows.map(row => {
+            const processedRows = rows.map(row => {
                 if (row.materiales_usados) {
-                    row.materiales_usados = JSON.parse(row.materiales_usados);
+                    try {
+                        row.materiales_usados = JSON.parse(row.materiales_usados);
+                    } catch (e) {
+                        console.error('Error parsing materiales_usados JSON for row:', row.id_trabajo, e);
+                        row.materiales_usados = null; // Set to null if parsing fails
+                    }
                 }
+                // Convertir campos de fecha (objetos Date de MySQL) a strings ISO
                 if (row.fecha_inicio_estimada) row.fecha_inicio_estimada = row.fecha_inicio_estimada.toISOString();
                 if (row.fecha_inicio_real) row.fecha_inicio_real = row.fecha_inicio_real.toISOString();
                 if (row.fecha_fin_estimada) row.fecha_fin_estimada = row.fecha_fin_estimada.toISOString();
@@ -163,6 +264,18 @@ class Trabajo {
                 if (row.fecha_actualizacion) row.fecha_actualizacion = row.fecha_actualizacion.toISOString();
                 return row;
             });
+
+            return {
+                data: processedRows,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+            };
         } catch (error) {
             console.error('Error al obtener trabajos:', error.message);
             throw new Error('No se pudieron obtener los trabajos.');
@@ -182,19 +295,23 @@ class Trabajo {
         // Convertir materiales_usados a string JSON si se está actualizando
         if (updateData.materiales_usados !== undefined && typeof updateData.materiales_usados === 'object' && updateData.materiales_usados !== null) {
             updateData.materiales_usados = JSON.stringify(updateData.materiales_usados);
+        } else if (updateData.materiales_usados === null) {
+            // Permitir explícitamente el null para materiales_usados
+            updateData.materiales_usados = null;
         }
 
+
         // Formatear las fechas para MySQL si se están actualizando
-        if (updateData.fecha_inicio_estimada) updateData.fecha_inicio_estimada = formatDateTimeForMySQL(updateData.fecha_inicio_estimada);
-        if (updateData.fecha_inicio_real) updateData.fecha_inicio_real = formatDateTimeForMySQL(updateData.fecha_inicio_real);
-        if (updateData.fecha_fin_estimada) updateData.fecha_fin_estimada = formatDateTimeForMySQL(updateData.fecha_fin_estimada);
-        if (updateData.fecha_fin_real) updateData.fecha_fin_real = formatDateTimeForMySQL(updateData.fecha_fin_real);
+        if (updateData.fecha_inicio_estimada !== undefined) updateData.fecha_inicio_estimada = formatDateTimeForMySQL(updateData.fecha_inicio_estimada);
+        if (updateData.fecha_inicio_real !== undefined) updateData.fecha_inicio_real = formatDateTimeForMySQL(updateData.fecha_inicio_real);
+        if (updateData.fecha_fin_estimada !== undefined) updateData.fecha_fin_estimada = formatDateTimeForMySQL(updateData.fecha_fin_estimada);
+        if (updateData.fecha_fin_real !== undefined) updateData.fecha_fin_real = formatDateTimeForMySQL(updateData.fecha_fin_real);
 
 
         for (const key in updateData) {
             if (updateData.hasOwnProperty(key) && key !== 'id_trabajo') {
                 // Validación para el campo 'estado' si es un ENUM
-                if (key === 'estado' && !['Pendiente', 'En Proceso', 'En Medición', 'Listo para Entrega', 'Entregado', 'Cancelado'].includes(updateData[key])) {
+                if (key === 'estado' && !['Pendiente', 'En Proceso', 'En Medición', 'Listo para Entrega', 'Entregado', 'Cancelado', 'Completada'].includes(updateData[key])) { // 'Completada' added for cotizacion state sync
                     throw new Error(`El estado '${updateData[key]}' no es válido.`);
                 }
                 fields.push(`${key} = ?`);
@@ -236,4 +353,3 @@ class Trabajo {
 }
 
 export default Trabajo;
-////

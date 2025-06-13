@@ -1,0 +1,159 @@
+/* client/src/components/TrabajoDetailModal/TrabajoDetailModal.module.css */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow-y: auto; /* Permite desplazamiento si el contenido es muy largo */
+    padding: 20px 0; /* Padding vertical para que no se pegue a los bordes */
+}
+
+.modal {
+    background: var(--white-color);
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 700px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    max-height: 90vh; /* Altura máxima del modal */
+    display: flex;
+    flex-direction: column;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modalHeader h2 {
+    color: var(--primary-color);
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 2em;
+    cursor: pointer;
+    color: var(--text-color-light);
+    transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+    color: var(--danger-color);
+}
+
+.modalBody {
+    overflow-y: auto; /* Permite desplazamiento interno del cuerpo del modal */
+    flex-grow: 1; /* Permite que el cuerpo ocupe el espacio restante */
+    padding-right: 5px; /* Para evitar que la barra de desplazamiento cubra el contenido */
+}
+
+.formGroup {
+    margin-bottom: 15px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 0.95em;
+}
+
+.inputField, .textareaField {
+    width: calc(100% - 20px); /* Ajusta por padding */
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: var(--input-bg-color);
+}
+
+.inputField:focus, .textareaField:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+.textareaField {
+    resize: vertical; /* Permite redimensionar verticalmente */
+    min-height: 80px;
+}
+
+.errorText {
+    color: var(--danger-color);
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.saveButton, .cancelButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.saveButton {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.saveButton:hover {
+    background-color: var(--primary-dark-color);
+}
+
+.cancelButton {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
+}
+
+.cancelButton:hover {
+    background-color: var(--secondary-dark-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .modal {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .modalHeader h2 {
+        font-size: 1.5em;
+    }
+
+    .modalActions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .saveButton, .cancelButton {
+        width: 100%;
+    }
+}

@@ -1,27 +1,17 @@
 // src/services/Trabajo.service.js
 
-// Importa el modelo Trabajo para interactuar con la base de datos
-import TrabajoModel from '../models/Trabajo.model.js';
-// Importa otros modelos para validación de claves foráneas y actualización
-import CotizacionModel from '../models/Cotizacion.model.js'; // Necesitamos este modelo
-import EmpleadoModel from '../models/Empleado.model.js';
+// Importa la clase 'Trabajo' directamente, ya que es la que exporta tu modelo MySQL.
+import Trabajo from '../models/Trabajo.model.js'; // <-- ¡CAMBIO CLAVE AQUÍ!
+import CotizacionModel from '../models/Cotizacion.model.js'; // Ya la tienes
+import EmpleadoModel from '../models/Empleado.model.js'; // Ya la tienes
 
 class TrabajoService {
-    /**
-     * Crea un nuevo trabajo.
-     * Incluye lógica de negocio para validar la existencia de la cotización y el empleado.
-     * @param {object} trabajoData - Datos del trabajo a crear.
-     * @returns {Promise<object>} El objeto del trabajo creado.
-     * @throws {Error} Si la cotización o el empleado no existen, o si ya hay un trabajo para esa cotización.
-     */
     async createTrabajo(trabajoData) {
-        // Validación de existencia de cotización
         const cotizacionExists = await CotizacionModel.findById(trabajoData.cotizacion_id);
         if (!cotizacionExists) {
             throw new Error('Cotización no encontrada. No se puede crear el trabajo.');
         }
 
-        // Validación de existencia de empleado (si se proporciona)
         if (trabajoData.empleado_id) {
             const empleadoExists = await EmpleadoModel.findById(trabajoData.empleado_id);
             if (!empleadoExists) {
@@ -29,50 +19,43 @@ class TrabajoService {
             }
         }
 
-        const newTrabajo = await TrabajoModel.create(trabajoData);
+        const newTrabajo = await Trabajo.create(trabajoData); // <-- Usa 'Trabajo' directamente
         return newTrabajo;
     }
 
-    /**
-     * Obtiene todos los trabajos, con filtros opcionales.
-     * @param {object} filters - Objeto con filtros para la búsqueda.
-     * @returns {Promise<Array<object>>} Un array de trabajos.
-     */
-    async getAllTrabajos(filters) {
-        const trabajos = await TrabajoModel.findAll(filters);
-        return trabajos;
+    async getAllTrabajos(filters, page, limit) {
+        console.log('--- ENTRA EN TrabajoService.getAllTrabajos ---');
+        console.log('Filtros recibidos en el servicio:', filters);
+        console.log('Paginación recibida en el servicio:', { page, limit });
+
+        try {
+            // Llama al método estático 'findAll' de la clase 'Trabajo'
+            const result = await Trabajo.findAll(filters, page, limit); // <-- Usa 'Trabajo' directamente
+            
+            console.log('Resultado del Trabajo.findAll (a devolver al controlador):', JSON.stringify(result, null, 2));
+            console.log('--- SALE DE TrabajoService.getAllTrabajos ---');
+            return result;
+
+        } catch (error) {
+            console.error('--- ERROR en TrabajoService.getAllTrabajos (al obtener de DB) ---:', error);
+            throw error;
+        }
     }
 
-    /**
-     * Obtiene un trabajo por su ID.
-     * @param {string} id_trabajo - ID del trabajo.
-     * @returns {Promise<object|null>} El trabajo encontrado o null.
-     * @throws {Error} Si el trabajo no es encontrado.
-     */
     async getTrabajoById(id_trabajo) {
-        const trabajo = await TrabajoModel.findById(id_trabajo);
+        const trabajo = await Trabajo.findById(id_trabajo); // <-- Usa 'Trabajo' directamente
         if (!trabajo) {
             throw new Error('Trabajo no encontrado.');
         }
         return trabajo;
     }
 
-    /**
-     * Actualiza los datos de un trabajo.
-     * Incluye lógica para actualizar automáticamente el estado de la cotización asociada
-     * si el trabajo alcanza un estado final (Completado/Entregado).
-     * @param {string} id_trabajo - ID del trabajo a actualizar.
-     * @param {object} updateData - Datos a actualizar.
-     * @returns {Promise<object>} El trabajo actualizado.
-     * @throws {Error} Si el trabajo no existe, datos inválidos o error al actualizar.
-     */
     async updateTrabajo(id_trabajo, updateData) {
-        const existingTrabajo = await TrabajoModel.findById(id_trabajo);
+        const existingTrabajo = await Trabajo.findById(id_trabajo); // <-- Usa 'Trabajo' directamente
         if (!existingTrabajo) {
             throw new Error('Trabajo no encontrado para actualizar.');
         }
 
-        // Lógica de negocio: Validar existencia de nuevo empleado_id si se cambia
         if (updateData.empleado_id && updateData.empleado_id !== existingTrabajo.empleado_id) {
             const newEmpleadoExists = await EmpleadoModel.findById(updateData.empleado_id);
             if (!newEmpleadoExists) {
@@ -80,42 +63,31 @@ class TrabajoService {
             }
         }
 
-        const success = await TrabajoModel.update(id_trabajo, updateData);
+        const success = await Trabajo.update(id_trabajo, updateData); // <-- Usa 'Trabajo' directamente
         if (!success) {
             throw new Error('No se pudo actualizar el trabajo.');
         }
 
-        // --- Lógica de Actualización Automática de Cotización ---
-        // Si el estado del trabajo se actualiza a 'Entregado' o 'Completado'
         if (updateData.estado && (updateData.estado === 'Entregado' || updateData.estado === 'Completada')) {
             if (existingTrabajo.cotizacion_id) {
-                // Actualizar el estado de la cotización asociada a 'Completada'
                 const quoteUpdateSuccess = await CotizacionModel.update(
                     existingTrabajo.cotizacion_id,
                     { estado: 'Completada' }
                 );
                 if (!quoteUpdateSuccess) {
                     console.warn(`Advertencia: No se pudo actualizar el estado de la cotización ${existingTrabajo.cotizacion_id} al completar el trabajo ${id_trabajo}.`);
-                    // Podrías lanzar un error aquí si esto es crítico, o solo registrar la advertencia.
                 }
             } else {
                 console.warn(`Advertencia: Trabajo ${id_trabajo} completado/entregado, pero no tiene una cotización asociada para actualizar.`);
             }
         }
-        // --- Fin Lógica de Actualización Automática ---
 
-        const updatedTrabajo = await TrabajoModel.findById(id_trabajo);
+        const updatedTrabajo = await Trabajo.findById(id_trabajo); // <-- Usa 'Trabajo' directamente
         return updatedTrabajo;
     }
 
-    /**
-     * Elimina un trabajo.
-     * @param {string} id_trabajo - ID del trabajo a eliminar.
-     * @returns {Promise<boolean>} True si se eliminó, false si no se encontró.
-     * @throws {Error} Si el trabajo no existe.
-     */
     async deleteTrabajo(id_trabajo) {
-        const success = await TrabajoModel.delete(id_trabajo);
+        const success = await Trabajo.delete(id_trabajo); // <-- Usa 'Trabajo' directamente
         if (!success) {
             throw new Error('Trabajo no encontrado para eliminar.');
         }
@@ -123,5 +95,4 @@ class TrabajoService {
     }
 }
 
-// Exporta una instancia de la clase para que sea un singleton
 export default new TrabajoService();

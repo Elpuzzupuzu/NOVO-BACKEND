@@ -1,5 +1,3 @@
-// src/controllers/Trabajo.controller.js
-
 // Importa el servicio Trabajo para acceder a la lógica de negocio
 import TrabajoService from '../services/Trabajo.service.js';
 
@@ -38,20 +36,59 @@ class TrabajoController {
 
     /**
      * Maneja la obtención de todos los trabajos.
-     * Permite filtrar por estado, empleado_id o cotizacion_id.
-     * @param {object} req - Objeto de solicitud (contiene req.query para filtros).
+     * Permite filtrar por estado, empleado_id, cotizacion_id, y searchTerm (cliente/empleado/IDs).
+     * Incluye paginación.
+     * @param {object} req - Objeto de solicitud (contiene req.query para filtros, page, limit, searchTerm).
      * @param {object} res - Objeto de respuesta.
      */
-    async getAllTrabajos(req, res) {
+  async getAllTrabajos(req, res) {
+        console.log('--- ENTRA EN TrabajoController.getAllTrabajos ---'); // Log de entrada al controlador
+
         try {
-            const filters = req.query; // Los filtros se pasan como query parameters
-            const trabajos = await TrabajoService.getAllTrabajos(filters);
-            res.status(200).json(trabajos);
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+            const searchTerm = req.query.searchTerm || '';
+            const estado = req.query.estado || '';
+            const empleado_id = req.query.empleado_id || '';
+            const cotizacion_id = req.query.cotizacion_id || '';
+
+            console.log('Parámetros de consulta recibidos:', { page, limit, searchTerm, estado, empleado_id, cotizacion_id }); // Log de parámetros
+
+            const filters = {
+                searchTerm: searchTerm,
+                estado: estado,
+                empleado_id: empleado_id,
+                cotizacion_id: cotizacion_id,
+            };
+
+            Object.keys(filters).forEach(key => {
+                if (filters[key] === '' || filters[key] === null || filters[key] === undefined) {
+                    delete filters[key];
+                }
+            });
+            console.log('Filtros finales para el servicio:', filters); // Log de filtros
+
+            const result = await TrabajoService.getAllTrabajos(filters, page, limit);
+            console.log('Resultado del TrabajoService.getAllTrabajos:', JSON.stringify(result, null, 2)); // Log del resultado del servicio
+
+            // Establecer encabezados de no-caché
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+            console.log('Encabezados de no-caché establecidos.'); // Log de encabezados
+
+            // Enviar la respuesta
+            res.status(200).send(JSON.stringify(result));
+            console.log('Respuesta 200 OK enviada con datos.'); // Log de éxito
+
         } catch (error) {
-            console.error('Error en TrabajoController.getAllTrabajos:', error);
+            console.error('--- ERROR en TrabajoController.getAllTrabajos ---:', error); // Log de error
             res.status(500).json({ message: 'Error interno del servidor al obtener trabajos.', error: error.message });
         }
+        console.log('--- SALE DE TrabajoController.getAllTrabajos ---'); // Log de salida del controlador
     }
+
+
 
     /**
      * Maneja la obtención de un trabajo por su ID.
@@ -85,7 +122,8 @@ class TrabajoController {
             if (updateData.id_trabajo) {
                 return res.status(400).json({ message: 'No se puede actualizar el ID del trabajo.' });
             }
-            if (updateData.estado && !['Pendiente', 'En Proceso', 'En Medición', 'Listo para Entrega', 'Entregado', 'Cancelado'].includes(updateData.estado)) {
+            // Validar estados permitidos, incluyendo 'Completada' para sincronización con cotizaciones
+            if (updateData.estado && !['Pendiente', 'En Proceso', 'En Medición', 'Listo para Entrega', 'Entregado', 'Cancelado', 'Completada'].includes(updateData.estado)) {
                 return res.status(400).json({ message: 'El estado del trabajo no es válido.' });
             }
 

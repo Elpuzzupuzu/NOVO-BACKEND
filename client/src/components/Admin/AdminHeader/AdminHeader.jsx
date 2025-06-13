@@ -78,7 +78,7 @@ const AdminHeader = () => {
                 <li><Link to="/admin/cotizaciones" className={styles.secondaryNavLink}>COTIZACIONES</Link></li>
 
                 {/* Gestión de Pedidos/Proyectos */}
-                <li><Link to="/admin/proyectos" className={styles.secondaryNavLink}>PROYECTOS</Link></li>
+                <li><Link to="/admin/trabajos" className={styles.secondaryNavLink}>PROYECTOS</Link></li>
 
                 {/* Gestión de Materiales (empleados/admin) */}
                 {(user?.role === 'empleado' || user?.role === 'gerente' || user?.role === 'admin') && (
