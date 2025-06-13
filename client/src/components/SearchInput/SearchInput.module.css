@@ -1,0 +1,17 @@
+/* src/components/SearchInput/SearchInput.module.css */
+.searchInput {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    width: 100%; /* O el ancho que prefieras */
+    max-width: 300px;
+    box-sizing: border-box; /* Asegura que padding no aumente el ancho total */
+    transition: border-color 0.2s ease-in-out;
+}
+
+.searchInput:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}

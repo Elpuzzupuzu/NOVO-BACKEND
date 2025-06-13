@@ -11,6 +11,8 @@ import { selectUser } from '../../../features/auth/authSlice';
 import CotizacionDetailModal from './CotizacionDetailModal';
 import styles from './CotizacionesGestionPage.module.css';
 
+import useClients from '../../../hooks/useClients'; 
+
 const CotizacionesGestionPage = () => {
     const dispatch = useDispatch();
 
@@ -20,18 +22,48 @@ const CotizacionesGestionPage = () => {
     const user = useSelector(selectUser);
     const pagination = useSelector(selectCotizacionesPagination);
 
-    // Estados para la búsqueda y filtrado
+    const { clients, loadingClients, clientsError } = useClients(); 
+    
+    const [clientMap, setClientMap] = useState({});
+
+    // >>> NUEVO ESTADO PARA EL TÉRMINO DE BÚSQUEDA DEBOUNCEADO
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(''); // Estado para el término debounced
+
     const [filterStatus, setFilterStatus] = useState('all');
+    const [localItemsPerPage, setLocalItemsPerPage] = useState(pagination.limit);
 
-    // Estado para el número de registros por página
-    const [localItemsPerPage, setLocalItemsPerPage] = useState(pagination.limit); // Usa el límite inicial del Redux store
-
-    // Estados para el modal de detalle
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCotizacion, setSelectedCotizacion] = useState(null);
 
-    // Función para despachar la carga de cotizaciones con filtros y paginación
+    useEffect(() => {
+        if (Array.isArray(clients) && clients.length > 0) {
+            const map = {};
+            clients.forEach(client => {
+                map[client.value] = { 
+                    nombre: client.label.split(' ')[0] || '', 
+                    apellido: client.label.split(' ').slice(1).join(' ') || ''
+                };
+            });
+            setClientMap(map);
+        } else if (clientsError) {
+            console.error("Error al cargar clientes en useClients:", clientsError);
+        }
+    }, [clients, clientsError]);
+
+    // >>> NUEVO useEffect para el Debouncing del searchTerm
+    useEffect(() => {
+        // Establecer un temporizador
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 800); // 500ms de retraso (ajusta este valor si lo consideras necesario)
+
+        // Limpiar el temporizador si el `searchTerm` cambia antes de que se dispare
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]); // Se ejecuta cada vez que `searchTerm` cambia
+
     const loadCotizaciones = useCallback((page = 1, limit = 10, filters = {}) => {
         const queryParams = {
             page,
@@ -41,21 +73,21 @@ const CotizacionesGestionPage = () => {
         if (queryParams.estado === 'all') {
             delete queryParams.estado;
         }
-        if (searchTerm) {
-            // Si el searchTerm es para buscar por cliente_id, asegúrate que el backend lo reciba como tal.
-            // Si la búsqueda se va a hacer por nombre/apellido del cliente, aquí deberías enviar un filtro diferente
-            // por ejemplo, `queryParams.search_client_name = searchTerm;` y manejarlo en el backend.
-            // Por ahora, lo mantenemos como cliente_id para compatibilidad con el backend actual.
-            queryParams.cliente_id = searchTerm;
-        }
-        dispatch(fetchCotizaciones(queryParams));
-    }, [dispatch, searchTerm]); // `searchTerm` como dependencia
 
-    // Cargar cotizaciones al montar el componente y cuando cambien los filtros o la paginación
+        // >>> CAMBIO CLAVE 2: Usar `debouncedSearchTerm` para la llamada a la API
+        if (debouncedSearchTerm) {
+            queryParams.searchTerm = debouncedSearchTerm;
+        } else {
+            delete queryParams.searchTerm;
+        }
+
+        dispatch(fetchCotizaciones(queryParams));
+    }, [dispatch, debouncedSearchTerm]); // `debouncedSearchTerm` ahora es la dependencia principal para recargar
+
+    // Cargar cotizaciones al montar y cuando cambien filtros, paginación o el TÉRMINO DEBUNCEADO
     useEffect(() => {
-        // Usa `localItemsPerPage` como el límite cuando se despacha la acción
         loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
-    }, [loadCotizaciones, pagination.page, localItemsPerPage, filterStatus]); // `localItemsPerPage` como dependencia
+    }, [loadCotizaciones, pagination.page, localItemsPerPage, filterStatus]);
 
     const handlePageChange = (newPage) => {
         loadCotizaciones(newPage, localItemsPerPage, { estado: filterStatus });
@@ -63,22 +95,25 @@ const CotizacionesGestionPage = () => {
 
     const handleFilterChange = (e) => {
         setFilterStatus(e.target.value);
-        // Siempre vuelve a la página 1 cuando se aplica un nuevo filtro
         loadCotizaciones(1, localItemsPerPage, { estado: e.target.value });
     };
 
     const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-        // Siempre vuelve a la página 1 cuando se aplica una nueva búsqueda
-        loadCotizaciones(1, localItemsPerPage, { estado: filterStatus, cliente_id: e.target.value });
+        // >>> CAMBIO CLAVE 3: Solo actualizamos `searchTerm` inmediatamente
+        setSearchTerm(e.target.value); 
+        // El `useEffect` con `debouncedSearchTerm` se encargará de disparar la búsqueda
+        // cuando el usuario deje de escribir.
+        // Opcional: Si quieres que la búsqueda se realice solo después de 'x' caracteres,
+        // puedes añadir una condición aquí:
+        // if (e.target.value.length >= 3 || e.target.value.length === 0) {
+        //     setSearchTerm(e.target.value);
+        // }
     };
 
-    // Manejador para el cambio de items por página
     const handleItemsPerPageChange = (e) => {
         const newLimit = parseInt(e.target.value);
         setLocalItemsPerPage(newLimit);
-        // Al cambiar el número de elementos por página, volvemos a la primera página
-        loadCotizaciones(1, newLimit, { estado: filterStatus, cliente_id: searchTerm });
+        loadCotizaciones(1, newLimit, { estado: filterStatus });
     };
 
     const handleOpenModal = (cotizacion) => {
@@ -89,8 +124,7 @@ const CotizacionesGestionPage = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedCotizacion(null);
-        // Después de cerrar el modal, recargar la lista con los filtros y paginación actuales
-        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus, cliente_id: searchTerm });
+        loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
     };
 
     const canView = user?.role === 'admin' || user?.role === 'empleado' || user?.role === 'gerente';
@@ -104,12 +138,16 @@ const CotizacionesGestionPage = () => {
         );
     }
 
-    if (status === 'loading' && cotizaciones.length === 0) {
-        return <div className={styles.loading}>Cargando cotizaciones...</div>;
+    if (status === 'loading' || loadingClients || Object.keys(clientMap).length === 0) {
+        return <div className={styles.loading}>Cargando cotizaciones y clientes...</div>;
     }
 
     if (error) {
         return <div className={styles.error}>Error al cargar cotizaciones: {error}</div>;
+    }
+
+    if (clientsError) {
+        return <div className={styles.error}>Error al cargar clientes: {clientsError}</div>;
     }
 
     return (
@@ -120,9 +158,9 @@ const CotizacionesGestionPage = () => {
                 <div className={styles.searchFilterGroup}>
                     <input
                         type="text"
-                        placeholder="Buscar por ID de cliente"
+                        placeholder="Buscar por ID o nombre de cliente" 
                         className={styles.searchInput}
-                        value={searchTerm}
+                        value={searchTerm} // El input siempre usa `searchTerm` para la visualización
                         onChange={handleSearchChange}
                     />
                     <select
@@ -139,7 +177,6 @@ const CotizacionesGestionPage = () => {
                         <option value="Cancelada">Cancelada</option>
                     </select>
 
-                    {/* Select para Registros por Página */}
                     <select
                         className={styles.filterSelect}
                         value={localItemsPerPage}
@@ -158,7 +195,7 @@ const CotizacionesGestionPage = () => {
                     <thead>
                         <tr>
                             <th>ID Cotización</th> 
-                            <th>Cliente</th>      
+                            <th>Cliente</th>       
                             <th>Tipo de Producto</th>
                             <th>Material</th>      
                             <th>Fecha Agendada</th>
@@ -169,28 +206,33 @@ const CotizacionesGestionPage = () => {
                     </thead>
                     <tbody>
                         {cotizaciones.length > 0 ? (
-                            cotizaciones.map(cotizacion => (
-                                <tr key={cotizacion.id_cotizacion} onClick={() => handleOpenModal(cotizacion)} className={styles.tableRow}>
-                                    <td>{cotizacion.id_cotizacion.substring(0, 8)}...</td>
-                                    {/* Muestra el nombre y apellido del cliente */}
-                                    <td>{`${cotizacion.cliente_nombre || ''} ${cotizacion.cliente_apellido || ''}`.trim()}</td>
-                                    <td>{cotizacion.tipo_producto}</td>
-                                    {/* Muestra el nombre del material */}
-                                    <td>{cotizacion.material_nombre || 'N/A'}</td>
-                                    <td>{cotizacion.fecha_agendada ? new Date(cotizacion.fecha_agendada).toLocaleDateString() : 'N/A'}</td>
-                                    <td>
-                                        <span className={`${styles.statusBadge} ${styles[cotizacion.estado.toLowerCase().replace(/ /g, '_')]}`}>
-                                            {cotizacion.estado.replace(/_/g, ' ')}
-                                        </span>
-                                    </td>
-                                    <td>${parseFloat(cotizacion.total_estimado)?.toFixed(2) || '0.00'}</td>
-                                    <td>
-                                        <button onClick={(e) => { e.stopPropagation(); handleOpenModal(cotizacion); }} className={styles.actionButton}>
-                                            Ver Detalles
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            cotizaciones.map(cotizacion => {
+                                const clientInfo = cotizacion.cliente_id ? clientMap[cotizacion.cliente_id] : null;
+                                const clientDisplayName = clientInfo 
+                                    ? `${clientInfo.nombre || ''} ${clientInfo.apellido || ''}`.trim() 
+                                    : (cotizacion.cliente_id ? `ID: ${cotizacion.cliente_id.substring(0, 8)}... (Desconocido)` : 'Sin cliente');
+
+                                return (
+                                    <tr key={cotizacion.id_cotizacion} onClick={() => handleOpenModal(cotizacion)} className={styles.tableRow}>
+                                        <td>{cotizacion.id_cotizacion.substring(0, 8)}...</td>
+                                        <td>{clientDisplayName}</td>
+                                        <td>{cotizacion.tipo_producto}</td>
+                                        <td>{cotizacion.material_nombre || 'N/A'}</td> 
+                                        <td>{cotizacion.fecha_agendada ? new Date(cotizacion.fecha_agendada).toLocaleDateString() : 'N/A'}</td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${styles[cotizacion.estado.toLowerCase().replace(/ /g, '_')]}`}>
+                                                {cotizacion.estado.replace(/_/g, ' ')}
+                                            </span>
+                                        </td>
+                                        <td>${parseFloat(cotizacion.total_estimado)?.toFixed(2) || '0.00'}</td>
+                                        <td>
+                                            <button onClick={(e) => { e.stopPropagation(); handleOpenModal(cotizacion); }} className={styles.actionButton}>
+                                                Ver Detalles
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
                                 <td colSpan="8" className={styles.noResults}>No se encontraron cotizaciones.</td>
@@ -200,7 +242,6 @@ const CotizacionesGestionPage = () => {
                 </table>
             </div>
 
-            {/* Paginación */}
             {pagination.totalPages > 1 && (
                 <div className={styles.pagination}>
                     <button
@@ -232,7 +273,6 @@ const CotizacionesGestionPage = () => {
                 </div>
             )}
 
-            {/* Modal de Detalle */}
             {selectedCotizacion && (
                 <CotizacionDetailModal
                     isOpen={isModalOpen}

@@ -85,96 +85,101 @@ class Cotizacion {
             throw new Error(`Could not find quote: ${error.message}`);
         }
     }
-
-    ///____________________________________________________///
-
+    
     /**
-     * Retrieves all quotes, with optional filters.
-     * @param {object} [filters={}] - Optional filters object (e.g., { cliente_id: 'abc', estado: 'Completada' }).
-     * @returns {Promise<Array<object>>} An array of quote objects.
+     * Retrieves all quotes, with optional filters including client name/ID search.
+     * @param {object} [filters={}] - Optional filters object (e.g., { cliente_id: 'abc', estado: 'Completada', searchTerm: 'Juan' }).
+     * @param {number} page - The current page number for pagination.
+     * @param {number} limit - The number of items per page for pagination.
+     * @returns {Promise<object>} An object containing an array of quote objects and pagination info.
      */
     static async findAll(filters = {}, page = 1, limit = 10) {
-    let query = `
-        SELECT
-            c.*,
-            cl.nombre AS cliente_nombre,
-            cl.apellido AS cliente_apellido,
-            m.nombre AS material_nombre
-        FROM
-            cotizaciones c
-        JOIN
-            clientes cl ON c.cliente_id = cl.id_cliente
-        LEFT JOIN
-            materiales m ON c.material_base_id = m.id_material
-    `;
-    let countQuery = 'SELECT COUNT(*) as total FROM cotizaciones c';
+        let query = `
+            SELECT
+                c.*,
+                cl.nombre AS cliente_nombre,
+                cl.apellido AS cliente_apellido,
+                m.nombre AS material_nombre
+            FROM
+                cotizaciones c
+            JOIN
+                clientes cl ON c.cliente_id = cl.id_cliente
+            LEFT JOIN
+                materiales m ON c.material_base_id = m.id_material
+        `;
+        let countQuery = 'SELECT COUNT(c.id_cotizacion) as total FROM cotizaciones c JOIN clientes cl ON c.cliente_id = cl.id_cliente'; // Join for count as well if filtering by client name
 
-    const conditions = [];
-    const values = [];
+        const conditions = [];
+        const values = [];
+        const countValues = []; // Separate values for count query if needed, although here they will be the same
 
-    if (filters.cliente_id) {
-        conditions.push('c.cliente_id = ?');
-        values.push(filters.cliente_id);
+        // Filter by cliente_id (exact match for UUIDs)
+        if (filters.cliente_id) {
+            conditions.push('c.cliente_id = ?');
+            values.push(filters.cliente_id);
+            countValues.push(filters.cliente_id);
+        }
+        
+        // Filter by estado
+        if (filters.estado) {
+            conditions.push('c.estado = ?');
+            values.push(filters.estado);
+            countValues.push(filters.estado);
+        }
+
+        // Search by client name/apellido or partial ID (new logic for searchTerm)
+        if (filters.searchTerm) {
+            const searchTermLike = `%${filters.searchTerm}%`;
+            // Add conditions for client name/apellido or partial UUID match
+            conditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ? OR c.id_cotizacion LIKE ? OR c.cliente_id LIKE ?)');
+            values.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike);
+            countValues.push(searchTermLike, searchTermLike, searchTermLike, searchTermLike);
+        }
+
+        if (conditions.length > 0) {
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause; // Apply the same WHERE clause to the count query
+        }
+
+        query += ' ORDER BY c.fecha_solicitud DESC';
+
+        const offset = (page - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset); // Limit and offset are only for the main query, not count
+
+        // --- ADD THESE CONSOLE.LOGS ---
+        console.log("--- Debugging Cotizacion.findAll (Backend) ---");
+        console.log("Final Data Query:", query);
+        console.log("Values for Data Query:", values);
+        console.log("Final Count Query:", countQuery);
+        console.log("Values for Count Query:", countValues); // Use countValues for count query
+        console.log("--- End Debugging ---");
+        // --- END CONSOLE.LOGS ---
+
+        try {
+            const [rows] = await pool.query(query, values);
+            const [countResult] = await pool.query(countQuery, countValues); // Pass countValues to count query
+
+            const total = countResult[0].total;
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                data: rows,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+            };
+        } catch (error) {
+            console.error('Error al recuperar cotizaciones:', error.message);
+            throw new Error('No se pudieron recuperar las cotizaciones.');
+        }
     }
-    if (filters.estado) {
-        conditions.push('c.estado = ?'); // Still 'c.estado' as confirmed
-        values.push(filters.estado);
-    }
-
-    if (conditions.length > 0) {
-        const whereClause = ' WHERE ' + conditions.join(' AND ');
-        query += whereClause;
-        countQuery += whereClause;
-    }
-
-    query += ' ORDER BY c.fecha_solicitud DESC';
-
-    const offset = (page - 1) * limit;
-    query += ` LIMIT ? OFFSET ?`;
-    values.push(limit, offset);
-
-    // --- ADD THESE CONSOLE.LOGS ---
-    console.log("--- Debugging findAll ---");
-    console.log("Final Data Query:", query);
-    console.log("Values for Data Query:", values);
-    console.log("Final Count Query:", countQuery);
-    console.log("Values for Count Query:", values.slice(0, conditions.length));
-    console.log("--- End Debugging ---");
-    // --- END CONSOLE.LOGS ---
-
-    try {
-        const [rows] = await pool.query(query, values);
-        const [countResult] = await pool.query(countQuery, values.slice(0, conditions.length));
-
-        const total = countResult[0].total;
-        const totalPages = Math.ceil(total / limit);
-
-        return {
-            data: rows,
-            pagination: {
-                total,
-                page,
-                limit,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1,
-            },
-        };
-    } catch (error) {
-        console.error('Error al recuperar cotizaciones:', error.message);
-        throw new Error('No se pudieron recuperar las cotizaciones.');
-    }
-}
-
-
-
-
-
-
-
-
-
-    
 
     /**
      * Updates an existing quote's data.
@@ -189,7 +194,7 @@ class Cotizacion {
         for (const key in updateData) {
             if (updateData.hasOwnProperty(key) && key !== 'id_cotizacion') {
                 // Validation for 'estado' field if it's an ENUM
-                if (key === 'estado' && !['Pendiente de Anticipo', 'Anticipo Pagado - Agendado', 'Anticipo Pagado - En Cola', 'Rechazada', 'Completada'].includes(updateData[key])) {
+                if (key === 'estado' && !['Pendiente de Anticipo', 'Anticipo Pagado - Agendado', 'Anticipo Pagado - En Cola', 'Rechazada', 'Completada', 'Cancelada'].includes(updateData[key])) { // Added Cancelada
                     throw new Error(`The status '${updateData[key]}' is not valid.`);
                 }
                 fields.push(`${key} = ?`);
