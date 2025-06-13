@@ -12,6 +12,8 @@ import CotizacionDetailModal from './CotizacionDetailModal';
 import styles from './CotizacionesGestionPage.module.css';
 
 import useClients from '../../../hooks/useClients'; 
+// >>> IMPORTA EL NUEVO COMPONENTE SearchInput
+import SearchInput from '../../../components/SearchInput/SearchInput'; 
 
 const CotizacionesGestionPage = () => {
     const dispatch = useDispatch();
@@ -26,9 +28,8 @@ const CotizacionesGestionPage = () => {
     
     const [clientMap, setClientMap] = useState({});
 
-    // >>> NUEVO ESTADO PARA EL TÉRMINO DE BÚSQUEDA DEBOUNCEADO
-    const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(''); // Estado para el término debounced
+    // >>> CAMBIO CLAVE 1: Estado para el término de búsqueda FINAL (el que llega del SearchInput)
+    const [currentSearchTerm, setCurrentSearchTerm] = useState(''); 
 
     const [filterStatus, setFilterStatus] = useState('all');
     const [localItemsPerPage, setLocalItemsPerPage] = useState(pagination.limit);
@@ -51,19 +52,7 @@ const CotizacionesGestionPage = () => {
         }
     }, [clients, clientsError]);
 
-    // >>> NUEVO useEffect para el Debouncing del searchTerm
-    useEffect(() => {
-        // Establecer un temporizador
-        const handler = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 800); // 500ms de retraso (ajusta este valor si lo consideras necesario)
-
-        // Limpiar el temporizador si el `searchTerm` cambia antes de que se dispare
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchTerm]); // Se ejecuta cada vez que `searchTerm` cambia
-
+    // >>> CAMBIO CLAVE 2: `loadCotizaciones` ahora depende de `currentSearchTerm`
     const loadCotizaciones = useCallback((page = 1, limit = 10, filters = {}) => {
         const queryParams = {
             page,
@@ -74,17 +63,19 @@ const CotizacionesGestionPage = () => {
             delete queryParams.estado;
         }
 
-        // >>> CAMBIO CLAVE 2: Usar `debouncedSearchTerm` para la llamada a la API
-        if (debouncedSearchTerm) {
-            queryParams.searchTerm = debouncedSearchTerm;
+        // Usamos el `currentSearchTerm` que se actualiza desde el `SearchInput`
+        if (currentSearchTerm) {
+            queryParams.searchTerm = currentSearchTerm;
         } else {
             delete queryParams.searchTerm;
         }
 
         dispatch(fetchCotizaciones(queryParams));
-    }, [dispatch, debouncedSearchTerm]); // `debouncedSearchTerm` ahora es la dependencia principal para recargar
+    }, [dispatch, currentSearchTerm]); // `currentSearchTerm` es la dependencia principal de la búsqueda
 
-    // Cargar cotizaciones al montar y cuando cambien filtros, paginación o el TÉRMINO DEBUNCEADO
+    // Cargar cotizaciones al montar y cuando cambien filtros, paginación o el currentSearchTerm
+    // Este useEffect se disparará cuando `loadCotizaciones` se re-genere (debido a `currentSearchTerm` cambiando)
+    // o cuando `pagination.page`, `localItemsPerPage`, `filterStatus` cambien.
     useEffect(() => {
         loadCotizaciones(pagination.page, localItemsPerPage, { estado: filterStatus });
     }, [loadCotizaciones, pagination.page, localItemsPerPage, filterStatus]);
@@ -98,17 +89,15 @@ const CotizacionesGestionPage = () => {
         loadCotizaciones(1, localItemsPerPage, { estado: e.target.value });
     };
 
-    const handleSearchChange = (e) => {
-        // >>> CAMBIO CLAVE 3: Solo actualizamos `searchTerm` inmediatamente
-        setSearchTerm(e.target.value); 
-        // El `useEffect` con `debouncedSearchTerm` se encargará de disparar la búsqueda
-        // cuando el usuario deje de escribir.
-        // Opcional: Si quieres que la búsqueda se realice solo después de 'x' caracteres,
-        // puedes añadir una condición aquí:
-        // if (e.target.value.length >= 3 || e.target.value.length === 0) {
-        //     setSearchTerm(e.target.value);
-        // }
-    };
+    // >>> CAMBIO CLAVE 3: Nuevo callback para el SearchInput
+    const handleSearch = useCallback((term) => {
+        setCurrentSearchTerm(term); // Actualiza el estado principal con el término debounced
+        // Cuando el término de búsqueda cambia, reseteamos a la primera página y disparamos la carga.
+        // `loadCotizaciones` será llamado por el useEffect principal una vez que `currentSearchTerm` cambie.
+        // Si quieres que la paginación se resetee a la primera página *solo* al buscar, 
+        // podrías llamar a loadCotizaciones aquí directamente con `page=1`.
+        // Por ahora, el useEffect se encargará.
+    }, []); // Este useCallback es estable porque no tiene dependencias que cambien
 
     const handleItemsPerPageChange = (e) => {
         const newLimit = parseInt(e.target.value);
@@ -156,12 +145,10 @@ const CotizacionesGestionPage = () => {
 
             <div className={styles.controls}>
                 <div className={styles.searchFilterGroup}>
-                    <input
-                        type="text"
-                        placeholder="Buscar por ID o nombre de cliente" 
-                        className={styles.searchInput}
-                        value={searchTerm} // El input siempre usa `searchTerm` para la visualización
-                        onChange={handleSearchChange}
+                    {/* >>> CAMBIO CLAVE 4: Usa el nuevo componente SearchInput */}
+                    <SearchInput 
+                        initialSearchTerm={currentSearchTerm} // Pasa el término actual para que el input lo muestre
+                        onSearch={handleSearch} // Pasa la función para recibir el término debounced
                     />
                     <select
                         className={styles.filterSelect}
