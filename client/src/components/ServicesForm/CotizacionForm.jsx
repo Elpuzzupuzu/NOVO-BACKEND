@@ -34,7 +34,6 @@
             tipo_producto: '',
             material_base_id: '',
             color_tela: '',
-            metros_estimados: '',
             diseno_personalizado: false,
             descripcion_diseno: '',
             notas_adicionales: '',
@@ -87,7 +86,7 @@
             tipo_producto: '',
             material_base_id: '',
             color_tela: '',
-            metros_estimados: '',
+            
             diseno_personalizado: false,
             descripcion_diseno: '',
             notas_adicionales: '',
@@ -208,20 +207,7 @@
                             </div>
 
                             {/* Metros Estimados */}
-                            <div className={styles.formGroup}>
-                                <label htmlFor="metros_estimados" className={styles.label}>Metros Estimados de Material (Opcional):</label>
-                                <input
-                                    type="number"
-                                    id="metros_estimados"
-                                    name="metros_estimados"
-                                    value={formData.metros_estimados}
-                                    onChange={handleChange}
-                                    className={styles.input}
-                                    min="0"
-                                    step="0.1"
-                                    placeholder="Ej: 5.5"
-                                />
-                            </div>
+                           
 
                             {/* Diseño Personalizado */}
                             <div className={styles.formGroup}>
