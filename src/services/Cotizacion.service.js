@@ -72,34 +72,89 @@ class CotizacionService {
      * @returns {Promise<object>} The updated quote object.
      * @throws {Error} If the quote does not exist, invalid data, or error during update.
      */
-    async updateCotizacion(id_cotizacion, updateData) {
-        const existingCotizacion = await CotizacionModel.findById(id_cotizacion);
-        if (!existingCotizacion) {
-            throw new Error('Quote not found for update.');
-        }
+    
+    
+    
+    // backend/src/services/Cotizacion.service.js
 
-        // Business logic: If deposit is being paid
-        if (updateData.monto_anticipo_pagado !== undefined && updateData.monto_anticipo_pagado > existingCotizacion.monto_anticipo_pagado) {
-            // Ensure the paid amount does not exceed the required deposit
-            if (updateData.monto_anticipo_pagado > existingCotizacion.anticipo_requerido) {
-                throw new Error('Paid deposit amount cannot exceed the required deposit.');
-            }
-            // Update status if full deposit is paid
-            if (updateData.monto_anticipo_pagado >= existingCotizacion.anticipo_requerido && existingCotizacion.estado === 'Pendiente de Anticipo') {
-                updateData.estado = 'Anticipo Pagado - Agendado'; // Or 'En Cola' based on your logic
-                updateData.fecha_pago_anticipo = new Date().toISOString(); // Set payment date
-                // Optionally set fecha_agendada here if it means "ready to be scheduled"
-            }
-        }
+// backend/src/services/Cotizacion.service.js
 
-        const success = await CotizacionModel.update(id_cotizacion, updateData);
-        if (!success) {
-            throw new Error('Could not update quote.');
-        }
+// backend/src/services/Cotizacion.service.js
 
-        const updatedCotizacion = await CotizacionModel.findById(id_cotizacion);
-        return updatedCotizacion;
+async updateCotizacion(id_cotizacion, updateData) {
+    const existingCotizacion = await CotizacionModel.findById(id_cotizacion);
+    if (!existingCotizacion) {
+        throw new Error('Quote not found for update.');
     }
+
+    // --- IMPORTANTE: ELIMINAR fecha_actualizacion del payload del frontend si existe ---
+    // Generalmente, fecha_actualizacion debe ser gestionada por el backend.
+    if (updateData.fecha_actualizacion !== undefined) {
+        delete updateData.fecha_actualizacion;
+    }
+
+    // --- Lógica de negocio para anticipo ---
+    if (updateData.monto_anticipo_pagado !== undefined && updateData.monto_anticipo_pagado > existingCotizacion.monto_anticipo_pagado) {
+        if (updateData.monto_anticipo_pagado > existingCotizacion.anticipo_requerido) {
+            throw new Error('Paid deposit amount cannot exceed the required deposit.');
+        }
+
+        if (updateData.monto_anticipo_pagado >= existingCotizacion.anticipo_requerido && existingCotizacion.estado === 'Pendiente de Anticipo') {
+            updateData.estado = 'Anticipo Pagado - Agendado';
+
+            // Si no hay fecha de pago o no es válida, usa la fecha actual del servidor.
+            if (!updateData.fecha_pago_anticipo || isNaN(new Date(updateData.fecha_pago_anticipo).getTime())) {
+                updateData.fecha_pago_anticipo = new Date(); // <--- Pasa directamente el objeto Date
+            } else {
+                 const date = new Date(updateData.fecha_pago_anticipo);
+                 if (!isNaN(date.getTime())) {
+                    updateData.fecha_pago_anticipo = date; // <--- Pasa directamente el objeto Date
+                 } else {
+                    updateData.fecha_pago_anticipo = null;
+                 }
+            }
+        }
+    }
+
+    // --- PRE-PROCESAMIENTO DE TODAS LAS FECHAS ANTES DE ENVIARLAS AL MODELO ---
+    // Todas son TIMESTAMP, por lo que pasar objetos Date es lo mejor.
+    const timestampFields = ['fecha_agendada', 'fecha_solicitud', 'fecha_pago_anticipo']; 
+    
+    timestampFields.forEach(field => {
+        if (updateData[field] !== undefined) { 
+            if (updateData[field] === null || updateData[field] === '') {
+                updateData[field] = null; 
+            } else {
+                const date = new Date(updateData[field]); 
+                if (!isNaN(date.getTime())) { 
+                    updateData[field] = date; // <--- ¡Pasa el OBJETO Date directamente!
+                } else {
+                    updateData[field] = null; 
+                }
+            }
+        }
+    });
+
+    // --- ESTABLECER fecha_actualizacion AQUÍ EN EL BACKEND ---
+    // Esto asegura que siempre se actualice a la hora del servidor y en el formato correcto para TIMESTAMP.
+    updateData.fecha_actualizacion = new Date(); // <--- Objeto Date para TIMESTAMP
+
+    console.log('Datos finales a enviar al modelo:', updateData); 
+
+    const success = await CotizacionModel.update(id_cotizacion, updateData);
+    if (!success) {
+        throw new Error('Could not update quote.');
+    }
+
+    const updatedCotizacion = await CotizacionModel.findById(id_cotizacion);
+    return updatedCotizacion;
+}
+
+
+
+
+
+
 
     /**
      * Deletes a quote.

@@ -10,6 +10,9 @@ import {
 import { selectUser } from '../../../features/auth/authSlice';
 import styles from './CotizacionDetailModal.module.css';
 
+import useClients from '../../../hooks/useClients';
+import useMaterials from '../../../hooks/useMaterials';
+
 const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
     const dispatch = useDispatch();
     const status = useSelector(selectCotizacionesStatus);
@@ -20,25 +23,56 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
     const [formData, setFormData] = useState({});
     const [localMessage, setLocalMessage] = useState(null);
 
+    const { clients, loadingClients, clientsError } = useClients();
+    const { materials, loadingMaterials, materialsError } = useMaterials();
+
     // Sincroniza el formData con la cotización prop y reinicia el modo edición
     useEffect(() => {
         if (cotizacion) {
             setFormData({
                 ...cotizacion,
-                // Formatear la fecha para input type="date"
+                // --- Formatear fechas para input type="date" (YYYY-MM-DD) y asegurar strings vacías si son null ---
                 fecha_agendada: cotizacion.fecha_agendada ? new Date(cotizacion.fecha_agendada).toISOString().split('T')[0] : '',
-                // Asegurar que los números sean tratados como tales
-                metros_estimados: parseFloat(cotizacion.metros_estimados) || 0,
-                total_estimado: parseFloat(cotizacion.total_estimado) || 0,
-                anticipo_requerido: parseFloat(cotizacion.anticipo_requerido) || 0,
-                // Si el material_base_id es nulo, lo ponemos como cadena vacía para el input
-                material_base_id: cotizacion.material_base_id || '',
-                // Asegurar que los nuevos campos numéricos también se parseen si fueran editables
-                monto_anticipo_pagado: parseFloat(cotizacion.monto_anticipo_pagado) || 0,
+                fecha_pago_anticipo: cotizacion.fecha_pago_anticipo ? new Date(cotizacion.fecha_pago_anticipo).toISOString().split('T')[0] : '',
+                
+                // --- Asegurar que los números sean tratados como tales, y vacíos ('') si son null/undefined para input ---
+                metros_estimados: cotizacion.metros_estimados !== null ? parseFloat(cotizacion.metros_estimados) : '',
+                total_estimado: cotizacion.total_estimado !== null ? parseFloat(cotizacion.total_estimado) : '',
+                anticipo_requerido: cotizacion.anticipo_requerido !== null ? parseFloat(cotizacion.anticipo_requerido) : '',
+                monto_anticipo_pagado: cotizacion.monto_anticipo_pagado !== null ? parseFloat(cotizacion.monto_anticipo_pagado) : '',
+
+                // --- Asegurar strings vacías para campos de texto si son null/undefined ---
+                material_base_id: cotizacion.material_base_id || '', 
+                color_tela: cotizacion.color_tela || '',
+                metodo_pago_anticipo: cotizacion.metodo_pago_anticipo || '', // string
+                descripcion_diseno: cotizacion.descripcion_diseno || '',
+                notas_adicionales: cotizacion.notas_adicionales || '',
+                
+                // --- Convertir a booleano para checkbox ---
+                diseno_personalizado: !!cotizacion.diseno_personalizado, 
+                
+                // --- Campos de solo lectura que NO van a formData porque se renderizan directamente desde `cotizacion` ---
+                // No los inicializamos aquí en formData
             });
             setEditMode(false); // Siempre inicia en modo vista
         }
     }, [cotizacion]);
+
+    // useEffect para asegurar que el material_base_id se seleccione cuando los materiales estén cargados
+    useEffect(() => {
+        // Esta lógica puede ser simplificada si la inicialización en el primer useEffect ya es suficiente.
+        // Solo es necesaria si `formData.material_base_id` necesita ser ajustado después de que `materials` cargue.
+        if (editMode && cotizacion && !loadingMaterials && materials.length > 0 && cotizacion.material_base_id) {
+            const materialExists = materials.some(m => m.value === cotizacion.material_base_id);
+            if (materialExists && formData.material_base_id !== cotizacion.material_base_id) {
+                setFormData(prevFormData => ({
+                    ...prevFormData,
+                    material_base_id: cotizacion.material_base_id,
+                }));
+            }
+        }
+    }, [cotizacion, materials, loadingMaterials, editMode, formData.material_base_id]);
+
 
     // Manejar mensajes de éxito/error de las acciones de Redux
     useEffect(() => {
@@ -64,12 +98,11 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prevFormData => {
-            // Manejo especial para campos numéricos que podrían ser vaciados
             let newValue = value;
             if (type === 'number') {
-                // Si el valor es vacío, se guarda como cadena vacía para permitir borrado en el input
-                // Si no es vacío, intenta parsear a float, si falla, usa 0
-                newValue = value === '' ? '' : parseFloat(value) || 0;
+                // Si el valor es vacío, lo mantenemos como '' para que el usuario pueda borrarlo
+                // De lo contrario, lo parseamos a float, usando 0 si el parseo falla (ej. "abc")
+                newValue = value === '' ? '' : (parseFloat(value) || 0);
             }
 
             return {
@@ -81,30 +114,20 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
     };
 
     const handleSave = () => {
-        setLocalMessage(null); // Limpiar mensajes previos al intentar guardar
+        setLocalMessage(null);
 
-        // Crear una copia de formData para manipulación y validación
-        const dataToUpdate = { ...formData };
+        let dataToUpdate = { ...formData }; // Usar 'let' para permitir modificaciones posteriores
 
-        // --- ¡ELIMINACIONES CRÍTICAS DEL PAYLOAD! ---
-        // Elimina el ID de la cotización, ya que va en la URL.
+        console.log('1. formData at start of handleSave:', formData); // Debug: ¿Qué hay en formData al inicio?
+        console.log('2. cotizacion.id_cotizacion:', cotizacion.id_cotizacion); // Debug: ID de la cotización
+
+        // Campos que deben ser eliminados porque son solo para visualización o cálculo en el frontend
+        // No deben enviarse al backend en el body de la petición PUT
         delete dataToUpdate.id_cotizacion;
-
-        // Elimina campos de relaciones (cliente y material) que no son columnas de la tabla 'cotizaciones'.
         delete dataToUpdate.cliente_nombre;
         delete dataToUpdate.cliente_apellido;
         delete dataToUpdate.material_nombre;
-
-        // Elimina campos de fecha de solo lectura o campos que el backend maneja automáticamente.
-        // `fecha_solicitud` y `fecha_pago_anticipo` no son editables en este modal.
-        delete dataToUpdate.fecha_solicitud;
-        delete dataToUpdate.fecha_pago_anticipo;
-        delete dataToUpdate.monto_anticipo_pagado; // Si este campo tampoco es editable directamente por el usuario aquí
-        delete dataToUpdate.metodo_pago_anticipo; // Si este campo tampoco es editable directamente por el usuario aquí
-        // --- ¡NUEVO AJUSTE! Elimina fecha_actualizacion del payload ---
-        // Este campo lo debe manejar el backend o la DB automáticamente.
-        delete dataToUpdate.fecha_actualizacion;
-
+        // Si tienes más campos que no se editan y no deben enviarse, agrégalos aquí.
 
         // --- Validaciones en el frontend antes de enviar ---
         if (!dataToUpdate.tipo_producto || dataToUpdate.tipo_producto.trim() === '') {
@@ -115,62 +138,82 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
             setLocalMessage({ type: 'error', text: 'El campo Estado es obligatorio.' });
             return;
         }
-        if (isNaN(dataToUpdate.total_estimado) || parseFloat(dataToUpdate.total_estimado) <= 0) {
+        // Validar total_estimado después de parsearlo a número
+        const totalEstimadoNum = parseFloat(dataToUpdate.total_estimado);
+        if (isNaN(totalEstimadoNum) || totalEstimadoNum <= 0) {
             setLocalMessage({ type: 'error', text: 'Total Estimado debe ser un número positivo.' });
             return;
         }
-        // Puedes añadir más validaciones según sea necesario, por ejemplo, para material_base_id si es obligatorio
-        // if (!dataToUpdate.material_base_id || dataToUpdate.material_base_id.trim() === '') {
-        //     setLocalMessage({ type: 'error', text: 'El campo Material Base ID es obligatorio.' });
-        //     return;
-        // }
+        if (!dataToUpdate.cliente_id) {
+            setLocalMessage({ type: 'error', text: 'El campo Cliente es obligatorio.' });
+            return;
+        }
+        if (!dataToUpdate.material_base_id) {
+            setLocalMessage({ type: 'error', text: 'El campo Material Base es obligatorio.' });
+            return;
+        }
+        console.log('3. dataToUpdate after initial cleanup and validations:', dataToUpdate);
 
 
         // Asegúrate de que todos los campos numéricos sean parseados justo antes de enviarlos.
-        // Solo los campos que son realmente editables y que tu backend espera
-        dataToUpdate.metros_estimados = parseFloat(dataToUpdate.metros_estimados) || 0;
-        dataToUpdate.total_estimado = parseFloat(dataToUpdate.total_estimado) || 0;
-        dataToUpdate.anticipo_requerido = parseFloat(dataToUpdate.anticipo_requerido) || 0;
+        // Si el valor es vacío, lo convertimos a null para la base de datos si es lo que espera tu backend.
+        dataToUpdate.metros_estimados = dataToUpdate.metros_estimados === '' ? null : parseFloat(dataToUpdate.metros_estimados);
+        dataToUpdate.total_estimado = dataToUpdate.total_estimado === '' ? null : parseFloat(dataToUpdate.total_estimado);
+        dataToUpdate.anticipo_requerido = dataToUpdate.anticipo_requerido === '' ? null : parseFloat(dataToUpdate.anticipo_requerido);
+        dataToUpdate.monto_anticipo_pagado = dataToUpdate.monto_anticipo_pagado === '' ? null : parseFloat(dataToUpdate.monto_anticipo_pagado);
 
 
-        // --- Lógica de Negocio al Guardar ---
-        // Si el anticipo es 0 o no válido, calcularlo basado en el total_estimado
+        // --- MANEJO DE FECHAS CLAVE AQUÍ ---
+        // Los inputs type="date" ya devuelven 'YYYY-MM-DD'.
+        // Solo necesitamos asegurarnos de que si el valor es una cadena vacía, se envíe como `null` al backend.
+        // Tu inicialización en useEffect ya asegura que el input recibe YYYY-MM-DD.
+        // El handleChange maneja el valor del input, que ya será YYYY-MM-DD.
+        // Por lo tanto, solo necesitamos convertir '' a null.
+
+        dataToUpdate.fecha_agendada = dataToUpdate.fecha_agendada || null;
+        dataToUpdate.fecha_pago_anticipo = dataToUpdate.fecha_pago_anticipo || null;
+
+
+        console.log('4. dataToUpdate RIGHT BEFORE DISPATCH (final values):', dataToUpdate); // Debug: Valor final antes del dispatch
+
+        // Lógica de Negocio al Guardar
+        // Si el anticipo requerido es NaN o <= 0, establecerlo al 50% del total estimado
         if (isNaN(dataToUpdate.anticipo_requerido) || dataToUpdate.anticipo_requerido <= 0) {
-            dataToUpdate.anticipo_requerido = dataToUpdate.total_estimado * 0.5; // Tu lógica de anticipo
+            dataToUpdate.anticipo_requerido = totalEstimadoNum * 0.5; // Usar totalEstimadoNum ya validado
         }
-
+        
         // Dispatch de la acción de actualización
         dispatch(updateCotizacion({ cotizacionId: cotizacion.id_cotizacion, updatedData: dataToUpdate }));
     };
 
     const handleDelete = () => {
-        // Confirmación antes de eliminar para evitar eliminaciones accidentales
         if (window.confirm('¿Estás seguro de que quieres eliminar esta cotización? Esta acción es irreversible.')) {
             dispatch(deleteCotizacion(cotizacion.id_cotizacion));
-            onClose(); // Cerrar el modal inmediatamente después de iniciar la eliminación
+            onClose();
         }
     };
 
-    // Permisos de edición/eliminación basados en el rol del usuario
     const canEdit = user?.role === 'empleado' || user?.role === 'gerente' || user?.role === 'admin';
     const canDelete = user?.role === 'admin';
 
-    // Función para renderizar un campo de texto o un input según el modo
+    // renderField ajustado para manejar valores nulos/vacíos en modo edición y fechas.
     const renderField = (label, name, value, type = 'text', options = [], displayValueOverride = null) => {
         if (!editMode) {
             let displayValue = value;
             if (displayValueOverride !== null) {
                 displayValue = displayValueOverride;
             } else if (type === 'date' && value) {
-                // Formatear fechas para visualización
-                displayValue = new Date(value).toLocaleDateString('es-ES', {
+                // Formato de fecha para visualización (es-ES)
+                // Asegurarse de que el valor sea una fecha válida antes de formatear
+                const date = new Date(value);
+                displayValue = isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('es-ES', {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit',
                 });
             } else if (type === 'checkbox') {
                 displayValue = value ? 'Sí' : 'No';
-            } else if (value === null || value === undefined || value === '') {
+            } else if (value === null || value === undefined || value === '' || (typeof value === 'number' && isNaN(value))) {
                 displayValue = 'N/A';
             }
             return <p className={styles.fieldValue}>{displayValue}</p>;
@@ -180,6 +223,8 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
         if (type === 'select') {
             return (
                 <select name={name} value={value} onChange={handleChange} className={styles.modalInput}>
+                    {/* Añadir opción por defecto para selects si es necesario */}
+                    {options.length > 0 && !options.some(opt => opt.value === '') && <option value="">Selecciona una opción</option>}
                     {options.map(option => (
                         <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
@@ -205,14 +250,15 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                     className={styles.modalCheckbox}
                 />
             );
-        } else {
+        } else { // Esto cubre 'text', 'number', 'date', etc.
             return (
                 <input
                     type={type}
                     name={name}
-                    value={value}
+                    value={value} // Value debe ser lo que viene de formData, ya formateado
                     onChange={handleChange}
                     className={styles.modalInput}
+                    // min y step solo para number inputs
                     min={type === 'number' ? "0" : undefined}
                     step={type === 'number' ? "0.01" : undefined}
                 />
@@ -234,15 +280,32 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                         {localMessage.text}
                     </p>
                 )}
-
+                {loadingClients && <p>Cargando clientes...</p>}
+                {clientsError && <p className={styles.errorMessage}>Error cargando clientes: {clientsError}</p>}
+                {loadingMaterials && <p>Cargando materiales...</p>}
+                {materialsError && <p className={styles.errorMessage}>Error cargando materiales: {materialsError}</p>}
                 {status === 'loading' && <p className={styles.loadingMessage}>Guardando cambios...</p>}
 
                 <div className={styles.formGrid}>
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Cliente:</label>
-                        {/* Se sigue mostrando el nombre y apellido del cliente en modo vista */}
-                        {renderField('Cliente ID', 'cliente_id', cotizacion.cliente_id, 'text', [],
-                                     `${cotizacion.cliente_nombre || ''} ${cotizacion.cliente_apellido || ''}`.trim() || 'N/A')}
+                        {editMode ? (
+                            <select
+                                name="cliente_id"
+                                value={formData.cliente_id || ''}
+                                onChange={handleChange}
+                                className={styles.modalInput}
+                                disabled={loadingClients}
+                            >
+                                <option value="">Selecciona un cliente</option>
+                                {clients.map(client => (
+                                    <option key={client.value} value={client.value}>{client.label}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            renderField('Cliente', 'cliente_id', cotizacion.cliente_id, 'text', [],
+                                         `${cotizacion.cliente_nombre || ''} ${cotizacion.cliente_apellido || ''}`.trim() || 'N/A')
+                        )}
                     </div>
 
                     <div className={styles.formGroup}>
@@ -260,9 +323,22 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
 
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Material Base:</label>
-                        {editMode ?
-                            renderField('Material Base ID', 'material_base_id', formData.material_base_id) :
-                            renderField('Material Base ID', 'material_base_id', cotizacion.material_base_id, 'text', [], cotizacion.material_nombre || 'N/A')}
+                        {editMode ? (
+                            <select
+                                name="material_base_id"
+                                value={formData.material_base_id || ''}
+                                onChange={handleChange}
+                                className={styles.modalInput}
+                                disabled={loadingMaterials}
+                            >
+                                <option value="">Selecciona un material</option>
+                                {materials.map(material => (
+                                    <option key={material.value} value={material.value}>{material.label}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            renderField('Material Base', 'material_base_id', cotizacion.material_base_id, 'text', [], cotizacion.material_nombre || 'N/A')
+                        )}
                     </div>
 
                     <div className={styles.formGroup}>
@@ -319,32 +395,44 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                         {renderField('Anticipo Requerido', 'anticipo_requerido', formData.anticipo_requerido, 'number')}
                     </div>
 
-                    {/* Campos de pago y fecha de solicitud, actualmente de solo lectura */}
+                    {/* CAMPOS DE PAGO: Editables */}
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Monto Anticipo Pagado:</label>
-                        {renderField('Monto Anticipo Pagado', 'monto_anticipo_pagado', cotizacion.monto_anticipo_pagado, 'number')}
+                        {renderField('Monto Anticipo Pagado', 'monto_anticipo_pagado', formData.monto_anticipo_pagado, 'number')}
                     </div>
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Método Pago Anticipo:</label>
-                        {renderField('Método Pago Anticipo', 'metodo_pago_anticipo', cotizacion.metodo_pago_anticipo)}
+                        {renderField('Método Pago Anticipo', 'metodo_pago_anticipo', formData.metodo_pago_anticipo)}
                     </div>
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Fecha Pago Anticipo:</label>
-                        {renderField('Fecha Pago Anticipo', 'fecha_pago_anticipo', cotizacion.fecha_pago_anticipo, 'date')}
+                        {renderField('Fecha Pago Anticipo', 'fecha_pago_anticipo', formData.fecha_pago_anticipo, 'date')}
                     </div>
+
+                    {/* Campos de Fecha de SOLO LECTURA (siempre muestran el valor de 'cotizacion' como texto) */}
                     <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Fecha Solicitud:</label>
-                        {renderField('Fecha Solicitud', 'fecha_solicitud', cotizacion.fecha_solicitud, 'date')}
+                        <p className={styles.fieldValue}>
+                            {cotizacion.fecha_solicitud ? new Date(cotizacion.fecha_solicitud).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                            }) : 'N/A'}
+                        </p>
                     </div>
-                     {/* Fecha de Actualización, solo lectura */}
-                     <div className={styles.formGroup}>
+                    <div className={styles.formGroup}>
                         <label className={styles.modalLabel}>Última Actualización:</label>
-                        {renderField('Fecha Actualización', 'fecha_actualizacion', cotizacion.fecha_actualizacion, 'date')}
+                        <p className={styles.fieldValue}>
+                            {cotizacion.fecha_actualizacion ? new Date(cotizacion.fecha_actualizacion).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                            }) : 'N/A'}
+                        </p>
                     </div>
                 </div>
 
                 <div className={styles.modalActions}>
-                    {/* Botones de edición/guardado/cancelado */}
                     {canEdit && !editMode && (
                         <button onClick={() => setEditMode(true)} className={styles.editButton}>
                             Editar
@@ -352,7 +440,7 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                     )}
                     {canEdit && editMode && (
                         <>
-                            <button onClick={handleSave} className={styles.saveButton} disabled={status === 'loading'}>
+                            <button onClick={handleSave} className={styles.saveButton} disabled={status === 'loading' || loadingClients || loadingMaterials}>
                                 {status === 'loading' ? 'Guardando...' : 'Guardar Cambios'}
                             </button>
                             <button onClick={() => setEditMode(false)} className={styles.cancelEditButton} disabled={status === 'loading'}>
@@ -360,13 +448,11 @@ const CotizacionDetailModal = ({ isOpen, onClose, cotizacion }) => {
                             </button>
                         </>
                     )}
-                    {/* Botón de eliminar (solo visible si no está en modo edición y tiene permisos) */}
                     {canDelete && !editMode && (
                         <button onClick={handleDelete} className={styles.deleteButton} disabled={status === 'loading'}>
                             Eliminar Cotización
                         </button>
                     )}
-                    {/* Botón de cerrar modal */}
                     <button onClick={onClose} className={styles.closeModalButton} disabled={status === 'loading'}>
                         Cerrar
                     </button>
