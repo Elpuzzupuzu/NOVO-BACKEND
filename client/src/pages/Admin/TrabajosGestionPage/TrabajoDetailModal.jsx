@@ -1,25 +1,25 @@
-// client/src/components/TrabajoDetailModal/TrabajoDetailModal.jsx
-
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from 'axios'; // Aunque axios no se usa directamente en el modal, se mantiene por si en el futuro se añade alguna llamada directa aquí.
 import styles from './TrabajoDetailModal.module.css';
 
 // Helper para formatear fechas desde ISO a input type="datetime-local" (YYYY-MM-DDTHH:MM)
 const formatToDatetimeLocal = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
+    // Verificar si la fecha es válida para evitar 'Invalid Date' en el input
     if (isNaN(date.getTime())) {
         return '';
     }
+    // slice(0, 16) recorta los segundos y la zona horaria, dejando YYYY-MM-DDTHH:MM
     return date.toISOString().slice(0, 16);
 };
 
 // Helper para convertir fecha de input type="datetime-local" a formato MySQL (YYYY-MM-DD HH:MM:SS)
 const formatFromDatetimeLocal = (datetimeLocalString) => {
-    if (!datetimeLocalString) return null;
+    if (!datetimeLocalString) return null; // Si está vacío, devuelve null para MySQL
     const date = new Date(datetimeLocalString);
     if (isNaN(date.getTime())) {
-        return null;
+        return null; // Si es una fecha inválida, devuelve null
     }
 
     const year = date.getFullYear();
@@ -27,21 +27,21 @@ const formatFromDatetimeLocal = (datetimeLocalString) => {
     const day = String(date.getDate()).padStart(2, '0');
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0'); // Añadir segundos, generalmente '00' si no se especifican
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
-const TrabajoDetailModal = ({ 
-    isOpen, 
-    onClose, 
-    mode, 
-    initialData, 
+const TrabajoDetailModal = ({
+    isOpen,
+    onClose,
+    mode,
+    initialData,
     onSave,
     // cotizacionesOptions ahora no se usa para poblar un select dinámico aquí,
     // pero la mantenemos como prop si la pasas (aunque sea vacía).
-    cotizacionesOptions = [], 
-    empleadosOptions = []    
+    cotizacionesOptions = [],
+    empleadosOptions = []
 }) => {
     const [formData, setFormData] = useState({
         cotizacion_id: '',
@@ -57,7 +57,7 @@ const TrabajoDetailModal = ({
         notas: '',
     });
     const [errors, setErrors] = useState({});
-    
+
     const estadoOptions = [
         'Pendiente',
         'En Proceso',
@@ -77,13 +77,15 @@ const TrabajoDetailModal = ({
                 fecha_inicio_real: formatToDatetimeLocal(initialData.fecha_inicio_real),
                 fecha_fin_estimada: formatToDatetimeLocal(initialData.fecha_fin_estimada),
                 fecha_fin_real: formatToDatetimeLocal(initialData.fecha_fin_real),
+                // Asegurarse de que materiales_usados es una cadena JSON válida o vacía
                 materiales_usados: initialData.materiales_usados ? JSON.stringify(initialData.materiales_usados, null, 2) : '',
                 estado: initialData.estado || 'Pendiente',
-                horas_hombre_estimadas: initialData.horas_hombre_estimadas || '',
-                costo_mano_obra: initialData.costo_mano_obra || '',
+                horas_hombre_estimadas: initialData.horas_hombre_estimadas !== null ? String(initialData.horas_hombre_estimadas) : '',
+                costo_mano_obra: initialData.costo_mano_obra !== null ? String(initialData.costo_mano_obra) : '',
                 notas: initialData.notas || '',
             });
         } else {
+            // Reiniciar el formulario al modo 'create' o cuando se abre el modal por primera vez en create mode
             setFormData({
                 cotizacion_id: '',
                 empleado_id: '',
@@ -98,12 +100,13 @@ const TrabajoDetailModal = ({
                 notas: '',
             });
         }
-        setErrors({}); 
-    }, [mode, initialData, isOpen]);
+        setErrors({}); // Limpiar errores al abrir o cambiar de modo
+    }, [mode, initialData, isOpen]); // Dependencias del useEffect
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Limpiar el error cuando el usuario empieza a escribir en el campo
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -111,25 +114,57 @@ const TrabajoDetailModal = ({
 
     const validateForm = () => {
         let newErrors = {};
-        // La validación de cotizacion_id sigue siendo necesaria si es un campo requerido
-        if (!formData.cotizacion_id) newErrors.cotizacion_id = 'La cotización es requerida.';
-        
-        if (formData.horas_hombre_estimadas !== '' && isNaN(Number(formData.horas_hombre_estimadas))) {
-            newErrors.horas_hombre_estimadas = 'Debe ser un número.';
-        }
-        if (formData.costo_mano_obra !== '' && isNaN(Number(formData.costo_mano_obra))) {
-            newErrors.costo_mano_obra = 'Debe ser un número.';
+
+        // Validación de cotizacion_id (asumiendo que es requerida)
+        if (!formData.cotizacion_id) {
+            newErrors.cotizacion_id = 'La cotización es requerida.';
         }
 
+        // Validación para campos numéricos
+        if (formData.horas_hombre_estimadas !== '' && isNaN(Number(formData.horas_hombre_estimadas))) {
+            newErrors.horas_hombre_estimadas = 'Debe ser un número válido.';
+        }
+        if (formData.costo_mano_obra !== '' && isNaN(Number(formData.costo_mano_obra))) {
+            newErrors.costo_mano_obra = 'Debe ser un número válido.';
+        }
+
+        // Validación para JSON de materiales_usados
         if (formData.materiales_usados) {
             try {
                 JSON.parse(formData.materiales_usados);
             } catch (e) {
-                newErrors.materiales_usados = 'Formato JSON inválido para materiales usados.';
+                newErrors.materiales_usados = 'Formato JSON inválido para materiales usados. Ejemplo: {"item": cantidad}.';
             }
         }
+
+        // --- Validaciones de Fechas ---
+        const inicioEstimada = formData.fecha_inicio_estimada ? new Date(formData.fecha_inicio_estimada) : null;
+        const finEstimada = formData.fecha_fin_estimada ? new Date(formData.fecha_fin_estimada) : null;
+        const inicioReal = formData.fecha_inicio_real ? new Date(formData.fecha_inicio_real) : null;
+        const finReal = formData.fecha_fin_real ? new Date(formData.fecha_fin_real) : null;
+
+        // Fecha de inicio estimada no puede ser posterior a la fecha de fin estimada
+        if (inicioEstimada && finEstimada && inicioEstimada > finEstimada) {
+            newErrors.fecha_fin_estimada = 'La fecha de fin estimada no puede ser anterior a la fecha de inicio estimada.';
+        }
+
+        // Fecha de inicio real no puede ser posterior a la fecha de fin real
+        if (inicioReal && finReal && inicioReal > finReal) {
+            newErrors.fecha_fin_real = 'La fecha de fin real no puede ser anterior a la fecha de inicio real.';
+        }
+
+        // Fecha de inicio real no puede ser anterior a la fecha de inicio estimada
+        if (inicioReal && inicioEstimada && inicioReal < inicioEstimada) {
+            newErrors.fecha_inicio_real = 'La fecha de inicio real no puede ser anterior a la fecha de inicio estimada.';
+        }
+
+        // Fecha de fin real no puede ser anterior a la fecha de fin estimada
+        if (finReal && finEstimada && finReal < finEstimada) {
+            newErrors.fecha_fin_real = 'La fecha de fin real no puede ser anterior a la fecha de fin estimada.';
+        }
+
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0; 
+        return Object.keys(newErrors).length === 0; // Retorna true si no hay errores
     };
 
     const handleSubmit = (e) => {
@@ -137,22 +172,25 @@ const TrabajoDetailModal = ({
         if (validateForm()) {
             const dataToSave = { ...formData };
 
+            // Convertir fechas a formato MySQL o null si están vacías
             dataToSave.fecha_inicio_estimada = formatFromDatetimeLocal(dataToSave.fecha_inicio_estimada);
             dataToSave.fecha_inicio_real = formatFromDatetimeLocal(dataToSave.fecha_inicio_real);
             dataToSave.fecha_fin_estimada = formatFromDatetimeLocal(dataToSave.fecha_fin_estimada);
             dataToSave.fecha_fin_real = formatFromDatetimeLocal(dataToSave.fecha_fin_real);
 
+            // Parsear materiales_usados o establecer a null
             if (dataToSave.materiales_usados) {
                 try {
                     dataToSave.materiales_usados = JSON.parse(dataToSave.materiales_usados);
                 } catch (e) {
                     console.error("Error al parsear materiales_usados antes de guardar:", e);
-                    dataToSave.materiales_usados = null;
+                    dataToSave.materiales_usados = null; // Si hay un error, se envía null
                 }
             } else {
-                dataToSave.materiales_usados = null;
+                dataToSave.materiales_usados = null; // Si está vacío, se envía null
             }
 
+            // Convertir números o establecer a null
             dataToSave.horas_hombre_estimadas = dataToSave.horas_hombre_estimadas ? Number(dataToSave.horas_hombre_estimadas) : null;
             dataToSave.costo_mano_obra = dataToSave.costo_mano_obra ? Number(dataToSave.costo_mano_obra) : null;
 
@@ -171,11 +209,11 @@ const TrabajoDetailModal = ({
                 </div>
                 <div className={styles.modalBody}>
                     <form onSubmit={handleSubmit}>
-                        
+
                         {/* SECCIÓN: INFORMACIÓN BÁSICA */}
                         <div className={styles.formSection}>
                             <h3 className={styles.formSectionTitle}>Información Básica</h3>
-                            
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="cotizacion_id">Cotización Asociada *</label>
@@ -184,12 +222,10 @@ const TrabajoDetailModal = ({
                                         name="cotizacion_id"
                                         value={formData.cotizacion_id}
                                         onChange={handleChange}
-                                        className={styles.inputField}
-                                        disabled={mode === 'edit'} 
+                                        className={`${styles.inputField} ${errors.cotizacion_id ? styles.inputError : ''}`}
+                                        disabled={mode === 'edit'}
                                     >
-                                        {/* Como no hay un hook de cotizaciones, solo mostramos una opción predeterminada. */}
-                                        {/* Si cotizacion_id se establece desde fuera (ej. al editar) se mostrará el valor. */}
-                                        <option value="">{formData.cotizacion_id || "Seleccione una cotización"}</option>
+                                        <option value="">{formData.cotizacion_id ? `ID: ${formData.cotizacion_id}` : "Seleccione una cotización"}</option>
                                         {/* Si en el futuro se necesita un select con opciones dinámicas, deberán venir de props */}
                                         {/* cotizacionesOptions.map(cot => (
                                             <option key={cot.id} value={cot.id}>{cot.label}</option>
@@ -236,7 +272,7 @@ const TrabajoDetailModal = ({
                         {/* SECCIÓN: PLANIFICACIÓN TEMPORAL */}
                         <div className={styles.formSection}>
                             <h3 className={styles.formSectionTitle}>Planificación Temporal</h3>
-                            
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="fecha_inicio_estimada">Fecha Inicio Estimada</label>
@@ -246,8 +282,9 @@ const TrabajoDetailModal = ({
                                         name="fecha_inicio_estimada"
                                         value={formData.fecha_inicio_estimada}
                                         onChange={handleChange}
-                                        className={styles.inputField}
+                                        className={`${styles.inputField} ${errors.fecha_inicio_estimada ? styles.inputError : ''}`}
                                     />
+                                    {errors.fecha_inicio_estimada && <p className={styles.errorText}>{errors.fecha_inicio_estimada}</p>}
                                 </div>
 
                                 <div className={styles.formGroup}>
@@ -258,8 +295,9 @@ const TrabajoDetailModal = ({
                                         name="fecha_fin_estimada"
                                         value={formData.fecha_fin_estimada}
                                         onChange={handleChange}
-                                        className={styles.inputField}
+                                        className={`${styles.inputField} ${errors.fecha_fin_estimada ? styles.inputError : ''}`}
                                     />
+                                    {errors.fecha_fin_estimada && <p className={styles.errorText}>{errors.fecha_fin_estimada}</p>}
                                 </div>
                             </div>
 
@@ -272,8 +310,9 @@ const TrabajoDetailModal = ({
                                         name="fecha_inicio_real"
                                         value={formData.fecha_inicio_real}
                                         onChange={handleChange}
-                                        className={styles.inputField}
+                                        className={`${styles.inputField} ${errors.fecha_inicio_real ? styles.inputError : ''}`}
                                     />
+                                    {errors.fecha_inicio_real && <p className={styles.errorText}>{errors.fecha_inicio_real}</p>}
                                 </div>
 
                                 <div className={styles.formGroup}>
@@ -284,8 +323,9 @@ const TrabajoDetailModal = ({
                                         name="fecha_fin_real"
                                         value={formData.fecha_fin_real}
                                         onChange={handleChange}
-                                        className={styles.inputField}
+                                        className={`${styles.inputField} ${errors.fecha_fin_real ? styles.inputError : ''}`}
                                     />
+                                    {errors.fecha_fin_real && <p className={styles.errorText}>{errors.fecha_fin_real}</p>}
                                 </div>
                             </div>
                         </div>
@@ -293,7 +333,7 @@ const TrabajoDetailModal = ({
                         {/* SECCIÓN: RECURSOS Y COSTOS */}
                         <div className={styles.formSection}>
                             <h3 className={styles.formSectionTitle}>Recursos y Costos</h3>
-                            
+
                             <div className={styles.formRow}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="horas_hombre_estimadas">Horas Hombre Estimadas</label>
@@ -303,7 +343,7 @@ const TrabajoDetailModal = ({
                                         name="horas_hombre_estimadas"
                                         value={formData.horas_hombre_estimadas}
                                         onChange={handleChange}
-                                        className={styles.inputField}
+                                        className={`${styles.inputField} ${errors.horas_hombre_estimadas ? styles.inputError : ''}`}
                                         placeholder="0"
                                     />
                                     {errors.horas_hombre_estimadas && <p className={styles.errorText}>{errors.horas_hombre_estimadas}</p>}
@@ -318,7 +358,7 @@ const TrabajoDetailModal = ({
                                         name="costo_mano_obra"
                                         value={formData.costo_mano_obra}
                                         onChange={handleChange}
-                                        className={styles.inputField}
+                                        className={`${styles.inputField} ${errors.costo_mano_obra ? styles.inputError : ''}`}
                                         placeholder="0.00"
                                     />
                                     {errors.costo_mano_obra && <p className={styles.errorText}>{errors.costo_mano_obra}</p>}
@@ -333,7 +373,7 @@ const TrabajoDetailModal = ({
                                         name="materiales_usados"
                                         value={formData.materiales_usados}
                                         onChange={handleChange}
-                                        className={`${styles.inputField} ${styles.textareaField}`}
+                                        className={`${styles.inputField} ${styles.textareaField} ${errors.materiales_usados ? styles.inputError : ''}`}
                                         rows="4"
                                         placeholder='Ejemplo: {"madera": 10, "tornillos": 100, "pintura": 2}'
                                     />
@@ -345,7 +385,7 @@ const TrabajoDetailModal = ({
                         {/* SECCIÓN: NOTAS ADICIONALES */}
                         <div className={styles.formSection}>
                             <h3 className={styles.formSectionTitle}>Información Adicional</h3>
-                            
+
                             <div className={styles.formRowSingle}>
                                 <div className={styles.formGroup}>
                                     <label htmlFor="notas">Notas y Observaciones</label>
