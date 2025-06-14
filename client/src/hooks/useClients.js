@@ -1,63 +1,69 @@
+// client/src/hooks/useEmpleados.js
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Define la URL base de la API aquí también para consistencia
 const API_BASE_URL = 'http://localhost:3000/NOVO';
 
-const useClients = () => {
-    const [clients, setClients] = useState([]);
-    const [loadingClients, setLoadingClients] = useState(true);
-    const [clientsError, setClientsError] = useState(null);
+const useEmpleados = () => {
+    const [empleados, setEmpleados] = useState([]);
+    const [isLoadingEmpleados, setIsLoadingEmpleados] = useState(true);
+    const [errorEmpleados, setErrorEmpleados] = useState(null);
 
     useEffect(() => {
-        const fetchClients = async () => {
-            setLoadingClients(true);
-            setClientsError(null);
+        const fetchEmpleados = async () => {
+            setIsLoadingEmpleados(true);
+            setErrorEmpleados(null);
             try {
                 const token = localStorage.getItem('token');
 
                 if (!token) {
-                    setClientsError('Authentication token not found. Please log in.');
-                    setLoadingClients(false);
-                    return;
+                    setErrorEmpleados('Authentication token not found. Please log in.');
+                    setIsLoadingEmpleados(false);
+                    return; // Detener la ejecución si no hay token
                 }
 
-                const response = await axios.get(`${API_BASE_URL}/clientes`, {
+                // El cambio clave: mapear directamente sobre response.data, sin .data anidado
+                const empleadosRes = await axios.get(`${API_BASE_URL}/empleados/`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-
-                // --- THE CORE FIX: map directly over response.data ---
-                if (response.data && Array.isArray(response.data)) {
-                    const formattedClients = response.data.map(client => ({
-                        value: client.id_cliente,
-                        label: `${client.nombre} ${client.apellido}`,
-                    }));
-                    setClients(formattedClients);
+                
+                // Asegúrate de que la respuesta tiene la estructura esperada (array directamente en data)
+                if (empleadosRes.data && Array.isArray(empleadosRes.data)) {
+                    setEmpleados(empleadosRes.data.map(emp => ({
+                        id: emp.id_empleado, // Asegúrate de que esta clave sea correcta para el ID del empleado
+                        label: `${emp.nombre} ${emp.apellido}` // Asegúrate de que estas claves sean correctas
+                    })));
                 } else {
-                    // This else block handles cases where response.data is not an array (unexpected)
-                    setClientsError('Unexpected response format for clients data. Expected an array.');
-                    console.error('API Response for clients was not an array:', response.data);
+                    // Manejar caso donde response.data no es un array (inesperado)
+                    console.warn("La respuesta de empleados no tiene el formato esperado (response.data no es un array):", empleadosRes.data);
+                    setErrorEmpleados("Formato de datos de empleados inesperado.");
+                    setEmpleados([]); // Asegurar que la lista esté vacía
                 }
-
             } catch (err) {
-                console.error('Error fetching clients:', err);
+                console.error('Error al cargar empleados:', err);
                 if (err.response) {
-                    setClientsError(err.response.data.message || `Server Error: ${err.response.status}`);
+                    // Errores de respuesta del servidor (ej. 401, 404, 500)
+                    setErrorEmpleados(err.response.data.message || `Server Error: ${err.response.status}`);
                 } else if (err.request) {
-                    setClientsError('Network Error: No response from server.');
+                    // Errores de red (no hay respuesta del servidor)
+                    setErrorEmpleados('Network Error: No response from server.');
                 } else {
-                    setClientsError(err.message || 'An unknown error occurred.');
+                    // Otros errores (problemas al configurar la solicitud)
+                    setErrorEmpleados(err.message || 'An unknown error occurred.');
                 }
+                setEmpleados([]); // Limpiar empleados en caso de error
             } finally {
-                setLoadingClients(false);
+                setIsLoadingEmpleados(false);
             }
         };
 
-        fetchClients();
-    }, []);
+        fetchEmpleados();
+    }, []); // El array vacío asegura que se ejecute solo una vez al montar el componente
 
-    return { clients, loadingClients, clientsError };
+    return { empleados, isLoadingEmpleados, errorEmpleados };
 };
 
-export default useClients;
+export default useEmpleados;

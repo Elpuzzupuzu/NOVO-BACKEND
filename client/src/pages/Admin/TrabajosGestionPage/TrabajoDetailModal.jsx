@@ -11,17 +11,15 @@ const formatToDatetimeLocal = (isoString) => {
     if (isNaN(date.getTime())) {
         return '';
     }
-    // toISOString() devuelve YYYY-MM-DDTHH:mm:ss.sssZ
-    // Slice para obtener YYYY-MM-DDTHH:MM
     return date.toISOString().slice(0, 16);
 };
 
 // Helper para convertir fecha de input type="datetime-local" a formato MySQL (YYYY-MM-DD HH:MM:SS)
 const formatFromDatetimeLocal = (datetimeLocalString) => {
     if (!datetimeLocalString) return null;
-    const date = new Date(datetimeLocalString); // Esto se interpreta en la zona horaria local
+    const date = new Date(datetimeLocalString);
     if (isNaN(date.getTime())) {
-        return null; // Si la fecha no es válida, devuelve null
+        return null;
     }
 
     const year = date.getFullYear();
@@ -29,13 +27,22 @@ const formatFromDatetimeLocal = (datetimeLocalString) => {
     const day = String(date.getDate()).padStart(2, '0');
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0'); // Incluimos segundos como '00' si no se usan
+    const seconds = String(date.getSeconds()).padStart(2, '0');
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
-
-const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
+const TrabajoDetailModal = ({ 
+    isOpen, 
+    onClose, 
+    mode, 
+    initialData, 
+    onSave,
+    // cotizacionesOptions ahora no se usa para poblar un select dinámico aquí,
+    // pero la mantenemos como prop si la pasas (aunque sea vacía).
+    cotizacionesOptions = [], 
+    empleadosOptions = []    
+}) => {
     const [formData, setFormData] = useState({
         cotizacion_id: '',
         empleado_id: '',
@@ -43,18 +50,14 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
         fecha_inicio_real: '',
         fecha_fin_estimada: '',
         fecha_fin_real: '',
-        materiales_usados: '', // Se espera un string JSON aquí
+        materiales_usados: '',
         estado: 'Pendiente',
         horas_hombre_estimadas: '',
         costo_mano_obra: '',
         notas: '',
     });
     const [errors, setErrors] = useState({});
-    const [cotizaciones, setCotizaciones] = useState([]);
-    const [empleados, setEmpleados] = useState([]);
-    const [isLoadingLookups, setIsLoadingLookups] = useState(true);
-
-    // Opciones para el select de estado (deben coincidir con el backend)
+    
     const estadoOptions = [
         'Pendiente',
         'En Proceso',
@@ -65,40 +68,6 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
         'Completada'
     ];
 
-    useEffect(() => {
-        // Cargar cotizaciones y empleados al abrir el modal
-        const fetchLookups = async () => {
-            setIsLoadingLookups(true);
-            try {
-                // Fetch cotizaciones (solo IDs y nombres de clientes para el select)
-                const cotizacionesRes = await axios.get('/NOVO/cotizaciones?limit=9999');
-                setCotizaciones(cotizacionesRes.data.data.map(cot => ({
-                    id: cot.id_cotizacion,
-                    label: `${cot.id_cotizacion.substring(0, 8)}... (Cliente: ${cot.cliente_nombre || ''} ${cot.cliente_apellido || ''})`
-                })));
-
-                // Fetch empleados (solo IDs y nombres para el select)
-                const empleadosRes = await axios.get('/NOVO/empleados?limit=9999');
-                setEmpleados(empleadosRes.data.data.map(emp => ({
-                    id: emp.id_empleado,
-                    label: `${emp.nombre} ${emp.apellido}`
-                })));
-
-            } catch (err) {
-                console.error('Error al cargar datos para selectores:', err);
-                // Manejar el error, quizás mostrar un mensaje al usuario
-            } finally {
-                setIsLoadingLookups(false);
-            }
-        };
-
-        if (isOpen) {
-            fetchLookups();
-        }
-
-    }, [isOpen]);
-
-    // Inicializar el formulario con los datos iniciales (para edición) o resetearlo (para creación)
     useEffect(() => {
         if (mode === 'edit' && initialData) {
             setFormData({
@@ -129,7 +98,7 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
                 notas: '',
             });
         }
-        setErrors({});
+        setErrors({}); 
     }, [mode, initialData, isOpen]);
 
     const handleChange = (e) => {
@@ -142,13 +111,16 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
 
     const validateForm = () => {
         let newErrors = {};
+        // La validación de cotizacion_id sigue siendo necesaria si es un campo requerido
         if (!formData.cotizacion_id) newErrors.cotizacion_id = 'La cotización es requerida.';
-        if (formData.horas_hombre_estimadas && isNaN(Number(formData.horas_hombre_estimadas))) {
+        
+        if (formData.horas_hombre_estimadas !== '' && isNaN(Number(formData.horas_hombre_estimadas))) {
             newErrors.horas_hombre_estimadas = 'Debe ser un número.';
         }
-        if (formData.costo_mano_obra && isNaN(Number(formData.costo_mano_obra))) {
+        if (formData.costo_mano_obra !== '' && isNaN(Number(formData.costo_mano_obra))) {
             newErrors.costo_mano_obra = 'Debe ser un número.';
         }
+
         if (formData.materiales_usados) {
             try {
                 JSON.parse(formData.materiales_usados);
@@ -157,7 +129,7 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
             }
         }
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return Object.keys(newErrors).length === 0; 
     };
 
     const handleSubmit = (e) => {
@@ -174,7 +146,7 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
                 try {
                     dataToSave.materiales_usados = JSON.parse(dataToSave.materiales_usados);
                 } catch (e) {
-                    console.error("Error final de parseo de materiales_usados antes de guardar:", e);
+                    console.error("Error al parsear materiales_usados antes de guardar:", e);
                     dataToSave.materiales_usados = null;
                 }
             } else {
@@ -198,176 +170,207 @@ const TrabajoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
                     <button className={styles.closeButton} onClick={onClose}>&times;</button>
                 </div>
                 <div className={styles.modalBody}>
-                    {isLoadingLookups ? (
-                        <p>Cargando datos...</p>
-                    ) : (
-                        <form onSubmit={handleSubmit}>
-                            <div className={styles.formGroup}>
-                                <label htmlFor="cotizacion_id">Cotización Asociada:</label>
-                                <select
-                                    id="cotizacion_id"
-                                    name="cotizacion_id"
-                                    value={formData.cotizacion_id}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                    disabled={mode === 'edit'}
-                                >
-                                    <option value="">Seleccione una cotización</option>
-                                    {cotizaciones.map(cot => (
-                                        <option key={cot.id} value={cot.id}>{cot.label}</option>
-                                    ))}
-                                </select>
-                                {errors.cotizacion_id && <p className={styles.errorText}>{errors.cotizacion_id}</p>}
+                    <form onSubmit={handleSubmit}>
+                        
+                        {/* SECCIÓN: INFORMACIÓN BÁSICA */}
+                        <div className={styles.formSection}>
+                            <h3 className={styles.formSectionTitle}>Información Básica</h3>
+                            
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="cotizacion_id">Cotización Asociada *</label>
+                                    <select
+                                        id="cotizacion_id"
+                                        name="cotizacion_id"
+                                        value={formData.cotizacion_id}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                        disabled={mode === 'edit'} 
+                                    >
+                                        {/* Como no hay un hook de cotizaciones, solo mostramos una opción predeterminada. */}
+                                        {/* Si cotizacion_id se establece desde fuera (ej. al editar) se mostrará el valor. */}
+                                        <option value="">{formData.cotizacion_id || "Seleccione una cotización"}</option>
+                                        {/* Si en el futuro se necesita un select con opciones dinámicas, deberán venir de props */}
+                                        {/* cotizacionesOptions.map(cot => (
+                                            <option key={cot.id} value={cot.id}>{cot.label}</option>
+                                        )) */}
+                                    </select>
+                                    {errors.cotizacion_id && <p className={styles.errorText}>{errors.cotizacion_id}</p>}
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="empleado_id">Empleado Responsable</label>
+                                    <select
+                                        id="empleado_id"
+                                        name="empleado_id"
+                                        value={formData.empleado_id}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                    >
+                                        <option value="">Seleccione un empleado</option>
+                                        {empleadosOptions.map(emp => (
+                                            <option key={emp.id} value={emp.id}>{emp.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="empleado_id">Empleado Responsable:</label>
-                                <select
-                                    id="empleado_id"
-                                    name="empleado_id"
-                                    value={formData.empleado_id}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                >
-                                    <option value="">Seleccione un empleado (Opcional)</option>
-                                    {empleados.map(emp => (
-                                        <option key={emp.id} value={emp.id}>{emp.label}</option>
-                                    ))}
-                                </select>
-                                {errors.empleado_id && <p className={styles.errorText}>{errors.empleado_id}</p>}
+                            <div className={styles.formRowSingle}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="estado">Estado del Trabajo</label>
+                                    <select
+                                        id="estado"
+                                        name="estado"
+                                        value={formData.estado}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                    >
+                                        {estadoOptions.map(option => (
+                                            <option key={option} value={option}>{option}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* SECCIÓN: PLANIFICACIÓN TEMPORAL */}
+                        <div className={styles.formSection}>
+                            <h3 className={styles.formSectionTitle}>Planificación Temporal</h3>
+                            
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="fecha_inicio_estimada">Fecha Inicio Estimada</label>
+                                    <input
+                                        type="datetime-local"
+                                        id="fecha_inicio_estimada"
+                                        name="fecha_inicio_estimada"
+                                        value={formData.fecha_inicio_estimada}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                    />
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="fecha_fin_estimada">Fecha Fin Estimada</label>
+                                    <input
+                                        type="datetime-local"
+                                        id="fecha_fin_estimada"
+                                        name="fecha_fin_estimada"
+                                        value={formData.fecha_fin_estimada}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                    />
+                                </div>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="estado">Estado del Trabajo:</label>
-                                <select
-                                    id="estado"
-                                    name="estado"
-                                    value={formData.estado}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                >
-                                    {estadoOptions.map(option => (
-                                        <option key={option} value={option}>{option}</option>
-                                    ))}
-                                </select>
-                                {errors.estado && <p className={styles.errorText}>{errors.estado}</p>}
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="fecha_inicio_real">Fecha Inicio Real</label>
+                                    <input
+                                        type="datetime-local"
+                                        id="fecha_inicio_real"
+                                        name="fecha_inicio_real"
+                                        value={formData.fecha_inicio_real}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                    />
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="fecha_fin_real">Fecha Fin Real</label>
+                                    <input
+                                        type="datetime-local"
+                                        id="fecha_fin_real"
+                                        name="fecha_fin_real"
+                                        value={formData.fecha_fin_real}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* SECCIÓN: RECURSOS Y COSTOS */}
+                        <div className={styles.formSection}>
+                            <h3 className={styles.formSectionTitle}>Recursos y Costos</h3>
+                            
+                            <div className={styles.formRow}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="horas_hombre_estimadas">Horas Hombre Estimadas</label>
+                                    <input
+                                        type="number"
+                                        id="horas_hombre_estimadas"
+                                        name="horas_hombre_estimadas"
+                                        value={formData.horas_hombre_estimadas}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                        placeholder="0"
+                                    />
+                                    {errors.horas_hombre_estimadas && <p className={styles.errorText}>{errors.horas_hombre_estimadas}</p>}
+                                </div>
+
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="costo_mano_obra">Costo Mano de Obra ($)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        id="costo_mano_obra"
+                                        name="costo_mano_obra"
+                                        value={formData.costo_mano_obra}
+                                        onChange={handleChange}
+                                        className={styles.inputField}
+                                        placeholder="0.00"
+                                    />
+                                    {errors.costo_mano_obra && <p className={styles.errorText}>{errors.costo_mano_obra}</p>}
+                                </div>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="fecha_inicio_estimada">Fecha Inicio Estimada:</label>
-                                <input
-                                    type="datetime-local"
-                                    id="fecha_inicio_estimada"
-                                    name="fecha_inicio_estimada"
-                                    value={formData.fecha_inicio_estimada}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                />
-                                {errors.fecha_inicio_estimada && <p className={styles.errorText}>{errors.fecha_inicio_estimada}</p>}
+                            <div className={styles.formRowSingle}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="materiales_usados">Materiales Usados (Formato JSON)</label>
+                                    <textarea
+                                        id="materiales_usados"
+                                        name="materiales_usados"
+                                        value={formData.materiales_usados}
+                                        onChange={handleChange}
+                                        className={`${styles.inputField} ${styles.textareaField}`}
+                                        rows="4"
+                                        placeholder='Ejemplo: {"madera": 10, "tornillos": 100, "pintura": 2}'
+                                    />
+                                    {errors.materiales_usados && <p className={styles.errorText}>{errors.materiales_usados}</p>}
+                                </div>
                             </div>
+                        </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="fecha_inicio_real">Fecha Inicio Real:</label>
-                                <input
-                                    type="datetime-local"
-                                    id="fecha_inicio_real"
-                                    name="fecha_inicio_real"
-                                    value={formData.fecha_inicio_real}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                />
-                                {errors.fecha_inicio_real && <p className={styles.errorText}>{errors.fecha_inicio_real}</p>}
+                        {/* SECCIÓN: NOTAS ADICIONALES */}
+                        <div className={styles.formSection}>
+                            <h3 className={styles.formSectionTitle}>Información Adicional</h3>
+                            
+                            <div className={styles.formRowSingle}>
+                                <div className={styles.formGroup}>
+                                    <label htmlFor="notas">Notas y Observaciones</label>
+                                    <textarea
+                                        id="notas"
+                                        name="notas"
+                                        value={formData.notas}
+                                        onChange={handleChange}
+                                        className={`${styles.inputField} ${styles.textareaField}`}
+                                        rows="3"
+                                        placeholder="Agregar notas, observaciones o comentarios adicionales..."
+                                    />
+                                </div>
                             </div>
+                        </div>
 
-                            <div className={styles.formGroup}>
-                                <label htmlFor="fecha_fin_estimada">Fecha Fin Estimada:</label>
-                                <input
-                                    type="datetime-local"
-                                    id="fecha_fin_estimada"
-                                    name="fecha_fin_estimada"
-                                    value={formData.fecha_fin_estimada}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                />
-                                {errors.fecha_fin_estimada && <p className={styles.errorText}>{errors.fecha_fin_estimada}</p>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="fecha_fin_real">Fecha Fin Real:</label>
-                                <input
-                                    type="datetime-local"
-                                    id="fecha_fin_real"
-                                    name="fecha_fin_real"
-                                    value={formData.fecha_fin_real}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                />
-                                {errors.fecha_fin_real && <p className={styles.errorText}>{errors.fecha_fin_real}</p>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="horas_hombre_estimadas">Horas Hombre Estimadas:</label>
-                                <input
-                                    type="number"
-                                    id="horas_hombre_estimadas"
-                                    name="horas_hombre_estimadas"
-                                    value={formData.horas_hombre_estimadas}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                />
-                                {errors.horas_hombre_estimadas && <p className={styles.errorText}>{errors.horas_hombre_estimadas}</p>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="costo_mano_obra">Costo Mano de Obra:</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    id="costo_mano_obra"
-                                    name="costo_mano_obra"
-                                    value={formData.costo_mano_obra}
-                                    onChange={handleChange}
-                                    className={styles.inputField}
-                                />
-                                {errors.costo_mano_obra && <p className={styles.errorText}>{errors.costo_mano_obra}</p>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="materiales_usados">Materiales Usados (JSON):</label>
-                                <textarea
-                                    id="materiales_usados"
-                                    name="materiales_usados"
-                                    value={formData.materiales_usados}
-                                    onChange={handleChange}
-                                    className={`${styles.inputField} ${styles.textareaField}`}
-                                    rows="5"
-                                    placeholder='Ej: {"madera": 10, "tornillos": 100}'
-                                ></textarea>
-                                {errors.materiales_usados && <p className={styles.errorText}>{errors.materiales_usados}</p>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label htmlFor="notas">Notas Adicionales:</label>
-                                <textarea
-                                    id="notas"
-                                    name="notas"
-                                    value={formData.notas}
-                                    onChange={handleChange}
-                                    className={`${styles.inputField} ${styles.textareaField}`}
-                                    rows="3"
-                                ></textarea>
-                            </div>
-
-                            <div className={styles.modalActions}>
-                                <button type="submit" className={styles.saveButton}>
-                                    {mode === 'create' ? 'Crear Trabajo' : 'Guardar Cambios'}
-                                </button>
-                                <button type="button" className={styles.cancelButton} onClick={onClose}>
-                                    Cancelar
-                                </button>
-                            </div>
-                        </form>
-                    )}
+                        <div className={styles.modalActions}>
+                            <button type="submit" className={styles.saveButton}>
+                                {mode === 'create' ? 'Crear Trabajo' : 'Guardar Cambios'}
+                            </button>
+                            <button type="button" className={styles.cancelButton} onClick={onClose}>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

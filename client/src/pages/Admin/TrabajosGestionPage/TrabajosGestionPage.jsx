@@ -1,3 +1,5 @@
+// client/src/pages/TrabajosGestionPage/TrabajosGestionPage.jsx
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -11,6 +13,10 @@ import {
 import TrabajoDetailModal from './TrabajoDetailModal';
 import SearchInput from '../../../components/SearchInput/SearchInput';
 import styles from './TrabajosGestionPage.module.css';
+
+// Importa solo el hook de empleados
+import useEmpleados from '../../../hooks/useEmpleados';
+// Eliminado: import useCotizaciones from '../../hooks/useCotizaciones';
 
 const defaultPaginationState = {
     total: 0,
@@ -40,6 +46,14 @@ const TrabajoGestionPage = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
+
+    // Usa solo el hook para obtener los datos de empleados
+    const { empleados, isLoadingEmpleados, errorEmpleados } = useEmpleados();
+    // Eliminado: const { cotizaciones, isLoadingCotizaciones, errorCotizaciones } = useCotizaciones();
+
+    // El estado de carga y error ahora solo depende de los empleados
+    const isLoadingLookups = isLoadingEmpleados;
+    const lookupError = errorEmpleados;
 
     const estadoOptions = [
         { value: '', label: 'Todos los Estados' },
@@ -102,7 +116,6 @@ const TrabajoGestionPage = () => {
         setIsModalOpen(true);
     };
 
-    // Modificado: Ahora esta función se usará solo con el click en la fila
     const handleViewEdit = (trabajo) => {
         dispatch(setSelectedTrabajo(trabajo));
         setModalMode('edit');
@@ -112,7 +125,7 @@ const TrabajoGestionPage = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         dispatch(clearSelectedTrabajo());
-        loadTrabajos();
+        loadTrabajos(); 
     };
 
     const handleSaveTrabajo = async (trabajoData) => {
@@ -131,9 +144,6 @@ const TrabajoGestionPage = () => {
         }
     };
 
-    // La función handleDeleteTrabajo sigue siendo necesaria si quieres un botón de eliminar dentro del modal o una acción de "click derecho"
-    // Por ahora, la mantendremos si la funcionalidad de eliminar sigue existiendo, aunque no haya un botón visible en la tabla.
-    // Si la eliminación se va a hacer desde el modal de detalle, esta función se llamaría desde allí.
     const handleDeleteTrabajo = async (id_trabajo) => {
         const isConfirmed = window.confirm('¿Estás seguro de que quieres eliminar este trabajo? ¡No podrás revertir esto!');
 
@@ -183,8 +193,11 @@ const TrabajoGestionPage = () => {
                 </button>
             </div>
 
+            {/* Mostrar mensajes de carga o error para los selectores */}
+            {isLoadingLookups && <p>Cargando opciones para empleados...</p>}
+            {lookupError && <p className={styles.errorText}>Error al cargar opciones: {lookupError}</p>}
+
             {trabajos.length === 0 && status !== 'loading' ? (
-                // Ajusta el colSpan al número actual de columnas visibles (6 en este caso)
                 <p className={styles.noResults}>No se encontraron trabajos que coincidan con los criterios de búsqueda.</p>
             ) : (
                 <div className={styles.tableContainer}>
@@ -198,15 +211,14 @@ const TrabajoGestionPage = () => {
                                 <th>Estado</th>
                                 <th>Inicio Estimado</th>
                                 <th>Fin Estimado</th>
-                                {/* Eliminada la columna de Acciones */}
                             </tr>
                         </thead>
                         <tbody>
                             {trabajos.map((trabajo) => (
                                 <tr 
                                     key={trabajo.id_trabajo} 
-                                    onClick={() => handleViewEdit(trabajo)} // Click en la fila para Ver/Editar
-                                    className={styles.tableRow} // Añade esta clase para el cursor y hover
+                                    onClick={() => handleViewEdit(trabajo)} 
+                                    className={styles.tableRow} 
                                 >
                                     <td>{trabajo.id_trabajo ? trabajo.id_trabajo.substring(0, 8) + '...' : 'N/A'}</td>
                                     <td>{trabajo.cotizacion_id ? trabajo.cotizacion_id.substring(0, 8) + '...' : 'N/A'}</td>
@@ -219,7 +231,6 @@ const TrabajoGestionPage = () => {
                                     </td>
                                     <td>{trabajo.fecha_inicio_estimada ? new Date(trabajo.fecha_inicio_estimada).toLocaleDateString() : 'N/A'}</td>
                                     <td>{trabajo.fecha_fin_estimada ? new Date(trabajo.fecha_fin_estimada).toLocaleDateString() : 'N/A'}</td>
-                                    {/* Eliminada la celda de Acciones */}
                                 </tr>
                             ))}
                         </tbody>
@@ -254,8 +265,10 @@ const TrabajoGestionPage = () => {
                     mode={modalMode}
                     initialData={selectedTrabajo}
                     onSave={handleSaveTrabajo}
-                    // Puedes pasar handleDeleteTrabajo al modal si la eliminación se hace desde ahí
                     onDelete={handleDeleteTrabajo} 
+                    // Ya no pasamos cotizacionesOptions
+                    cotizacionesOptions={[]} // Pasa un array vacío o null si el select de cotizaciones no es dinámico
+                    empleadosOptions={empleados}
                 />
             )}
         </div>
