@@ -17,7 +17,7 @@ const SearchInput = ({ initialSearchTerm, onSearch }) => {
         const handler = setTimeout(() => {
             // >>> CAMBIO CLAVE: Recortar espacios en blanco del `searchTerm` antes de asignarlo al debounced
             setDebouncedSearchTerm(searchTerm.trim()); 
-        }, 500); // 500ms de retraso
+        }, 800); // 500ms de retraso
 
         return () => {
             clearTimeout(handler);
