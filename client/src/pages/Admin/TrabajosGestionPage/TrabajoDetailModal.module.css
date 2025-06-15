@@ -156,6 +156,96 @@
   padding: 8px;
 }
 
+
+
+/* ... (existing styles) ... */
+
+.materialInputGroup {
+    display: flex;
+    gap: 10px; /* Space between input fields and button */
+    align-items: center;
+    margin-bottom: 10px; /* Space below the input group */
+}
+
+.smallInputField {
+    flex: 1; /* Allow inputs to grow */
+    padding: 8px 12px;
+    font-size: 1em;
+}
+
+.addButton {
+    padding: 8px 15px;
+    background-color: #4CAF50; /* Green for add button */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.addButton:hover {
+    background-color: #45a049;
+}
+
+.materialList {
+    margin-top: 15px;
+    background-color: #2a2a2a; /* Slightly lighter background for the list */
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.materialList h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #e0e0e0;
+}
+
+.materialList ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.materialItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    color: #f0f0f0;
+}
+
+.removeButton {
+    background: none;
+    border: none;
+    color: #ff6666; /* Red for remove button */
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-left: 10px;
+    padding: 0 5px;
+    transition: color 0.3s ease;
+}
+
+.removeButton:hover {
+    color: #ff3333;
+}
+
+/* Existing error styles */
+.inputError {
+    border-color: #ff4d4f; /* Example red for errors */
+    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+.errorText {
+    color: #ff4d4f;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
 /* Estilos específicos para textareas */
 .textareaField {
   resize: vertical;
