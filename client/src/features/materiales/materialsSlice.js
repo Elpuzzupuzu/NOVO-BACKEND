@@ -7,6 +7,11 @@ const initialState = {
     materials: [], // Array para almacenar los materiales
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,    // Almacena cualquier mensaje de error
+    // Nuevos estados para paginación y búsqueda
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    limit: 10, // Límite por defecto
 };
 
 // =========================================================
@@ -16,6 +21,7 @@ const initialState = {
 /**
  * Thunk para obtener todos los materiales.
  * Corresponde a la ruta GET /NOVO/materiales.
+ * Este thunk NO tiene paginación ni búsqueda.
  */
 export const fetchMaterials = createAsyncThunk(
     'materials/fetchMaterials',
@@ -28,6 +34,31 @@ export const fetchMaterials = createAsyncThunk(
                 return rejectWithValue(error.response.data.message);
             }
             return rejectWithValue(error.message || 'Error de red desconocido al obtener materiales.');
+        }
+    }
+);
+
+/**
+ * Thunk para obtener materiales con búsqueda y paginación.
+ * Corresponde a la NUEVA ruta GET /NOVO/materiales/search.
+ * @param {object} params - Objeto que puede contener searchTerm, page, limit.
+ * @param {string} [params.searchTerm] - Término de búsqueda.
+ * @param {number} [params.page] - Número de página.
+ * @param {number} [params.limit] - Límite de resultados por página.
+ * @param {boolean} [params.disponible_para_cotizacion] - Filtro por disponibilidad.
+ */
+export const fetchPaginatedMaterials = createAsyncThunk(
+    'materials/fetchPaginatedMaterials',
+    async (params = {}, { rejectWithValue }) => {
+        try {
+            const queryParams = new URLSearchParams(params).toString();
+            const response = await axiosInstance.get(`/NOVO/materiales/search?${queryParams}`);
+            return response.data; // Esto debería contener { data: materials[], pagination: {} }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                return rejectWithValue(error.response.data.message);
+            }
+            return rejectWithValue(error.message || 'Error de red desconocido al obtener materiales paginados.');
         }
     }
 );
@@ -129,11 +160,17 @@ const materialsSlice = createSlice({
         },
         clearMaterialsError: (state) => {
             state.error = null;
-        }
+        },
+        setMaterialPage: (state, action) => {
+            state.currentPage = action.payload;
+        },
+        setMaterialLimit: (state, action) => {
+            state.limit = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
-            // Casos para fetchMaterials
+            // Casos para fetchMaterials (el original, sin paginación)
             .addCase(fetchMaterials.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -141,11 +178,31 @@ const materialsSlice = createSlice({
             .addCase(fetchMaterials.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.materials = action.payload; // Asigna los materiales obtenidos
+                // IMPORTANTE: Este thunk no actualiza los datos de paginación
+                // porque no los recibe del backend.
                 state.error = null;
             })
             .addCase(fetchMaterials.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Fallo al cargar los materiales.';
+            })
+            // Casos para fetchPaginatedMaterials (el NUEVO)
+            .addCase(fetchPaginatedMaterials.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
+            .addCase(fetchPaginatedMaterials.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.materials = action.payload.data; // Asigna solo los datos de los materiales
+                state.currentPage = action.payload.pagination.page;
+                state.totalPages = action.payload.pagination.totalPages;
+                state.totalItems = action.payload.pagination.total;
+                state.limit = action.payload.pagination.limit; // Actualiza el límite en el estado
+                state.error = null;
+            })
+            .addCase(fetchPaginatedMaterials.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload || 'Fallo al cargar los materiales paginados.';
             })
             // Casos para createMaterial
             .addCase(createMaterial.pending, (state) => {
@@ -153,7 +210,9 @@ const materialsSlice = createSlice({
                 state.error = null;
             })
             .addCase(createMaterial.fulfilled, (state, action) => {
-                state.materials.push(action.payload); // Añade el nuevo material
+                // Al crear un material, podríamos querer refetch o insertarlo si estamos en la primera página
+                // Por simplicidad, si la creación es exitosa, se puede refetch para asegurar la consistencia.
+                // state.materials.push(action.payload); // Si lo añades, considera el impacto en paginación
                 state.status = 'succeeded'; // Asegura que el status vuelva a 'succeeded' después de la creación
                 state.error = null;
             })
@@ -174,7 +233,8 @@ const materialsSlice = createSlice({
                     state.materials[index] = action.payload;
                 } else {
                     // Si un material se obtiene por ID y no estaba en la lista, lo añade
-                    state.materials.push(action.payload);
+                    // Esto puede ser problemático con paginación, considerar refetching total.
+                    // state.materials.push(action.payload);
                 }
                 state.error = null;
             })
@@ -217,7 +277,7 @@ const materialsSlice = createSlice({
 });
 
 // Exporta las acciones síncronas generadas por createSlice
-export const { resetMaterialsStatus, clearMaterialsError } = materialsSlice.actions;
+export const { resetMaterialsStatus, clearMaterialsError, setMaterialPage, setMaterialLimit } = materialsSlice.actions;
 
 // Exporta el reducer principal
 export default materialsSlice.reducer;
@@ -228,3 +288,9 @@ export const selectMaterialsStatus = (state) => state.materials.status;
 export const selectMaterialsError = (state) => state.materials.error;
 export const selectMaterialById = (state, materialId) =>
     state.materials.materials.find(material => material.id_material === materialId);
+
+// Nuevos selectores para paginación
+export const selectCurrentPage = (state) => state.materials.currentPage;
+export const selectTotalPages = (state) => state.materials.totalPages;
+export const selectTotalItems = (state) => state.materials.totalItems;
+export const selectLimit = (state) => state.materials.limit;

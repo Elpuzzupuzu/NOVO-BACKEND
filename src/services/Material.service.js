@@ -20,11 +20,24 @@ class MaterialService {
     }
 
     /**
-     * Obtiene todos los materiales.
+     * Obtiene todos los materiales. Este es el método original.
      * @returns {Promise<Array<object>>} Un array de objetos de materiales.
      */
     async getAllMaterials() {
         const materials = await MaterialModel.findAll();
+        return materials;
+    }
+
+    /**
+     * Obtiene materiales con opciones de filtrado, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * @param {object} filters - Objeto con los filtros a aplicar (ej: { searchTerm: 'cuero' }).
+     * @param {number} page - El número de página actual.
+     * @param {number} limit - La cantidad de materiales por página.
+     * @returns {Promise<object>} Un objeto que contiene 'data' (array de materiales) y 'pagination' (metadatos de paginación).
+     */
+    async getPaginatedAndFilteredMaterials(filters, page, limit) {
+        const materials = await MaterialModel.findPaginatedAndFiltered(filters, page, limit);
         return materials;
     }
 

@@ -34,7 +34,7 @@ class MaterialController {
     }
 
     /**
-     * Maneja la obtención de todos los materiales.
+     * Maneja la obtención de todos los materiales (método original).
      * @param {object} req - Objeto de solicitud.
      * @param {object} res - Objeto de respuesta.
      */
@@ -44,7 +44,41 @@ class MaterialController {
             res.status(200).json(materials);
         } catch (error) {
             console.error('Error en MaterialController.getAllMaterials:', error);
-            res.status(500).json({ message: 'Error interno del servidor al obtener materiales.', error: error.message });
+            res.status(500).json({ message: 'Error interno del servidor al obtener materiales (original).', error: error.message });
+        }
+    }
+
+    /**
+     * Maneja la obtención de materiales con filtros, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * Extrae `searchTerm`, `page` y `limit` de los query parameters.
+     * @param {object} req - Objeto de solicitud (contiene req.query).
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getPaginatedAndFilteredMaterialsController(req, res) {
+        try {
+            // Extraer parámetros de la consulta (query parameters)
+            const { searchTerm, page, limit, disponible_para_cotizacion } = req.query;
+
+            // Construir el objeto de filtros
+            const filters = {};
+            if (searchTerm) {
+                filters.searchTerm = searchTerm;
+            }
+            // Convertir 'disponible_para_cotizacion' a booleano si existe
+            if (typeof disponible_para_cotizacion !== 'undefined') {
+                filters.disponible_para_cotizacion = disponible_para_cotizacion === 'true';
+            }
+
+            // Convertir page y limit a números, con valores por defecto
+            const pageNum = parseInt(page, 10) || 1;
+            const limitNum = parseInt(limit, 10) || 10;
+
+            const materials = await MaterialService.getPaginatedAndFilteredMaterials(filters, pageNum, limitNum);
+            res.status(200).json(materials); // materials ya contiene data y pagination
+        } catch (error) {
+            console.error('Error en MaterialController.getPaginatedAndFilteredMaterialsController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener materiales (paginados/filtrados).', error: error.message });
         }
     }
 

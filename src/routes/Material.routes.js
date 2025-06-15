@@ -1,3 +1,4 @@
+
 // src/routes/material.routes.js
 
 import { Router } from 'express';
@@ -14,8 +15,13 @@ const router = Router();
 // POST /NOVO/materiales - Crear un nuevo material
 router.post('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin'), MaterialController.createMaterial);
 
-// GET /NOVO/materiales - Obtener todos los materiales
+// GET /NOVO/materiales - Obtener todos los materiales (método original sin paginación/búsqueda)
 router.get('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin','cliente'), MaterialController.getAllMaterials);
+
+// NUEVA RUTA: GET /NOVO/materiales/search - Obtener materiales con paginación y búsqueda
+// Esta ruta ahora maneja los query parameters para searchTerm, page y limit
+router.get('/search', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin', 'cliente'), MaterialController.getPaginatedAndFilteredMaterialsController);
+
 
 // GET /NOVO/materiales/:id_material - Obtener un material por su ID
 router.get('/:id_material', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin'), MaterialController.getMaterialById);

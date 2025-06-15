@@ -97,7 +97,8 @@ class Material {
     }
 
     /**
-     * Obtiene todos los materiales de la base de datos.
+     * Obtiene todos los materiales de la base de datos sin filtros ni paginación.
+     * Este es el método original que se conserva.
      * @returns {Promise<Array<object>>} Un array de objetos de materiales.
      */
     static async findAll() {
@@ -106,8 +107,102 @@ class Material {
             const [rows] = await pool.query(query);
             return rows;
         } catch (error) {
-            console.error('Error al obtener todos los materiales:', error.message);
-            throw new Error('No se pudieron obtener los materiales.');
+            console.error('Error al obtener todos los materiales (original):', error.message);
+            throw new Error('No se pudieron obtener los materiales (original).');
+        }
+    }
+
+    /**
+     * Obtiene materiales con filtros, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * @param {object} filters - Objeto con filtros (ej: { searchTerm: 'cuero', disponible_para_cotizacion: true }).
+     * @param {number} page - Número de página actual.
+     * @param {number} limit - Cantidad de elementos por página.
+     * @returns {Promise<object>} Un objeto que contiene 'data' (array de materiales) y 'pagination' (metadatos).
+     * @throws {Error} Si hay un error en la base de datos al recuperar los materiales.
+     */
+    static async findPaginatedAndFiltered(filters = {}, page = 1, limit = 10) {
+        let query = `
+            SELECT
+                id_material,
+                nombre,
+                codigo,
+                descripcion,
+                unidad_medida,
+                costo_por_unidad,
+                disponible_para_cotizacion,
+                fecha_creacion,
+                fecha_actualizacion,
+                stock_actual
+            FROM
+                materiales
+        `;
+        let countQuery = 'SELECT COUNT(id_material) as total FROM materiales';
+
+        const conditions = [];
+        const values = [];
+        const countValues = [];
+
+        // Filtro por 'disponible_para_cotizacion' si es necesario
+        if (typeof filters.disponible_para_cotizacion !== 'undefined') {
+            conditions.push('disponible_para_cotizacion = ?');
+            values.push(filters.disponible_para_cotizacion);
+            countValues.push(filters.disponible_para_cotizacion);
+        }
+
+        // Lógica de búsqueda por searchTerm (nombre, id_material, codigo)
+        if (filters.searchTerm) {
+            const cleanedSearchTerm = filters.searchTerm.trim();
+            const termLike = `%${cleanedSearchTerm}%`;
+
+            // Buscar en nombre, id_material y codigo
+            conditions.push('(nombre LIKE ? OR id_material LIKE ? OR codigo LIKE ?)');
+            values.push(termLike, termLike, termLike);
+            countValues.push(termLike, termLike, termLike);
+        }
+
+        if (conditions.length > 0) {
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause;
+        }
+
+        // Ordenar por nombre ascendente por defecto
+        query += ' ORDER BY nombre ASC';
+
+        const offset = (page - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset);
+
+        // --- Debugging (opcional, puedes quitarlo en producción) ---
+        console.log("--- Debugging Material.findPaginatedAndFiltered (Backend) ---");
+        console.log("Final Data Query:", query);
+        console.log("Values for Data Query:", values);
+        console.log("Final Count Query:", countQuery);
+        console.log("Values for Count Query:", countValues);
+        console.log("--- End Debugging ---");
+
+        try {
+            const [rows] = await pool.query(query, values);
+            const [countResult] = await pool.query(countQuery, countValues);
+
+            const total = countResult[0].total;
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                data: rows,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+            };
+        } catch (error) {
+            console.error('Error al recuperar materiales (paginados/filtrados):', error.message);
+            throw new Error('No se pudieron recuperar los materiales (paginados/filtrados).');
         }
     }
 
