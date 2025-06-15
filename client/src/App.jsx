@@ -17,10 +17,13 @@ import CotizacionesGestionPage from './pages/Admin/Cotizaciones/CotizacionesGest
 import CotizacionEditPage from './pages/Admin/Cotizaciones/CotizacionEditPage';
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE TRABAJOS
-import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage'; // <--- ¡NUEVA IMPORTACIÓN!
+import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage';
+
+// IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE MATERIALES
 
 // Importa el selector de usuario desde tu slice de autenticación
 import { selectUser, selectIsAuthenticated } from './features/auth/authSlice';
+import MaterialesPage from './pages/Admin/Materiales/MaterialPage';
 
 
 // Componente para proteger rutas (ProtectedRoute)
@@ -136,10 +139,10 @@ function App() {
 
                 {/* GESTIÓN DE TRABAJOS: RUTA PARA LA PÁGINA DE LISTADO Y BÚSQUEDA */}
                 <Route
-                    path="/admin/trabajos" // <--- ¡NUEVA RUTA!
+                    path="/admin/trabajos"
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'empleado', 'gerente']}>
-                            <TrabajoGestionPage /> {/* <--- ¡RENDERIZA EL COMPONENTE DE TRABAJOS! */}
+                            <TrabajoGestionPage />
                         </ProtectedRoute>
                     }
                 />
@@ -149,13 +152,11 @@ function App() {
                     path="/admin/materiales"
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'empleado', 'gerente']}>
-                            <div style={{ padding: '20px', backgroundColor: '#1a1a1a', minHeight: 'calc(100vh - 60px)', color: '#fff' }}>
-                                <h2>Gestión de Materiales</h2>
-                                <p>Administración del inventario de materiales.</p>
-                            </div>
+                            <MaterialesPage/> {/* <--- ¡AHORA RENDERIZA EL COMPONENTE MaterialsPage! */}
                         </ProtectedRoute>
                     }
                 />
+
                 {/* Gestión de Usuarios (solo para administradores) */}
                 <Route
                     path="/admin/usuarios"
