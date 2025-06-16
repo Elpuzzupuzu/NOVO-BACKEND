@@ -38,7 +38,7 @@ class EmpleadoController {
     }
 
     /**
-     * Maneja la obtención de todos los empleados.
+     * Maneja la obtención de todos los empleados (método original).
      * @param {object} req - Objeto de solicitud.
      * @param {object} res - Objeto de respuesta.
      */
@@ -49,6 +49,40 @@ class EmpleadoController {
         } catch (error) {
             console.error('Error en EmpleadoController.getAllEmpleados:', error);
             res.status(500).json({ message: 'Error interno del servidor al obtener empleados.', error: error.message });
+        }
+    }
+
+    /**
+     * Maneja la obtención de empleados con filtros, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * Extrae `searchTerm`, `page`, `limit`, `activo` y `role` de los query parameters.
+     * @param {object} req - Objeto de solicitud (contiene req.query).
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getPaginatedAndFilteredEmpleadosController(req, res) {
+        try {
+            const { searchTerm, page, limit, activo, role } = req.query;
+
+            const filters = {};
+            if (searchTerm) {
+                filters.searchTerm = searchTerm;
+            }
+            if (typeof activo !== 'undefined') {
+                // Convertir 'activo' a booleano o número según cómo lo maneje tu DB
+                filters.activo = activo === 'true' || activo === '1';
+            }
+            if (role) {
+                filters.role = role;
+            }
+
+            const pageNum = parseInt(page, 10) || 1;
+            const limitNum = parseInt(limit, 10) || 10;
+
+            const empleados = await EmpleadoService.getPaginatedAndFilteredEmpleados(filters, pageNum, limitNum);
+            res.status(200).json(empleados); // empleados ya contiene data y pagination
+        } catch (error) {
+            console.error('Error en EmpleadoController.getPaginatedAndFilteredEmpleadosController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener empleados (paginados/filtrados).', error: error.message });
         }
     }
 

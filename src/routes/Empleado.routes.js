@@ -15,8 +15,12 @@ const router = Router();
 // POST /NOVO/empleados - Crear un nuevo empleado
 router.post('/', authenticateToken, authorizeRoles('admin'), EmpleadoController.createEmpleado);
 
-// GET /NOVO/empleados - Obtener todos los empleados
+// GET /NOVO/empleados - Obtener todos los empleados (método original sin paginación/búsqueda)
 router.get('/', authenticateToken, authorizeRoles('gerente', 'admin'), EmpleadoController.getAllEmpleados);
+
+// NUEVA RUTA: GET /NOVO/empleados/search - Obtener empleados con paginación y búsqueda
+// Esta ruta maneja los query parameters para searchTerm, page, limit, activo y role
+router.get('/search', authenticateToken, authorizeRoles('gerente', 'admin'), EmpleadoController.getPaginatedAndFilteredEmpleadosController);
 
 // GET /NOVO/empleados/:id_empleado - Obtener un empleado por su ID
 router.get('/:id_empleado', authenticateToken, authorizeRoles('gerente', 'admin'), EmpleadoController.getEmpleadoById);

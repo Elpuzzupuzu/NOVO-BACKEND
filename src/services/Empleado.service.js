@@ -17,11 +17,24 @@ class EmpleadoService {
     }
 
     /**
-     * Obtiene todos los empleados.
+     * Obtiene todos los empleados (método original sin paginación/búsqueda).
      * @returns {Promise<Array<object>>} Un array de objetos de empleados (sin contraseñas).
      */
     async getAllEmpleados() {
         const empleados = await EmpleadoModel.findAll();
+        return empleados;
+    }
+
+    /**
+     * Obtiene empleados con opciones de filtrado, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * @param {object} filters - Objeto con los filtros a aplicar (ej: { searchTerm: 'juan', activo: true, role: 'empleado' }).
+     * @param {number} page - El número de página actual.
+     * @param {number} limit - La cantidad de empleados por página.
+     * @returns {Promise<object>} Un objeto que contiene 'data' (array de empleados) y 'pagination' (metadatos de paginación).
+     */
+    async getPaginatedAndFilteredEmpleados(filters, page, limit) {
+        const empleados = await EmpleadoModel.findPaginatedAndFiltered(filters, page, limit);
         return empleados;
     }
 

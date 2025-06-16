@@ -20,10 +20,14 @@ import CotizacionEditPage from './pages/Admin/Cotizaciones/CotizacionEditPage';
 import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage';
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE MATERIALES
+import MaterialesPage from './pages/Admin/Materiales/MaterialPage';
+
+// IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE EMPLEADOS
+import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage';
+
 
 // Importa el selector de usuario desde tu slice de autenticación
 import { selectUser, selectIsAuthenticated } from './features/auth/authSlice';
-import MaterialesPage from './pages/Admin/Materiales/MaterialPage';
 
 
 // Componente para proteger rutas (ProtectedRoute)
@@ -152,7 +156,17 @@ function App() {
                     path="/admin/materiales"
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'empleado', 'gerente']}>
-                            <MaterialesPage/> {/* <--- ¡AHORA RENDERIZA EL COMPONENTE MaterialsPage! */}
+                            <MaterialesPage/>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* GESTIÓN DE EMPLEADOS - */}
+                <Route
+                    path="/admin/usuarios"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin', 'gerente']}> {/* Solo admin y gerente pueden ver y gestionar empleados */}
+                            <EmpleadosPage />
                         </ProtectedRoute>
                     }
                 />

@@ -1,0 +1,252 @@
+/* Overlay del modal */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    padding: 20px; /* Padding para que no se pegue a los bordes en móviles */
+    overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+}
+
+/* Contenido del modal */
+.modalContent {
+    background-color: #2c2c2c; /* Fondo oscuro */
+    border-radius: 10px;
+    padding: 30px;
+    width: 100%;
+    max-width: 600px; /* Ancho máximo para el modal */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+    animation: fadeInScale 0.3s ease-out; /* Animación de entrada */
+}
+
+/* Animación de entrada del modal */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Cabecera del modal */
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modalHeader h2 {
+    color: #92e66f; /* Verde brillante */
+    font-size: 1.8em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.headerIcon {
+    font-size: 1.2em;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+    color: #f44336; /* Rojo para el botón de cerrar */
+}
+
+/* Cuerpo del modal (formulario) */
+.modalBody {
+    font-size: 0.95em;
+}
+
+.form {
+    display: grid;
+    gap: 15px; /* Espacio entre los grupos de formulario */
+}
+
+.formGroup {
+    margin-bottom: 10px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    color: #c0c0c0;
+    font-weight: 500;
+}
+
+.inputField,
+.selectField {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    font-size: 1em;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inputField:focus,
+.selectField:focus {
+    border-color: #92e66f;
+    box-shadow: 0 0 0 2px rgba(146, 230, 111, 0.3);
+}
+
+.inputField:disabled {
+    background-color: #4a4a4a;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.errorText {
+    color: #ff4d4f; /* Rojo para mensajes de error */
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.helpText {
+    color: #999;
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+/* Estilos para el checkbox */
+.formGroupCheckbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: #c0c0c0;
+}
+
+.checkboxField {
+    width: 20px;
+    height: 20px;
+    accent-color: #92e66f; /* Color del checkbox */
+    cursor: pointer;
+}
+
+/* Botones de acción del modal (Guardar, Cancelar) */
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+}
+
+.saveButton,
+.cancelButton {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.saveButton {
+    background-color: #92e66f; /* Verde */
+    color: #1e1e1e;
+}
+
+.saveButton:hover {
+    background-color: #7bd35a;
+    transform: translateY(-1px);
+}
+
+.cancelButton {
+    background-color: #555;
+    color: #e0e0e0;
+}
+
+.cancelButton:hover {
+    background-color: #666;
+    transform: translateY(-1px);
+}
+
+.buttonIcon {
+    font-size: 1.1em;
+}
+
+/* Notificaciones dentro del modal */
+.modalNotification {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.modalNotification.success {
+    background-color: #305e26;
+    color: #92e66f;
+    border-color: #92e66f;
+}
+
+.modalNotification.error {
+    background-color: #5e2626;
+    color: #ff4d4f;
+    border-color: #f44336;
+}
+
+/* Media Queries para Responsividad */
+@media (max-width: 600px) {
+    .modalContent {
+        padding: 20px;
+        margin: 20px; /* Margen para que no se pegue a los bordes */
+    }
+
+    .modalHeader h2 {
+        font-size: 1.5em;
+    }
+
+    .closeButton {
+        font-size: 1.2em;
+    }
+
+    .form {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        gap: 10px;
+    }
+
+    .modalActions {
+        flex-direction: column; /* Apila los botones en columnas */
+        gap: 10px;
+    }
+
+    .saveButton,
+    .cancelButton {
+        width: 100%; /* Botones de acción ocupan todo el ancho */
+        justify-content: center;
+    }
+}

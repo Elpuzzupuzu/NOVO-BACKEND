@@ -1,0 +1,156 @@
+/* Overlay del modal de confirmación */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente oscuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Asegura que esté por encima de otros modales si los hay */
+    padding: 20px;
+    animation: fadeIn 0.2s ease-out; /* Animación de entrada */
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Contenido del modal */
+.modalContent {
+    background-color: #2c2c2c; /* Fondo oscuro */
+    border-radius: 10px;
+    padding: 30px;
+    width: 100%;
+    max-width: 450px; /* Ancho más pequeño para confirmación */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+    color: #e0e0e0;
+    text-align: center;
+    animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Animación de rebote */
+}
+
+/* Animación de rebote al entrar */
+@keyframes slideIn {
+    from { transform: translateY(-50px) scale(0.8); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Cabecera del modal */
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 15px;
+}
+
+.modalTitle {
+    color: #92e66f; /* Verde brillante */
+    font-size: 1.5em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.headerIcon {
+    font-size: 1.1em;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+    color: #f44336; /* Rojo para el botón de cerrar */
+}
+
+/* Cuerpo del modal */
+.modalBody {
+    margin-bottom: 30px;
+}
+
+.messageText {
+    font-size: 1.1em;
+    line-height: 1.5;
+    color: #c0c0c0;
+}
+
+/* Acciones del modal (botones) */
+.modalActions {
+    display: flex;
+    justify-content: center; /* Centra los botones */
+    gap: 15px; /* Espacio entre los botones */
+}
+
+.confirmButton,
+.cancelButton {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.confirmButton {
+    background-color: #f44336; /* Rojo para la acción destructiva */
+    color: #fff;
+}
+
+.confirmButton:hover {
+    background-color: #d32f2f; /* Rojo más oscuro al pasar el ratón */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cancelButton {
+    background-color: #555;
+    color: #e0e0e0;
+}
+
+.cancelButton:hover {
+    background-color: #666;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Media Queries para Responsividad */
+@media (max-width: 480px) {
+    .modalContent {
+        padding: 20px;
+        margin: 15px;
+    }
+
+    .modalTitle {
+        font-size: 1.3em;
+    }
+
+    .messageText {
+        font-size: 1em;
+    }
+
+    .modalActions {
+        flex-direction: column; /* Apila los botones en pantallas pequeñas */
+        gap: 10px;
+    }
+
+    .confirmButton,
+    .cancelButton {
+        width: 100%; /* Ocupan todo el ancho */
+        padding: 10px 15px;
+    }
+}

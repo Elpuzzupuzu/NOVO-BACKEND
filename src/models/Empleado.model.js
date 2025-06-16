@@ -85,7 +85,8 @@ class Empleado {
     }
 
     /**
-     * Obtiene todos los empleados de la base de datos. No incluye contraseñas.
+     * Obtiene todos los empleados de la base de datos sin filtros ni paginación (método original).
+     * No incluye contraseñas.
      * @returns {Promise<Array<object>>} Un array de objetos de empleados.
      */
     static async findAll() {
@@ -94,8 +95,107 @@ class Empleado {
             const [rows] = await pool.query(query);
             return rows;
         } catch (error) {
-            console.error('Error al obtener todos los empleados:', error.message);
-            throw new Error('No se pudieron obtener los empleados.');
+            console.error('Error al obtener todos los empleados (original):', error.message);
+            throw new Error('No se pudieron obtener los empleados (original).');
+        }
+    }
+
+    /**
+     * Obtiene empleados con filtros, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * @param {object} filters - Objeto con filtros (ej: { searchTerm: 'juan', activo: true, role: 'empleado' }).
+     * @param {number} page - Número de página actual.
+     * @param {number} limit - Cantidad de elementos por página.
+     * @returns {Promise<object>} Un objeto que contiene 'data' (array de empleados) y 'pagination' (metadatos).
+     * @throws {Error} Si hay un error en la base de datos al recuperar los empleados.
+     */
+    static async findPaginatedAndFiltered(filters = {}, page = 1, limit = 10) {
+        let query = `
+            SELECT
+                id_empleado, nombre, apellido, cargo, contacto, username, role, fecha_contratacion, fecha_baja, activo, fecha_creacion, fecha_actualizacion
+            FROM
+                empleados
+        `;
+        let countQuery = 'SELECT COUNT(id_empleado) as total FROM empleados';
+
+        const conditions = [];
+        const values = [];
+        const countValues = [];
+
+        // Filtro por 'activo'
+        if (typeof filters.activo !== 'undefined') {
+            conditions.push('activo = ?');
+            values.push(filters.activo);
+            countValues.push(filters.activo);
+        }
+
+        // Filtro por 'role'
+        if (filters.role) {
+            conditions.push('role = ?');
+            values.push(filters.role);
+            countValues.push(filters.role);
+        }
+
+        // Lógica de búsqueda por searchTerm (id_empleado, nombre, apellido, username, cargo, contacto)
+        if (filters.searchTerm) {
+            const cleanedSearchTerm = filters.searchTerm.trim();
+            const termLike = `%${cleanedSearchTerm}%`;
+
+            // Buscar en múltiples campos con LIKE
+            conditions.push(`
+                (id_empleado LIKE ? OR
+                nombre LIKE ? OR
+                apellido LIKE ? OR
+                username LIKE ? OR
+                cargo LIKE ? OR
+                contacto LIKE ?)
+            `);
+            values.push(termLike, termLike, termLike, termLike, termLike, termLike);
+            countValues.push(termLike, termLike, termLike, termLike, termLike, termLike);
+        }
+
+        if (conditions.length > 0) {
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause;
+        }
+
+        // Ordenar por nombre y apellido ascendente por defecto
+        query += ' ORDER BY nombre ASC, apellido ASC';
+
+        const offset = (page - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset);
+
+        // --- Debugging (opcional, puedes quitarlo en producción) ---
+        console.log("--- Debugging Empleado.findPaginatedAndFiltered (Backend) ---");
+        console.log("Final Data Query:", query);
+        console.log("Values for Data Query:", values);
+        console.log("Final Count Query:", countQuery);
+        console.log("Values for Count Query:", countValues);
+        console.log("--- End Debugging ---");
+
+        try {
+            const [rows] = await pool.query(query, values);
+            const [countResult] = await pool.query(countQuery, countValues);
+
+            const total = countResult[0].total;
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                data: rows,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+            };
+        } catch (error) {
+            console.error('Error al recuperar empleados (paginados/filtrados):', error.message);
+            throw new Error('No se pudieron recuperar los empleados (paginados/filtrados).');
         }
     }
 
