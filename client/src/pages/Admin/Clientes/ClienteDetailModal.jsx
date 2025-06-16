@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import styles from './EmpleadoDetailModal.module.css'; // Asegúrate de que este archivo CSS exista
+import styles from './ClienteDetailModal.module.css'; // Asegúrate de que este archivo CSS exista
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faSave, faUserPlus, faUserEdit, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-
-// Componente del modal para crear, ver o editar un empleado
-const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
-    // Estado local para los datos del formulario del empleado
-    const [empleadoData, setEmpleadoData] = useState({
+import { faTimes, faSave, faUserPlus, faUserEdit, faExclamationCircle, faCameraRetro } from '@fortawesome/free-solid-svg-icons';
+import Footer from '../../../components/Footer/Footer'
+// Componente del modal para crear, ver o editar un cliente
+const ClienteDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => {
+    // Estado local para los datos del formulario del cliente
+    const [clienteData, setClienteData] = useState({
         nombre: '',
         apellido: '',
-        cargo: '',
-        contacto: '',
+        contacto: '', // WhatsApp o teléfono
+        email: '',
+        direccion: '',
         username: '',
         password: '', // Importante: no cargar contraseña real, solo para nueva creación/cambio
-        role: 'empleado', // Valor por defecto
-        activo: true, // Valor por defecto
+        foto_perfil_url: '',
     });
     const [errors, setErrors] = useState({}); // Estado para errores de validación
     const [notification, setNotification] = useState({ message: '', type: '' }); // Para notificaciones dentro del modal
@@ -24,28 +24,27 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
         if (isOpen) {
             if (mode === 'edit' && initialData) {
                 // Si estamos editando y hay datos iniciales, precargar el formulario
-                setEmpleadoData({
+                setClienteData({
                     nombre: initialData.nombre || '',
                     apellido: initialData.apellido || '',
-                    cargo: initialData.cargo || '',
                     contacto: initialData.contacto || '',
+                    email: initialData.email || '',
+                    direccion: initialData.direccion || '',
                     username: initialData.username || '',
-                    // No precargamos la contraseña por seguridad. Se dejará vacía.
-                    password: '',
-                    role: initialData.role || 'empleado',
-                    activo: initialData.activo !== undefined ? initialData.activo : true,
+                    password: '', // Nunca precargar la contraseña existente por seguridad
+                    foto_perfil_url: initialData.foto_perfil_url || '',
                 });
             } else {
                 // Si estamos creando, resetear el formulario a sus valores iniciales/por defecto
-                setEmpleadoData({
+                setClienteData({
                     nombre: '',
                     apellido: '',
-                    cargo: '',
                     contacto: '',
+                    email: '',
+                    direccion: '',
                     username: '',
                     password: '',
-                    role: 'empleado',
-                    activo: true,
+                    foto_perfil_url: '',
                 });
             }
             setErrors({}); // Limpiar errores al abrir/cambiar modo
@@ -55,10 +54,10 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
 
     // Manejador de cambios en los inputs del formulario
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setEmpleadoData(prevData => ({
+        const { name, value } = e.target;
+        setClienteData(prevData => ({
             ...prevData,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
         // Limpiar el error específico al empezar a escribir en el campo
         if (errors[name]) {
@@ -69,32 +68,45 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
     // Función de validación del formulario
     const validateForm = () => {
         const newErrors = {};
-        if (!empleadoData.nombre.trim()) {
+        if (!clienteData.nombre.trim()) {
             newErrors.nombre = 'El nombre es requerido.';
         }
-        if (!empleadoData.username.trim()) {
+        if (!clienteData.contacto.trim()) {
+            newErrors.contacto = 'El contacto es requerido (WhatsApp/Teléfono).';
+        }
+        // Validación de contacto: 10-15 dígitos numéricos
+        if (clienteData.contacto.trim() && !/^\d{10,15}$/.test(clienteData.contacto)) {
+            newErrors.contacto = 'El contacto debe ser un número de 10 a 15 dígitos.';
+        }
+        if (!clienteData.username.trim()) {
             newErrors.username = 'El nombre de usuario es requerido.';
         }
         // La contraseña es requerida solo al crear, o si se intenta actualizar al editar
-        if (mode === 'create' && !empleadoData.password.trim()) {
+        if (mode === 'create' && !clienteData.password.trim()) {
             newErrors.password = 'La contraseña es requerida.';
-        } else if (mode === 'edit' && empleadoData.password.trim() && empleadoData.password.length < 6) {
+        } else if (mode === 'edit' && clienteData.password.trim() && clienteData.password.length < 6) {
             newErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
         }
-        if (empleadoData.password.trim() && !/[A-Z]/.test(empleadoData.password)) {
+        // Validaciones de complejidad de contraseña (solo si se proporciona)
+        if (clienteData.password.trim() && !/[A-Z]/.test(clienteData.password)) {
             newErrors.password = 'La contraseña debe contener al menos una mayúscula.';
         }
-        if (empleadoData.password.trim() && !/[a-z]/.test(empleadoData.password)) {
+        if (clienteData.password.trim() && !/[a-z]/.test(clienteData.password)) {
             newErrors.password = 'La contraseña debe contener al menos una minúscula.';
         }
-        if (empleadoData.password.trim() && !/[0-9]/.test(empleadoData.password)) {
+        if (clienteData.password.trim() && !/[0-9]/.test(clienteData.password)) {
             newErrors.password = 'La contraseña debe contener al menos un número.';
         }
-        if (empleadoData.password.trim() && !/[!@#$%^&*(),.?":{}|<>]/.test(empleadoData.password)) {
+        if (clienteData.password.trim() && !/[!@#$%^&*(),.?":{}|<>]/.test(clienteData.password)) {
             newErrors.password = 'La contraseña debe contener al menos un carácter especial.';
         }
-        if (empleadoData.contacto && !/^\d{10}$/.test(empleadoData.contacto) && !/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/.test(empleadoData.contacto)) {
-            newErrors.contacto = 'El contacto debe ser un teléfono válido (10 dígitos) o un email válido.';
+        // Validación de formato de email
+        if (clienteData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteData.email)) {
+            newErrors.email = 'Formato de email inválido.';
+        }
+        // Validación de URL de foto de perfil
+        if (clienteData.foto_perfil_url && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(clienteData.foto_perfil_url)) {
+            newErrors.foto_perfil_url = 'URL de foto de perfil inválida. Debe ser una URL de imagen válida (http/https).';
         }
 
         setErrors(newErrors);
@@ -113,23 +125,29 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
 
         try {
             // Eliminar la contraseña si está vacía en modo edición para no intentar actualizarla
-            const dataToSave = { ...empleadoData };
+            const dataToSave = { ...clienteData };
             if (mode === 'edit' && !dataToSave.password.trim()) {
                 delete dataToSave.password;
+            }
+            // Asegurarse de que la URL de la foto de perfil sea null si está vacía
+            if (!dataToSave.foto_perfil_url) {
+                dataToSave.foto_perfil_url = null;
             }
 
             // Llamar a la función onSave proporcionada por el padre
             await onSave(dataToSave);
             // El padre se encargará de cerrar el modal y mostrar la notificación general
         } catch (error) {
-            console.error('Error en EmpleadoDetailModal al guardar:', error);
+            console.error('Error en ClienteDetailModal al guardar:', error);
             // Mostrar notificación de error específica del modal
-            setNotification({ message: error.message || 'Error al guardar el empleado.', type: 'error' });
+            setNotification({ message: error.message || 'Error al guardar el cliente.', type: 'error' });
         }
     };
 
     // Si el modal no está abierto, no renderizar nada
     if (!isOpen) return null;
+
+    const fullName = `${clienteData.nombre || ''} ${clienteData.apellido || ''}`.trim();
 
     return (
         <div className={styles.modalOverlay}>
@@ -137,7 +155,7 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
                 <div className={styles.modalHeader}>
                     <h2>
                         <FontAwesomeIcon icon={mode === 'create' ? faUserPlus : faUserEdit} className={styles.headerIcon} />
-                        {mode === 'create' ? 'Crear Nuevo Empleado' : 'Editar Empleado'}
+                        {mode === 'create' ? 'Crear Nuevo Cliente' : 'Editar Cliente'}
                     </h2>
                     <button onClick={onClose} className={styles.closeButton}>
                         <FontAwesomeIcon icon={faTimes} />
@@ -153,14 +171,55 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
                     )}
 
                     <form onSubmit={handleSubmit} className={styles.form}>
-                        {/* Campo Nombre */}
+                        {/* Sección de Foto de Perfil (mejorada con nueva disposición) */}
+                        <div className={`${styles.formGroup} ${styles.photoUploadSection}`}>
+                            {/* Contenedor de imagen a la izquierda */}
+                            <div className={styles.imagePreviewContainer}>
+                                {(clienteData.foto_perfil_url || (mode === 'edit' && initialData?.foto_perfil_url)) ? (
+                                    <img 
+                                        src={clienteData.foto_perfil_url || initialData?.foto_perfil_url} 
+                                        alt="Foto de perfil" 
+                                        className={styles.imagePreview}
+                                        onError={(e) => { 
+                                            e.target.onerror = null; 
+                                            e.target.src = 'https://placehold.co/180x180/A0A0A0/FFFFFF?text=Error'; // Placeholder para errores
+                                        }}
+                                    />
+                                ) : (
+                                    // Este div vacío permitirá que el pseudo-elemento ::after del CSS funcione
+                                    <div className={styles.imagePreview}></div> 
+                                )}
+                                {/* Nombre completo debajo de la foto */}
+                                <p className={styles.userFullName}>{fullName}</p>
+                            </div>
+                            
+                            {/* Contenedor de input y label a la derecha */}
+                            <div className={styles.photoInputContainer}>
+                                <label htmlFor="foto_perfil_url" className={styles.photoUploadLabel}>
+                                    <FontAwesomeIcon icon={faCameraRetro} className={styles.photoIcon} /> 
+                                    Foto de Perfil (URL)
+                                </label>
+                                <input
+                                    type="url"
+                                    id="foto_perfil_url"
+                                    name="foto_perfil_url"
+                                    value={clienteData.foto_perfil_url}
+                                    onChange={handleChange}
+                                    className={styles.inputField}
+                                    placeholder="Ej: https://example.com/mi_foto.jpg"
+                                />
+                                {errors.foto_perfil_url && <p className={styles.errorText}>{errors.foto_perfil_url}</p>}
+                            </div>
+                        </div>
+
+                        {/* Campos de Información General (2 columnas) */}
                         <div className={styles.formGroup}>
                             <label htmlFor="nombre">Nombre:</label>
                             <input
                                 type="text"
                                 id="nombre"
                                 name="nombre"
-                                value={empleadoData.nombre}
+                                value={clienteData.nombre}
                                 onChange={handleChange}
                                 className={styles.inputField}
                                 required
@@ -168,54 +227,66 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
                             {errors.nombre && <p className={styles.errorText}>{errors.nombre}</p>}
                         </div>
 
-                        {/* Campo Apellido */}
                         <div className={styles.formGroup}>
                             <label htmlFor="apellido">Apellido:</label>
                             <input
                                 type="text"
                                 id="apellido"
                                 name="apellido"
-                                value={empleadoData.apellido}
+                                value={clienteData.apellido}
                                 onChange={handleChange}
                                 className={styles.inputField}
                             />
                         </div>
 
-                        {/* Campo Cargo */}
                         <div className={styles.formGroup}>
-                            <label htmlFor="cargo">Cargo:</label>
-                            <input
-                                type="text"
-                                id="cargo"
-                                name="cargo"
-                                value={empleadoData.cargo}
-                                onChange={handleChange}
-                                className={styles.inputField}
-                            />
-                        </div>
-
-                        {/* Campo Contacto */}
-                        <div className={styles.formGroup}>
-                            <label htmlFor="contacto">Contacto (Email/Teléfono):</label>
+                            <label htmlFor="contacto">Contacto (WhatsApp/Teléfono):</label>
                             <input
                                 type="text"
                                 id="contacto"
                                 name="contacto"
-                                value={empleadoData.contacto}
+                                value={clienteData.contacto}
                                 onChange={handleChange}
                                 className={styles.inputField}
+                                required
                             />
                             {errors.contacto && <p className={styles.errorText}>{errors.contacto}</p>}
                         </div>
 
-                        {/* Campo Username (full width) */}
+                        <div className={styles.formGroup}>
+                            <label htmlFor="email">Email:</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={clienteData.email}
+                                onChange={handleChange}
+                                className={styles.inputField}
+                            />
+                            {errors.email && <p className={styles.errorText}>{errors.email}</p>}
+                        </div>
+
+                        {/* Campo Dirección (full width) */}
+                        <div className={`${styles.formGroup} ${styles.formGroupFullWidth}`}>
+                            <label htmlFor="direccion">Dirección:</label>
+                            <textarea
+                                id="direccion"
+                                name="direccion"
+                                value={clienteData.direccion}
+                                onChange={handleChange}
+                                className={styles.textareaField}
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        {/* Campos de Credenciales (full width) */}
                         <div className={`${styles.formGroup} ${styles.formGroupFullWidth}`}>
                             <label htmlFor="username">Nombre de Usuario:</label>
                             <input
                                 type="text"
                                 id="username"
                                 name="username"
-                                value={empleadoData.username}
+                                value={clienteData.username}
                                 onChange={handleChange}
                                 className={styles.inputField}
                                 required
@@ -224,49 +295,19 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
                             {errors.username && <p className={styles.errorText}>{errors.username}</p>}
                         </div>
 
-                        {/* Campo Contraseña (full width) */}
                         <div className={`${styles.formGroup} ${styles.formGroupFullWidth}`}>
                             <label htmlFor="password">Contraseña {mode === 'edit' ? '(Dejar vacío para no cambiar)' : ''}:</label>
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                value={empleadoData.password}
+                                value={clienteData.password}
                                 onChange={handleChange}
                                 className={styles.inputField}
                                 required={mode === 'create'}
                             />
                             {errors.password && <p className={styles.errorText}>{errors.password}</p>}
                             {mode === 'edit' && <p className={styles.helpText}>Solo llena este campo si deseas cambiar la contraseña.</p>}
-                        </div>
-
-                        {/* Campo Rol */}
-                        <div className={styles.formGroup}>
-                            <label htmlFor="role">Rol:</label>
-                            <select
-                                id="role"
-                                name="role"
-                                value={empleadoData.role}
-                                onChange={handleChange}
-                                className={styles.selectField}
-                            >
-                                <option value="empleado">Empleado</option>
-                                <option value="gerente">Gerente</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        {/* Campo Activo (Checkbox) */}
-                        <div className={styles.formGroupCheckbox}>
-                            <input
-                                type="checkbox"
-                                id="activo"
-                                name="activo"
-                                checked={empleadoData.activo}
-                                onChange={handleChange}
-                                className={styles.checkboxField}
-                            />
-                            <label htmlFor="activo">Activo</label>
                         </div>
 
                         <div className={styles.modalActions}>
@@ -281,8 +322,9 @@ const EmpleadoDetailModal = ({ isOpen, onClose, mode, initialData, onSave }) => 
                     </form>
                 </div>
             </div>
+            
         </div>
     );
 };
 
-export default EmpleadoDetailModal;
+export default ClienteDetailModal;

@@ -22,13 +22,14 @@ class Cliente {
      * @param {string} [clienteData.direccion] - Dirección del cliente (opcional).
      * @param {string} clienteData.username - Nombre de usuario (único).
      * @param {string} clienteData.password - Contraseña en texto plano.
+     * @param {string} [clienteData.foto_perfil_url] - URL de la foto de perfil del cliente.
      * @param {string} [clienteData.role='cliente'] - Rol del cliente (por defecto 'cliente').
      * @returns {Promise<object>} El objeto del cliente creado (sin la contraseña hasheada para seguridad).
      * @throws {Error} Si el contacto o el username ya están registrados o hay un error.
      */
     static async create(clienteData) {
         const id_cliente = uuidv4();
-        const { nombre, apellido, contacto, email, direccion, username, password } = clienteData;
+        const { nombre, apellido, contacto, email, direccion, username, password, foto_perfil_url = null } = clienteData;
         // El rol se toma de clienteData, o se usa 'cliente' si no se proporciona (la DB también tiene un DEFAULT)
         const role = clienteData.role || 'cliente';
 
@@ -41,10 +42,10 @@ class Cliente {
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const query = `
-            INSERT INTO clientes (id_cliente, nombre, apellido, contacto, email, direccion, username, password, role)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO clientes (id_cliente, nombre, apellido, contacto, email, direccion, username, password, foto_perfil_url, role)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [id_cliente, nombre, apellido, contacto, email, direccion, username, hashedPassword, role];
+        const values = [id_cliente, nombre, apellido, contacto, email, direccion, username, hashedPassword, foto_perfil_url, role];
 
         try {
             await pool.query(query, values);
@@ -72,8 +73,9 @@ class Cliente {
      * @returns {Promise<object|null>} El objeto del cliente si se encuentra, o null si no.
      */
     static async findById(id_cliente, includePassword = false) {
-        // Asegúrate de seleccionar el campo 'role'
-        const selectFields = includePassword ? '*' : 'id_cliente, nombre, apellido, contacto, email, direccion, username, role, fecha_registro, fecha_actualizacion';
+        const selectFields = includePassword 
+            ? '*' 
+            : 'id_cliente, nombre, apellido, contacto, email, direccion, username, foto_perfil_url, role, fecha_registro, fecha_actualizacion';
         const query = `SELECT ${selectFields} FROM clientes WHERE id_cliente = ?`;
         try {
             const [rows] = await pool.query(query, [id_cliente]);
@@ -91,7 +93,6 @@ class Cliente {
      * @returns {Promise<object|null>} El objeto del cliente (incluyendo contraseña hasheada y rol) si se encuentra, o null si no.
      */
     static async findByUsername(username) {
-        // Se necesita la contraseña para comparar y el rol para el JWT payload
         const query = 'SELECT * FROM clientes WHERE username = ?';
         try {
             const [rows] = await pool.query(query, [username]);
@@ -118,8 +119,7 @@ class Cliente {
      * @returns {Promise<object|null>} El objeto del cliente si se encuentra, o null si no.
      */
     static async findByContacto(contacto) {
-        // Asegúrate de seleccionar el campo 'role'
-        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, role, fecha_registro, fecha_actualizacion FROM clientes WHERE contacto = ?';
+        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, foto_perfil_url, role, fecha_registro, fecha_actualizacion FROM clientes WHERE contacto = ?';
         try {
             const [rows] = await pool.query(query, [contacto]);
             return rows[0] || null;
@@ -130,18 +130,103 @@ class Cliente {
     }
 
     /**
-     * Obtiene todos los clientes de la base de datos. No incluye contraseñas.
+     * Obtiene todos los clientes de la base de datos (método original sin paginación/búsqueda).
+     * No incluye contraseñas.
      * @returns {Promise<Array<object>>} Un array de objetos de clientes.
      */
     static async findAll() {
-        // Asegúrate de seleccionar el campo 'role'
-        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, role, fecha_registro, fecha_actualizacion FROM clientes';
+        const query = 'SELECT id_cliente, nombre, apellido, contacto, email, direccion, username, foto_perfil_url, role, fecha_registro, fecha_actualizacion FROM clientes';
         try {
             const [rows] = await pool.query(query);
             return rows;
         } catch (error) {
-            console.error('Error al obtener todos los clientes:', error.message);
-            throw new Error('No se pudieron obtener los clientes.');
+            console.error('Error al obtener todos los clientes (original):', error.message);
+            throw new Error('No se pudieron obtener los clientes (original).');
+        }
+    }
+
+    /**
+     * Obtiene clientes con filtros, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * @param {object} filters - Objeto con los filtros (ej: { searchTerm: 'juan', email: 'test@example.com' }).
+     * @param {number} page - Número de página actual.
+     * @param {number} limit - Cantidad de elementos por página.
+     * @returns {Promise<object>} Un objeto que contiene 'data' (array de clientes) y 'pagination' (metadatos).
+     * @throws {Error} Si hay un error en la base de datos al recuperar los clientes.
+     */
+    static async findPaginatedAndFiltered(filters = {}, page = 1, limit = 10) {
+        let query = `
+            SELECT
+                id_cliente, nombre, apellido, contacto, email, direccion, username, foto_perfil_url, role, fecha_registro, fecha_actualizacion
+            FROM
+                clientes
+        `;
+        let countQuery = 'SELECT COUNT(id_cliente) as total FROM clientes';
+
+        const conditions = [];
+        const values = [];
+        const countValues = [];
+
+        // Lógica de búsqueda por searchTerm (id_cliente, nombre, apellido, contacto, email, username)
+        if (filters.searchTerm) {
+            const cleanedSearchTerm = filters.searchTerm.trim();
+            const termLike = `%${cleanedSearchTerm}%`;
+
+            // Buscar en múltiples campos con LIKE
+            conditions.push(`
+                (id_cliente LIKE ? OR
+                nombre LIKE ? OR
+                apellido LIKE ? OR
+                contacto LIKE ? OR
+                email LIKE ? OR
+                username LIKE ?)
+            `);
+            values.push(termLike, termLike, termLike, termLike, termLike, termLike);
+            countValues.push(termLike, termLike, termLike, termLike, termLike, termLike);
+        }
+
+        if (conditions.length > 0) {
+            const whereClause = ' WHERE ' + conditions.join(' AND ');
+            query += whereClause;
+            countQuery += whereClause;
+        }
+
+        // Ordenar por nombre y apellido ascendente por defecto
+        query += ' ORDER BY nombre ASC, apellido ASC';
+
+        const offset = (page - 1) * limit;
+        query += ` LIMIT ? OFFSET ?`;
+        values.push(limit, offset);
+
+        // --- Debugging (opcional, puedes quitarlo en producción) ---
+        console.log("--- Debugging Cliente.findPaginatedAndFiltered (Backend) ---");
+        console.log("Final Data Query:", query);
+        console.log("Values for Data Query:", values);
+        console.log("Final Count Query:", countQuery);
+        console.log("Values for Count Query:", countValues);
+        console.log("--- End Debugging ---");
+
+        try {
+            const [rows] = await pool.query(query, values);
+            const [countResult] = await pool.query(countQuery, countValues);
+
+            const total = countResult[0].total;
+            const totalPages = Math.ceil(total / limit);
+
+            return {
+                data: rows,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages,
+                    hasNextPage: page < totalPages,
+                    hasPrevPage: page > 1,
+                },
+            };
+        } catch (error) {
+            console.error('Error al recuperar clientes (paginados/filtrados):', error.message);
+            throw new Error('No se pudieron recuperar los clientes (paginados/filtrados).');
         }
     }
 
@@ -151,6 +236,7 @@ class Cliente {
      * @param {string} id_cliente - El ID del cliente a actualizar.
      * @param {object} updateData - Objeto con los datos a actualizar.
      * @param {string} [updateData.password] - Nueva contraseña en texto plano (se hasheará).
+     * @param {string} [updateData.foto_perfil_url] - Nueva URL de la foto de perfil.
      * @returns {Promise<boolean>} True si la actualización fue exitosa, false si no se encontró el cliente.
      * @throws {Error} Si el contacto o username a actualizar ya existe o hay un error.
      */

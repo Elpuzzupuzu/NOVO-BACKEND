@@ -78,7 +78,7 @@
 }
 
 /* El botón de menú de cuadrícula puede no ser tan relevante en AdminHeader,
-   pero mantengo sus estilos si se decide usar para herramientas rápidas. */
+    pero mantengo sus estilos si se decide usar para herramientas rápidas. */
 .gridMenuButton {
     background: none;
     border: none;
@@ -135,7 +135,7 @@
     background: none;
     border: none;
     color: #f0f0f0;
-    font-size: 1.6rem;
+    /* font-size: 1.6rem; */ /* Eliminamos el font-size para que la imagen de perfil pueda tener su propio tamaño */
     cursor: pointer;
     padding: 5px;
     display: flex;
@@ -152,6 +152,14 @@
     position: relative;
 }
 
+.profileImage {
+    width: 60px; /* Tamaño de la imagen de perfil en el header */
+    height: 60px;
+    border-radius: 50%; /* Para hacerla circular */
+    object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+    border: 1px solid #ffd700; /* Pequeño borde dorado para destacar */
+}
+
 .profileName {
     font-size: 1rem;
     font-weight: bold;
@@ -164,17 +172,57 @@
     background-color: #2a2a2a;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    min-width: 180px;
+    min-width: 220px; /* Puedes ajustar el ancho mínimo si es necesario */
     z-index: 100;
     display: flex;
     flex-direction: column;
-    padding: 10px 0;
+    padding: 0; /* Cambiado a 0 para que el header tenga su propio padding */
 }
+
+/* NUEVOS ESTILOS PARA LA SECCIÓN DE USUARIO EN EL DROPDOWN */
+.dropdownHeader {
+    display: flex;
+    flex-direction: column; /* Para apilar imagen, nombre y rol */
+    align-items: center;
+    padding: 15px 20px; /* Padding para esta sección */
+    border-bottom: 1px solid #444; /* Separador */
+    margin-bottom: 10px; /* Espacio antes de los enlaces */
+    text-align: center;
+}
+
+.dropdownProfileImage {
+    width: 100px; /* Tamaño más grande para la imagen en el dropdown */
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffd700; /* Borde un poco más grueso */
+    margin-bottom: 10px;
+}
+
+.dropdownProfileIcon {
+    font-size: 3.5rem; /* Tamaño grande para el ícono por defecto */
+    color: #ffd700; /* Color del ícono */
+    margin-bottom: 10px;
+}
+
+.dropdownUserName {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f0f0f0;
+    margin-bottom: 5px;
+}
+
+.dropdownUserRole {
+    font-size: 0.85rem;
+    color: #aaa;
+    /* text-transform: capitalize; (Si el backend no lo envía capitalizado y quieres hacerlo aquí) */
+}
+
 
 .dropdownItem,
 .dropdownItemLogout {
     display: block;
-    padding: 10px 15px;
+    padding: 10px 15px; /* Mantener este padding para los enlaces */
     text-decoration: none;
     color: #f0f0f0;
     background: none;
@@ -193,7 +241,7 @@
 .dropdownItemLogout {
     color: #ff4d4d;
     border-top: 1px solid #444;
-    margin-top: 5px;
+    margin-top: 10px; /* Aumentar el margen superior para separarlo de los enlaces */
     padding-top: 10px;
 }
 
@@ -314,7 +362,7 @@
     margin-left: 15px;
 }
 
-.hamburger span {
+.hamburger span { /* Remove these if you're using FontAwesome for hamburger */
     display: block;
     width: 28px;
     height: 3px;
@@ -322,7 +370,7 @@
     margin-bottom: 6px;
     transition: all 0.3s ease;
 }
-.hamburger span:last-child {
+.hamburger span:last-child { /* Remove these if you're using FontAwesome for hamburger */
     margin-bottom: 0;
 }
 
@@ -437,7 +485,7 @@
         font-size: 0.7rem;
     }
     .navIcon {
-        font-size: 1.3rem;
+        font-size: 1.3rem; /* Reintroducido para el FontAwesomeIcon si se muestra */
     }
     .searchBar {
         width: 100%;

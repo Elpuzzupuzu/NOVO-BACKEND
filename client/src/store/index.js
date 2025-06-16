@@ -4,7 +4,8 @@ import authReducer from '../features/auth/authSlice';
 import cotizacionesReducer from '../features/cotizaciones/cotizacionesSlice';
 import materialsReducer from '../features/materiales/materialsSlice';
 import trabajosReducer from '../features/trabajos/trabajosSlice'; 
-import empleadosReducer from '../features/empleados/EmpleadosSlice'; // ¡Importa el slice de empleados!
+import empleadosReducer from '../features/empleados/EmpleadosSlice'; 
+import clientesReducer from '../features/clientes/clientesSlice'; // ¡Importa el slice de clientes!
 
 const store = configureStore({
   reducer: {
@@ -12,7 +13,8 @@ const store = configureStore({
     cotizaciones: cotizacionesReducer,
     materials: materialsReducer,
     trabajos: trabajosReducer, 
-    empleados: empleadosReducer, // ¡Registra el slice de empleados aquí!
+    empleados: empleadosReducer, 
+    clientes: clientesReducer, // ¡Registra el slice de clientes aquí!
     // Puedes añadir más reducers aquí a medida que crees más slices
   },
   // Middleware opcional para desarrollo

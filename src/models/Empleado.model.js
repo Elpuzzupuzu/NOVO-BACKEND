@@ -20,6 +20,7 @@ class Empleado {
      * @param {string} [empleadoData.contacto] - Contacto del empleado (único, ej: teléfono, email).
      * @param {string} empleadoData.username - Nombre de usuario del empleado (único).
      * @param {string} empleadoData.password - Contraseña en texto plano del empleado.
+     * @param {string} [empleadoData.foto_perfil_url] - URL de la foto de perfil del empleado (opcional). // ADDED JSDOC
      * @param {string} [empleadoData.role='empleado'] - Rol del empleado (ej: 'empleado', 'gerente', 'admin').
      * @param {string} [empleadoData.fecha_contratacion] - Fecha de contratación (formato 'YYYY-MM-DD').
      * @param {boolean} [empleadoData.activo=true] - Si el empleado está activo.
@@ -35,6 +36,8 @@ class Empleado {
             contacto = null,
             username, // Requerido para login
             password, // Requerido para login
+            // ADDED: Include foto_perfil_url in destructuring
+            foto_perfil_url = null,
             fecha_contratacion = null,
             activo = true
         } = empleadoData;
@@ -44,16 +47,17 @@ class Empleado {
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const query = `
-            INSERT INTO empleados (id_empleado, nombre, apellido, cargo, contacto, username, password, role, fecha_contratacion, activo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO empleados (id_empleado, nombre, apellido, cargo, contacto, username, password, foto_perfil_url, role, fecha_contratacion, activo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [id_empleado, nombre, apellido, cargo, contacto, username, hashedPassword, role, fecha_contratacion, activo];
+        // ADDED: Add foto_perfil_url to the values array
+        const values = [id_empleado, nombre, apellido, cargo, contacto, username, hashedPassword, foto_perfil_url, role, fecha_contratacion, activo];
 
         try {
             await pool.query(query, values);
             // Retorna el empleado creado, excluyendo la contraseña hasheada por seguridad
             const { password: _, ...empleadoWithoutPassword } = empleadoData;
-            return { id_empleado, role, ...empleadoWithoutPassword };
+            return { id_empleado, role, foto_perfil_url, ...empleadoWithoutPassword }; // Ensure foto_perfil_url is returned
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
                 if (error.message.includes('for key \'contacto\'')) {
@@ -74,7 +78,8 @@ class Empleado {
      * @returns {Promise<object|null>} El objeto del empleado si se encuentra, o null si no.
      */
     static async findById(id_empleado) {
-        const query = 'SELECT id_empleado, nombre, apellido, cargo, contacto, username, role, fecha_contratacion, activo, fecha_creacion, fecha_actualizacion FROM empleados WHERE id_empleado = ?';
+        // ADDED: Include foto_perfil_url in the SELECT statement
+        const query = 'SELECT id_empleado, nombre, apellido, cargo, contacto, username, foto_perfil_url, role, fecha_contratacion, activo, fecha_creacion, fecha_actualizacion FROM empleados WHERE id_empleado = ?';
         try {
             const [rows] = await pool.query(query, [id_empleado]);
             return rows[0] || null;
@@ -90,7 +95,8 @@ class Empleado {
      * @returns {Promise<Array<object>>} Un array de objetos de empleados.
      */
     static async findAll() {
-        const query = 'SELECT id_empleado, nombre, apellido, cargo, contacto, username, role, fecha_contratacion, activo, fecha_creacion, fecha_actualizacion FROM empleados';
+        // ADDED: Include foto_perfil_url in the SELECT statement
+        const query = 'SELECT id_empleado, nombre, apellido, cargo, contacto, username, foto_perfil_url, role, fecha_contratacion, activo, fecha_creacion, fecha_actualizacion FROM empleados';
         try {
             const [rows] = await pool.query(query);
             return rows;
@@ -112,7 +118,7 @@ class Empleado {
     static async findPaginatedAndFiltered(filters = {}, page = 1, limit = 10) {
         let query = `
             SELECT
-                id_empleado, nombre, apellido, cargo, contacto, username, role, fecha_contratacion, fecha_baja, activo, fecha_creacion, fecha_actualizacion
+                id_empleado, nombre, apellido, cargo, contacto, username, foto_perfil_url, role, fecha_contratacion, fecha_baja, activo, fecha_creacion, fecha_actualizacion
             FROM
                 empleados
         `;
@@ -205,6 +211,7 @@ class Empleado {
      * @param {string} id_empleado - El ID del empleado a actualizar.
      * @param {object} updateData - Objeto con los datos a actualizar.
      * @param {string} [updateData.password] - Nueva contraseña en texto plano (se hasheará).
+     * @param {string} [updateData.foto_perfil_url] - URL de la nueva foto de perfil. // ADDED JSDOC
      * @returns {Promise<boolean>} True si la actualización fue exitosa, false si no se encontró el empleado.
      * @throws {Error} Si el contacto o username a actualizar ya existe en otro empleado.
      */

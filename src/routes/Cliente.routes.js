@@ -18,9 +18,13 @@ router.post('/register', ClienteController.createCliente);
 // Para todas estas rutas, primero se verifica la autenticación (JWT válido)
 // Luego, se verifica la autorización (si el rol del usuario es permitido)
 
-// GET /NOVO/clientes - Obtener todos los clientes
+// GET /NOVO/clientes - Obtener todos los clientes (método original sin paginación/búsqueda)
 // Solo roles 'gerente' o 'admin' pueden ver todos los clientes
 router.get('/', authenticateToken, authorizeRoles('gerente', 'admin'), ClienteController.getAllClientes);
+
+// NUEVA RUTA: GET /NOVO/clientes/search - Obtener clientes con paginación y búsqueda
+// Esta ruta maneja los query parameters para searchTerm, page, limit
+router.get('/search', authenticateToken, authorizeRoles('gerente', 'admin'), ClienteController.getPaginatedAndFilteredClientesController);
 
 // GET /NOVO/clientes/:id_cliente - Obtener un cliente por su ID
 // Cualquier usuario autenticado puede obtener su propio perfil.

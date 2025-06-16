@@ -22,8 +22,13 @@ import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestio
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE MATERIALES
 import MaterialesPage from './pages/Admin/Materiales/MaterialPage';
 
-// IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE EMPLEADOS
+// IMPORTA EL COMPONENTE DE GESTIÓN DE EMPLEADOS
+// Se corrige la ruta si era incorrecta, asumiendo EmpleadosGestionPage
 import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage';
+
+
+// IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE CLIENTES
+import ClientesPage from './pages/Admin/Clientes/ClientesPage';
 
 
 // Importa el selector de usuario desde tu slice de autenticación
@@ -161,9 +166,9 @@ function App() {
                     }
                 />
 
-                {/* GESTIÓN DE EMPLEADOS - */}
+                {/* GESTIÓN DE EMPLEADOS */}
                 <Route
-                    path="/admin/usuarios"
+                    path="/admin/empleados"
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'gerente']}> {/* Solo admin y gerente pueden ver y gestionar empleados */}
                             <EmpleadosPage />
@@ -171,18 +176,19 @@ function App() {
                     }
                 />
 
-                {/* Gestión de Usuarios (solo para administradores) */}
+                {/* GESTIÓN DE CLIENTES - NUEVA RUTA */}
                 <Route
-                    path="/admin/usuarios"
+                    path="/admin/clientes"
                     element={
-                        <ProtectedRoute allowedRoles={['admin']}>
-                            <div style={{ padding: '20px', backgroundColor: '#1a1a1a', minHeight: 'calc(100vh - 60px)', color: '#fff' }}>
-                                <h2>Gestión de Usuarios</h2>
-                                <p>Administración de usuarios y roles.</p>
-                            </div>
+                        <ProtectedRoute allowedRoles={['admin', 'gerente']}> {/* Solo admin y gerente pueden ver y gestionar clientes */}
+                            <ClientesPage />
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Gestión de Usuarios (solo para administradores) */}
+                {/* NOTA: Había una duplicación de ruta /admin/usuarios, esta es la más restrictiva. */}
+             
                 {/* Gestión de Proyectos */}
                 <Route
                     path="/admin/proyectos"

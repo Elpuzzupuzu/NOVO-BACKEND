@@ -1,4 +1,3 @@
-// client/src/features/empleados/EmpleadosSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '../../config/axiosConfig'; // Asegúrate de que esta ruta sea correcta
 
@@ -30,6 +29,7 @@ export const fetchEmpleados = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get('/NOVO/empleados');
+            // La respuesta.data ya contendrá foto_perfil_url si el backend lo envía
             return response.data;
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -56,6 +56,7 @@ export const fetchPaginatedEmpleados = createAsyncThunk(
         try {
             const queryParams = new URLSearchParams(params).toString();
             const response = await axiosInstance.get(`/NOVO/empleados/search?${queryParams}`);
+            // response.data.data contendrá foto_perfil_url para cada empleado
             return response.data; // Esto debería contener { data: empleados[], pagination: {} }
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -70,13 +71,15 @@ export const fetchPaginatedEmpleados = createAsyncThunk(
 /**
  * Thunk para crear un nuevo empleado.
  * Corresponde a la ruta POST /NOVO/empleados.
+ * @param {object} empleadoData - Datos del empleado a crear, incluyendo `foto_perfil_url` si se proporciona.
  */
 export const createEmpleado = createAsyncThunk(
     'empleados/createEmpleado',
     async (empleadoData, { rejectWithValue }) => {
         try {
+            // empleadoData ahora puede incluir foto_perfil_url
             const response = await axiosInstance.post('/NOVO/empleados', empleadoData);
-            return response.data.empleado;
+            return response.data.empleado; // El empleado devuelto incluirá foto_perfil_url
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
                 return rejectWithValue(error.response.data.message);
@@ -95,6 +98,7 @@ export const fetchEmpleadoById = createAsyncThunk(
     async (id_empleado, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`/NOVO/empleados/${id_empleado}`);
+            // La respuesta.data ya contendrá foto_perfil_url si el backend lo envía
             return response.data;
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -108,13 +112,17 @@ export const fetchEmpleadoById = createAsyncThunk(
 /**
  * Thunk para actualizar un empleado.
  * Corresponde a la ruta PUT /NOVO/empleados/:id_empleado.
+ * @param {object} args - Objeto que contiene `id_empleado` y `updateData`.
+ * @param {string} args.id_empleado - El ID del empleado a actualizar.
+ * @param {object} args.updateData - Objeto con los datos a actualizar, incluyendo `foto_perfil_url` si se modifica.
  */
 export const updateEmpleado = createAsyncThunk(
     'empleados/updateEmpleado',
     async ({ id_empleado, updateData }, { rejectWithValue }) => {
         try {
+            // updateData ahora puede incluir foto_perfil_url
             const response = await axiosInstance.put(`/NOVO/empleados/${id_empleado}`, updateData);
-            return response.data.empleado;
+            return response.data.empleado; // El empleado devuelto incluirá foto_perfil_url
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
                 return rejectWithValue(error.response.data.message);
@@ -185,7 +193,7 @@ const empleadosSlice = createSlice({
             })
             .addCase(fetchEmpleados.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.empleados = action.payload; // Asigna los empleados obtenidos
+                state.empleados = action.payload; // Asigna los empleados obtenidos, ya contendrán foto_perfil_url
                 // IMPORTANTE: Este thunk no actualiza los datos de paginación
                 // porque no los recibe del backend.
                 state.error = null;
@@ -201,7 +209,7 @@ const empleadosSlice = createSlice({
             })
             .addCase(fetchPaginatedEmpleados.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.empleados = action.payload.data; // Asigna solo los datos de los empleados
+                state.empleados = action.payload.data; // Asigna solo los datos de los empleados, ya contendrán foto_perfil_url
                 state.currentPage = action.payload.pagination.page;
                 state.totalPages = action.payload.pagination.totalPages;
                 state.totalItems = action.payload.pagination.total;
@@ -214,14 +222,17 @@ const empleadosSlice = createSlice({
             })
             // Casos para createEmpleado
             .addCase(createEmpleado.pending, (state) => {
-                state.status = 'loading'; 
+                state.status = 'loading';
                 state.error = null;
             })
             .addCase(createEmpleado.fulfilled, (state, action) => {
-                state.status = 'succeeded'; 
+                state.status = 'succeeded';
                 state.error = null;
                 // No actualizamos 'empleados' directamente aquí porque la lista se recargará
                 // desde el componente para mantener la paginación/filtros.
+                // Sin embargo, si decides agregar el empleado recién creado a la lista,
+                // asegúrate de que el 'action.payload' (el nuevo empleado) contenga 'foto_perfil_url'.
+                // state.empleados.push(action.payload); // Ejemplo si decides añadirlo
             })
             .addCase(createEmpleado.rejected, (state, action) => {
                 state.status = 'failed';
@@ -229,10 +240,11 @@ const empleadosSlice = createSlice({
             })
             // Casos para fetchEmpleadoById
             .addCase(fetchEmpleadoById.pending, (state) => {
-                state.error = null; 
+                state.error = null;
             })
             .addCase(fetchEmpleadoById.fulfilled, (state, action) => {
                 // Si el empleado ya está en la lista paginada, lo actualizamos.
+                // action.payload (el empleado obtenido) ahora puede incluir foto_perfil_url.
                 const index = state.empleados.findIndex(emp => emp.id_empleado === action.payload.id_empleado);
                 if (index !== -1) {
                     state.empleados[index] = action.payload;
@@ -244,16 +256,17 @@ const empleadosSlice = createSlice({
             })
             // Casos para updateEmpleado
             .addCase(updateEmpleado.pending, (state) => {
-                state.status = 'loading'; 
+                state.status = 'loading';
                 state.error = null;
             })
             .addCase(updateEmpleado.fulfilled, (state, action) => {
                 // Si el empleado está en la lista paginada actual, lo actualizamos
+                // action.payload (el empleado actualizado) ahora puede incluir foto_perfil_url.
                 const index = state.empleados.findIndex(emp => emp.id_empleado === action.payload.id_empleado);
                 if (index !== -1) {
                     state.empleados[index] = action.payload;
                 }
-                state.status = 'succeeded'; 
+                state.status = 'succeeded';
                 state.error = null;
             })
             .addCase(updateEmpleado.rejected, (state, action) => {
@@ -262,12 +275,12 @@ const empleadosSlice = createSlice({
             })
             // Casos para deleteEmpleado
             .addCase(deleteEmpleado.pending, (state) => {
-                state.status = 'loading'; 
+                state.status = 'loading';
                 state.error = null;
             })
             .addCase(deleteEmpleado.fulfilled, (state, action) => {
                 state.empleados = state.empleados.filter(emp => emp.id_empleado !== action.payload);
-                state.status = 'succeeded'; 
+                state.status = 'succeeded';
                 state.error = null;
                 // La paginación se ajustará al recargar desde el componente.
             })
@@ -279,14 +292,14 @@ const empleadosSlice = createSlice({
 });
 
 // Exporta las acciones síncronas generadas por createSlice
-export const { 
-    setEmpleadoPage, 
-    setEmpleadoLimit, 
-    setEmpleadoSearchTerm, 
-    setEmpleadoActivoFilter, 
+export const {
+    setEmpleadoPage,
+    setEmpleadoLimit,
+    setEmpleadoSearchTerm,
+    setEmpleadoActivoFilter,
     setEmpleadoRoleFilter,
-    resetEmpleadosStatus, 
-    clearEmpleadosError 
+    resetEmpleadosStatus,
+    clearEmpleadosError
 } = empleadosSlice.actions;
 
 // Exporta el reducer principal

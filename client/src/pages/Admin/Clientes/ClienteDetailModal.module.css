@@ -1,0 +1,462 @@
+/* Overlay del modal */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Contenido del modal */
+.modalContent {
+    background-color: #2c2c2c;
+    border-radius: 10px;
+    padding: 30px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+    animation: fadeInScale 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Animación de entrada del modal */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Cabecera del modal */
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.modalHeader h2 {
+    color: #92e66f;
+    font-size: 1.8em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.headerIcon {
+    font-size: 1.2em;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+    color: #f44336;
+}
+
+/* Cuerpo del modal (formulario) */
+.modalBody {
+    font-size: 0.95em;
+    flex-grow: 1;
+    padding-right: 5px;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "photoSection photoSection"
+        "nombreGroup apellidoGroup"
+        "contactoGroup emailGroup"
+        "direccionGroup direccionGroup"
+        "usernameGroup usernameGroup"
+        "passwordGroup passwordGroup"
+        ". ."
+        "actions actions";
+    gap: 20px;
+}
+
+/* === SECCIÓN DE FOTO MEJORADA === */
+.photoUploadSection {
+    grid-area: photoSection;
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 35px;
+    align-items: start;
+    padding: 30px;
+    background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+    border: 2px solid #444;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.photoUploadSection:hover {
+    border-color: #92e66f;
+    background: linear-gradient(135deg, #363636 0%, #2d2d2d 100%);
+    box-shadow: 0 6px 20px rgba(146, 230, 111, 0.15);
+}
+
+/* Contenedor de la imagen a la izquierda */
+.imagePreviewContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 25px;
+    min-height: 280px;
+    justify-content: center;
+    border: 3px dashed #555;
+    transition: all 0.3s ease;
+    grid-column: 1;
+}
+
+.imagePreviewContainer:hover {
+    border-color: #92e66f;
+    background: rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+.imagePreview {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #92e66f;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+}
+
+.imagePreview:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 35px rgba(146, 230, 111, 0.5);
+    border-color: #7bd35a;
+}
+
+/* Nombre completo debajo de la foto */
+.userFullName {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #92e66f;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    line-height: 1.3;
+    max-width: 100%;
+    word-wrap: break-word;
+    transition: color 0.3s ease;
+}
+
+.userFullName:empty::after {
+    content: 'Sin nombre';
+    color: #888;
+    font-style: italic;
+    font-weight: normal;
+}
+
+.imagePreviewContainer:hover .userFullName {
+    color: #7bd35a;
+}
+
+/* Placeholder cuando no hay imagen */
+.photoUploadSection:not(:has(.imagePreview)) .imagePreviewContainer::after {
+    content: '👤';
+    font-size: 5.5em;
+    opacity: 0.5;
+    color: #777;
+}
+
+/* Contenedor del input y label a la derecha */
+.photoInputContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    grid-column: 2;
+    align-self: center;
+}
+
+.photoUploadLabel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #92e66f;
+    margin: 0;
+}
+
+.photoIcon {
+    font-size: 1.4em;
+}
+
+/* Input de URL mejorado */
+.photoUploadSection .inputField {
+    background: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+.photoUploadSection .inputField:focus {
+    border-color: #92e66f;
+    background: #404040;
+    box-shadow: 0 0 0 2px rgba(146, 230, 111, 0.2);
+}
+
+.photoUploadSection .inputField::placeholder {
+    color: #888;
+    font-style: italic;
+}
+
+/* === FIN SECCIÓN DE FOTO === */
+
+/* Asignar áreas de grid a los formGroups */
+.formGroup:nth-child(2) { grid-area: nombreGroup; }
+.formGroup:nth-child(3) { grid-area: apellidoGroup; }
+.formGroup:nth-child(4) { grid-area: contactoGroup; }
+.formGroup:nth-child(5) { grid-area: emailGroup; }
+.formGroup:nth-child(6) { grid-area: direccionGroup; }
+.formGroup:nth-child(7) { grid-area: usernameGroup; }
+.formGroup:nth-child(8) { grid-area: passwordGroup; }
+
+.formGroupFullWidth {
+    grid-column: 1 / -1;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    color: #c0c0c0;
+    font-weight: 500;
+}
+
+.inputField,
+.textareaField {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    font-size: 1em;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inputField:focus,
+.textareaField:focus {
+    border-color: #92e66f;
+    box-shadow: 0 0 0 2px rgba(146, 230, 111, 0.3);
+}
+
+.inputField:disabled {
+    background-color: #4a4a4a;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.textareaField {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.errorText {
+    color: #ff4d4f;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.helpText {
+    color: #999;
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+/* Botones de acción del modal */
+.modalActions {
+    grid-area: actions;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #444;
+    flex-shrink: 0;
+}
+
+.saveButton,
+.cancelButton {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.saveButton {
+    background-color: #92e66f;
+    color: #1e1e1e;
+}
+
+.saveButton:hover {
+    background-color: #7bd35a;
+    transform: translateY(-1px);
+}
+
+.cancelButton {
+    background-color: #555;
+    color: #e0e0e0;
+}
+
+.cancelButton:hover {
+    background-color: #666;
+    transform: translateY(-1px);
+}
+
+.buttonIcon {
+    font-size: 1.1em;
+}
+
+/* Notificaciones dentro del modal */
+.modalNotification {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.modalNotification.error {
+    background-color: #5e2626;
+    color: #ff4d4f;
+    border-color: #f44336;
+}
+
+.modalNotification .notificationIcon {
+    font-size: 1.2em;
+}
+
+/* Media Queries para Responsividad */
+@media (max-width: 768px) {
+    .modalContent {
+        padding: 20px;
+        margin: 10px;
+        max-width: 100%;
+        max-height: 95vh;
+    }
+
+    .modalHeader h2 {
+        font-size: 1.5em;
+    }
+
+    .closeButton {
+        font-size: 1.2em;
+    }
+
+    .form {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "photoSection"
+            "nombreGroup"
+            "apellidoGroup"
+            "contactoGroup"
+            "emailGroup"
+            "direccionGroup"
+            "usernameGroup"
+            "passwordGroup"
+            "actions";
+        gap: 15px;
+    }
+
+    .formGroupFullWidth {
+        grid-column: auto;
+    }
+
+    .photoUploadSection {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        gap: 25px;
+        padding: 25px;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .imagePreviewContainer {
+        grid-column: 1;
+        grid-row: 1;
+        min-height: 220px;
+        width: 200px;
+        margin: 0 auto;
+    }
+
+    .userFullName {
+        font-size: 1em;
+        margin-top: 8px;
+    }
+
+    .photoInputContainer {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .photoIcon {
+        font-size: 1.4em;
+    }
+
+    .imagePreview {
+        width: 150px;
+        height: 150px;
+    }
+
+    .modalActions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .saveButton,
+    .cancelButton {
+        width: 100%;
+        justify-content: center;
+    }
+}

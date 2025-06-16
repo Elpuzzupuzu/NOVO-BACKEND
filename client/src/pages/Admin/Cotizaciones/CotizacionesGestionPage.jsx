@@ -10,6 +10,7 @@ import {
 import { selectUser } from '../../../features/auth/authSlice';
 import CotizacionDetailModal from './CotizacionDetailModal';
 import styles from './CotizacionesGestionPage.module.css';
+import Footer from '../../../components/Footer/Footer'
 
 import useClients from '../../../hooks/useClients'; 
 // >>> IMPORTA EL NUEVO COMPONENTE SearchInput
@@ -267,6 +268,7 @@ const CotizacionesGestionPage = () => {
                     cotizacion={selectedCotizacion}
                 />
             )}
+            <Footer/>
         </div>
     );
 };

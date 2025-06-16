@@ -81,12 +81,19 @@
 
 .form {
     display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas por defecto */
     gap: 15px; /* Espacio entre los grupos de formulario */
 }
 
+/* Clases para controlar el ancho de los campos en la grilla */
 .formGroup {
-    margin-bottom: 10px;
+    /* Por defecto, los formGroup ocuparán la mitad del ancho */
 }
+
+.formGroupFullWidth {
+    grid-column: 1 / -1; /* Ocupa todas las columnas disponibles (para username, password) */
+}
+
 
 .formGroup label {
     display: block;
@@ -137,8 +144,10 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 10px;
-    color: #c0c0c0;
+    /* Ajusta su posición en la grilla si es necesario, o déjalo flotar */
+    /* Por defecto en un layout de 2 columnas, puede que necesites que ocupe 1 columna */
+    grid-column: span 1; /* Esto lo hace ocupar 1 columna */
+    align-self: end; /* Alinea al final de su fila en la cuadrícula */
 }
 
 .checkboxField {
@@ -150,6 +159,7 @@
 
 /* Botones de acción del modal (Guardar, Cancelar) */
 .modalActions {
+    grid-column: 1 / -1; /* Hace que los botones ocupen todo el ancho de la rejilla */
     display: flex;
     justify-content: flex-end;
     gap: 15px;
@@ -205,12 +215,10 @@
     font-weight: 500;
     text-align: center;
     border: 1px solid transparent;
-}
-
-.modalNotification.success {
-    background-color: #305e26;
-    color: #92e66f;
-    border-color: #92e66f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 .modalNotification.error {
@@ -219,11 +227,15 @@
     border-color: #f44336;
 }
 
+.modalNotification .notificationIcon {
+    font-size: 1.2em;
+}
+
 /* Media Queries para Responsividad */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .modalContent {
         padding: 20px;
-        margin: 20px; /* Margen para que no se pegue a los bordes */
+        margin: 20px;
     }
 
     .modalHeader h2 {
@@ -236,7 +248,16 @@
 
     .form {
         grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
-        gap: 10px;
+        gap: 15px;
+    }
+
+    .formGroupFullWidth {
+        grid-column: auto; /* Deshace el full width en móvil */
+    }
+
+    .formGroupCheckbox {
+        grid-column: auto; /* Deshace el span en móvil */
+        justify-content: flex-start; /* Alinea a la izquierda en móvil */
     }
 
     .modalActions {

@@ -6,7 +6,7 @@ import EmpleadoModel from '../models/Empleado.model.js';
 class EmpleadoService {
     /**
      * Crea un nuevo empleado, hasheando la contraseña y validando unicidad.
-     * @param {object} empleadoData - Datos del empleado a crear (nombre, username, password, [contacto], [role], etc.).
+     * @param {object} empleadoData - Datos del empleado a crear (nombre, username, password, [contacto], [role], [foto_perfil_url], etc.).
      * @returns {Promise<object>} El objeto del empleado creado (sin la contraseña hasheada).
      * @throws {Error} Si el contacto o username del empleado ya existen o hay un error.
      */
@@ -55,7 +55,7 @@ class EmpleadoService {
     /**
      * Actualiza los datos de un empleado existente.
      * @param {string} id_empleado - El ID del empleado a actualizar.
-     * @param {object} updateData - Objeto con los datos a actualizar.
+     * @param {object} updateData - Objeto con los datos a actualizar, incluyendo opcionalmente `foto_perfil_url`.
      * @returns {Promise<object>} El objeto del empleado actualizado (sin contraseña hasheada si se actualizó).
      * @throws {Error} Si el empleado no existe, o si el nuevo contacto/username ya está en uso.
      */

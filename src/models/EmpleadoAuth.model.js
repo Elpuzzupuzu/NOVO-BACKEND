@@ -13,8 +13,8 @@ class EmpleadoAuth {
      * @returns {Promise<object|null>} El objeto del empleado si se encuentra, o null si no.
      */
     static async findByUsername(username) {
-        // Se necesita la contraseña y el rol para el proceso de autenticación/autorización
-        const query = 'SELECT id_empleado, nombre, apellido, username, password, role FROM empleados WHERE username = ?';
+        // --- CAMBIO AQUÍ: Añadir foto_perfil_url a la consulta SELECT ---
+        const query = 'SELECT id_empleado, nombre, apellido, username, password, role, foto_perfil_url FROM empleados WHERE username = ?';
         try {
             const [rows] = await pool.query(query, [username]);
             return rows[0] || null;

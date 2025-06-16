@@ -1,4 +1,5 @@
 // src/controllers/Cliente.controller.js
+// src/controllers/Cliente.controller.js
 
 // Importa el servicio Cliente para acceder a la lógica de negocio
 import ClienteService from '../services/Cliente.service.js';
@@ -31,10 +32,8 @@ class ClienteController {
         }
     }
 
-    // ELIMINADO: El método loginCliente ya no está aquí. Se movió a AuthController.
-
     /**
-     * Maneja la obtención de todos los clientes.
+     * Maneja la obtención de todos los clientes (método original).
      * @param {object} req - Objeto de solicitud.
      * @param {object} res - Objeto de respuesta.
      */
@@ -45,6 +44,33 @@ class ClienteController {
         } catch (error) {
             console.error('Error en ClienteController.getAllClientes:', error);
             res.status(500).json({ message: 'Error interno del servidor al obtener clientes.', error: error.message });
+        }
+    }
+
+    /**
+     * Maneja la obtención de clientes con filtros, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * Extrae `searchTerm`, `page`, `limit` de los query parameters.
+     * @param {object} req - Objeto de solicitud (contiene req.query).
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getPaginatedAndFilteredClientesController(req, res) {
+        try {
+            const { searchTerm, page, limit } = req.query;
+
+            const filters = {};
+            if (searchTerm) {
+                filters.searchTerm = searchTerm;
+            }
+
+            const pageNum = parseInt(page, 10) || 1;
+            const limitNum = parseInt(limit, 10) || 10;
+
+            const clientes = await ClienteService.getPaginatedAndFilteredClientes(filters, pageNum, limitNum);
+            res.status(200).json(clientes); // clientes ya contiene data y pagination
+        } catch (error) {
+            console.error('Error en ClienteController.getPaginatedAndFilteredClientesController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener clientes (paginados/filtrados).', error: error.message });
         }
     }
 

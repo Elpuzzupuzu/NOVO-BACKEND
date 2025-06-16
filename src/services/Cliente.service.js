@@ -11,7 +11,7 @@ dotenv.config(); // Carga las variables de entorno
 class ClienteService {
     /**
      * Crea un nuevo cliente. Incluye lógica de negocio como verificar si el contacto o username ya existen.
-     * @param {object} clienteData - Datos del cliente (nombre, apellido, contacto, email, direccion, username, password, [role]).
+     * @param {object} clienteData - Datos del cliente (nombre, apellido, contacto, email, direccion, username, password, [role], [foto_perfil_url]).
      * @returns {Promise<object>} El cliente creado (sin la contraseña hasheada).
      * @throws {Error} Si el contacto o username ya están registrados o hay un error al crear el cliente.
      */
@@ -66,11 +66,24 @@ class ClienteService {
     }
 
     /**
-     * Obtiene todos los clientes.
+     * Obtiene todos los clientes (método original sin paginación/búsqueda).
      * @returns {Promise<Array<object>>} Un array de clientes (sin contraseñas).
      */
     async getAllClientes() {
         const clientes = await ClienteModel.findAll();
+        return clientes;
+    }
+
+    /**
+     * Obtiene clientes con opciones de filtrado, búsqueda y paginación.
+     * Este es el NUEVO método para la funcionalidad extendida.
+     * @param {object} filters - Objeto con los filtros a aplicar (ej: { searchTerm: 'juan', email: 'test@example.com' }).
+     * @param {number} page - El número de página actual.
+     * @param {number} limit - La cantidad de clientes por página.
+     * @returns {Promise<object>} Un objeto que contiene 'data' (array de clientes) y 'pagination' (metadatos de paginación).
+     */
+    async getPaginatedAndFilteredClientes(filters, page, limit) {
+        const clientes = await ClienteModel.findPaginatedAndFiltered(filters, page, limit);
         return clientes;
     }
 

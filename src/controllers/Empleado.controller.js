@@ -21,7 +21,8 @@ class EmpleadoController {
             if (empleadoData.role && !['empleado', 'gerente', 'admin'].includes(empleadoData.role)) {
                 return res.status(400).json({ message: 'El rol del empleado no es válido.' });
             }
-
+            // `foto_perfil_url` es opcional, no necesita validación aquí de presencia.
+            // Si la aplicación requiere validación de formato URL, se haría aquí o en el servicio.
 
             const newEmpleado = await EmpleadoService.createEmpleado(empleadoData);
             res.status(201).json({ message: 'Empleado creado exitosamente.', empleado: newEmpleado });
@@ -123,6 +124,8 @@ class EmpleadoController {
             if (updateData.role && !['empleado', 'gerente', 'admin'].includes(updateData.role)) {
                 return res.status(400).json({ message: 'El rol del empleado no es válido para la actualización.' });
             }
+            // `foto_perfil_url` puede ser parte de `updateData`, no necesita validación explícita aquí
+            // de la misma manera que `nombre` o `contacto` ya que es opcional.
 
             const updatedEmpleado = await EmpleadoService.updateEmpleado(id_empleado, updateData);
             res.status(200).json({ message: 'Empleado actualizado exitosamente.', empleado: updatedEmpleado });
