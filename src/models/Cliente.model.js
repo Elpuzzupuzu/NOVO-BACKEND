@@ -199,12 +199,7 @@ class Cliente {
         values.push(limit, offset);
 
         // --- Debugging (opcional, puedes quitarlo en producción) ---
-        console.log("--- Debugging Cliente.findPaginatedAndFiltered (Backend) ---");
-        console.log("Final Data Query:", query);
-        console.log("Values for Data Query:", values);
-        console.log("Final Count Query:", countQuery);
-        console.log("Values for Count Query:", countValues);
-        console.log("--- End Debugging ---");
+      
 
         try {
             const [rows] = await pool.query(query, values);

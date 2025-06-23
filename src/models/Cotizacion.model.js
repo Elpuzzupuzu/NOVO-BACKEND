@@ -199,12 +199,7 @@ class Cotizacion {
             throw new Error('No se pudieron recuperar las cotizaciones.');
         }
     }
-
-
-
-
-
-
+c
 
     
     /**

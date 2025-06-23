@@ -152,10 +152,6 @@ async updateCotizacion(id_cotizacion, updateData) {
 
 
 
-
-
-
-
     /**
      * Deletes a quote.
      * @param {string} id_cotizacion - ID of the quote to delete.

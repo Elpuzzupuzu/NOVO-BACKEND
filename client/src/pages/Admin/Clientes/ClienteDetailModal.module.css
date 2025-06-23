@@ -137,6 +137,7 @@
     border: 3px dashed #555;
     transition: all 0.3s ease;
     grid-column: 1;
+    position: relative; /* Para posicionar el spinner */
 }
 
 .imagePreviewContainer:hover {
@@ -186,12 +187,18 @@
     color: #7bd35a;
 }
 
-/* Placeholder cuando no hay imagen */
-.photoUploadSection:not(:has(.imagePreview)) .imagePreviewContainer::after {
-    content: '👤';
-    font-size: 5.5em;
-    opacity: 0.5;
-    color: #777;
+/* Placeholder cuando no hay imagen o se está cargando/redimensionando */
+.imagePreview[src*="placehold.co"] {
+    /* Estilos específicos para el placeholder */
+    background-color: #4a4a4a;
+    border: 5px solid #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #bbb; /* Color del texto del placeholder */
+    font-size: 0.8em; /* Ajusta si el texto es muy grande */
+    text-align: center;
+    font-style: italic;
 }
 
 /* Contenedor del input y label a la derecha */
@@ -217,26 +224,66 @@
     font-size: 1.4em;
 }
 
-/* Input de URL mejorado */
-.photoUploadSection .inputField {
-    background: #3a3a3a;
-    border: 1px solid #555;
+/* Estilo para el input de tipo file (oculto) */
+.fileInput {
+    display: none;
+}
+
+/* Estilo para el label que actúa como botón de "seleccionar archivo" */
+.photoUploadLabel {
+    background-color: #5a5a5a;
+    color: #e0e0e0;
+    padding: 12px 20px;
     border-radius: 6px;
-    padding: 14px 16px;
-    font-size: 1em;
-    transition: all 0.3s ease;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    text-align: center;
+    justify-content: center;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.photoUploadSection .inputField:focus {
-    border-color: #92e66f;
-    background: #404040;
-    box-shadow: 0 0 0 2px rgba(146, 230, 111, 0.2);
+.photoUploadLabel:hover:not([disabled]) {
+    background-color: #6a6a6a;
+    transform: translateY(-1px);
 }
 
-.photoUploadSection .inputField::placeholder {
-    color: #888;
-    font-style: italic;
+.photoUploadLabel[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: #4a4a4a;
 }
+
+
+/* Botón para borrar foto */
+.clearPhotoButton {
+    background-color: #d32f2f;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
+}
+
+.clearPhotoButton:hover:not([disabled]) {
+    background-color: #c62828;
+    transform: translateY(-1px);
+}
+
+.clearPhotoButton[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: #8d3e3e;
+}
+
 
 /* === FIN SECCIÓN DE FOTO === */
 
@@ -334,9 +381,15 @@
     color: #1e1e1e;
 }
 
-.saveButton:hover {
+.saveButton:hover:not([disabled]) {
     background-color: #7bd35a;
     transform: translateY(-1px);
+}
+
+.saveButton[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: #5d8e48; /* Color tenue para deshabilitado */
 }
 
 .cancelButton {
@@ -344,9 +397,15 @@
     color: #e0e0e0;
 }
 
-.cancelButton:hover {
+.cancelButton:hover:not([disabled]) {
     background-color: #666;
     transform: translateY(-1px);
+}
+
+.cancelButton[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: #4a4a4a;
 }
 
 .buttonIcon {
@@ -376,6 +435,33 @@
 .modalNotification .notificationIcon {
     font-size: 1.2em;
 }
+
+/* Spinner de redimensionamiento */
+.resizingSpinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 180px; /* Igual que el tamaño de la imagen de previsualización */
+    width: 180px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #92e66f;
+    font-size: 1em;
+    gap: 10px;
+    position: absolute; /* Para centrar sobre la imagen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    border: 5px solid #92e66f; /* Mismo borde que la imagen */
+}
+
+.resizingSpinner p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
 
 /* Media Queries para Responsividad */
 @media (max-width: 768px) {
@@ -445,6 +531,11 @@
     }
 
     .imagePreview {
+        width: 150px;
+        height: 150px;
+    }
+
+    .resizingSpinner {
         width: 150px;
         height: 150px;
     }
