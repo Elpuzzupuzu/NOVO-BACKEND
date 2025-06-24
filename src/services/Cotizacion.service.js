@@ -29,7 +29,7 @@ class CotizacionService {
         }
 
         // Calculate anticipo_requerido if not provided (50% of total_estimado)
-        if (cotizacionData.total_estimado && !cotizacionData.anticipo_requerido) {
+        if (cotizacionData.total_estimado && cotizacionData.anticipo_requerido === undefined) {
             cotizacionData.anticipo_requerido = cotizacionData.total_estimado * 0.50;
         } else if (!cotizacionData.total_estimado || cotizacionData.anticipo_requerido === undefined) {
              throw new Error('total_estimado and anticipo_requerido (or total_estimado to calculate it) are required.');
@@ -44,7 +44,7 @@ class CotizacionService {
      * @param {object} filters - Object with filters for the search.
      * @returns {Promise<Array<object>>} An array of quote objects.
      */
-        async getAllCotizaciones(filters, page, limit) {
+    async getAllCotizaciones(filters, page, limit) {
         // Pasa los parámetros de paginación al modelo
         const { data, pagination } = await CotizacionModel.findAll(filters, page, limit);
         return { data, pagination };
@@ -72,85 +72,68 @@ class CotizacionService {
      * @returns {Promise<object>} The updated quote object.
      * @throws {Error} If the quote does not exist, invalid data, or error during update.
      */
-    
-    
-    
-    // backend/src/services/Cotizacion.service.js
-
-// backend/src/services/Cotizacion.service.js
-
-// backend/src/services/Cotizacion.service.js
-
-async updateCotizacion(id_cotizacion, updateData) {
-    const existingCotizacion = await CotizacionModel.findById(id_cotizacion);
-    if (!existingCotizacion) {
-        throw new Error('Quote not found for update.');
-    }
-
-    // --- IMPORTANTE: ELIMINAR fecha_actualizacion del payload del frontend si existe ---
-    // Generalmente, fecha_actualizacion debe ser gestionada por el backend.
-    if (updateData.fecha_actualizacion !== undefined) {
-        delete updateData.fecha_actualizacion;
-    }
-
-    // --- Lógica de negocio para anticipo ---
-    if (updateData.monto_anticipo_pagado !== undefined && updateData.monto_anticipo_pagado > existingCotizacion.monto_anticipo_pagado) {
-        if (updateData.monto_anticipo_pagado > existingCotizacion.anticipo_requerido) {
-            throw new Error('Paid deposit amount cannot exceed the required deposit.');
+    async updateCotizacion(id_cotizacion, updateData) {
+        const existingCotizacion = await CotizacionModel.findById(id_cotizacion);
+        if (!existingCotizacion) {
+            throw new Error('Quote not found for update.');
         }
 
-        if (updateData.monto_anticipo_pagado >= existingCotizacion.anticipo_requerido && existingCotizacion.estado === 'Pendiente de Anticipo') {
-            updateData.estado = 'Anticipo Pagado - Agendado';
+        // Eliminar fecha_actualizacion del payload si existe, debe ser gestionada por el backend.
+        if (updateData.fecha_actualizacion !== undefined) {
+            delete updateData.fecha_actualizacion;
+        }
 
-            // Si no hay fecha de pago o no es válida, usa la fecha actual del servidor.
-            if (!updateData.fecha_pago_anticipo || isNaN(new Date(updateData.fecha_pago_anticipo).getTime())) {
-                updateData.fecha_pago_anticipo = new Date(); // <--- Pasa directamente el objeto Date
-            } else {
-                 const date = new Date(updateData.fecha_pago_anticipo);
-                 if (!isNaN(date.getTime())) {
-                    updateData.fecha_pago_anticipo = date; // <--- Pasa directamente el objeto Date
-                 } else {
-                    updateData.fecha_pago_anticipo = null;
-                 }
+        // Lógica de negocio para anticipo
+        if (updateData.monto_anticipo_pagado !== undefined && updateData.monto_anticipo_pagado > existingCotizacion.monto_anticipo_pagado) {
+            if (updateData.monto_anticipo_pagado > existingCotizacion.anticipo_requerido) {
+                throw new Error('Paid deposit amount cannot exceed the required deposit.');
             }
-        }
-    }
 
-    // --- PRE-PROCESAMIENTO DE TODAS LAS FECHAS ANTES DE ENVIARLAS AL MODELO ---
-    // Todas son TIMESTAMP, por lo que pasar objetos Date es lo mejor.
-    const timestampFields = ['fecha_agendada', 'fecha_solicitud', 'fecha_pago_anticipo']; 
-    
-    timestampFields.forEach(field => {
-        if (updateData[field] !== undefined) { 
-            if (updateData[field] === null || updateData[field] === '') {
-                updateData[field] = null; 
-            } else {
-                const date = new Date(updateData[field]); 
-                if (!isNaN(date.getTime())) { 
-                    updateData[field] = date; // <--- ¡Pasa el OBJETO Date directamente!
+            if (updateData.monto_anticipo_pagado >= existingCotizacion.anticipo_requerido && existingCotizacion.estado === 'Pendiente de Anticipo') {
+                updateData.estado = 'Anticipo Pagado - Agendado';
+
+                if (!updateData.fecha_pago_anticipo || isNaN(new Date(updateData.fecha_pago_anticipo).getTime())) {
+                    updateData.fecha_pago_anticipo = new Date();
                 } else {
-                    updateData[field] = null; 
+                    const date = new Date(updateData.fecha_pago_anticipo);
+                    if (!isNaN(date.getTime())) {
+                        updateData.fecha_pago_anticipo = date;
+                    } else {
+                        updateData.fecha_pago_anticipo = null;
+                    }
                 }
             }
         }
-    });
 
-    // --- ESTABLECER fecha_actualizacion AQUÍ EN EL BACKEND ---
-    // Esto asegura que siempre se actualice a la hora del servidor y en el formato correcto para TIMESTAMP.
-    updateData.fecha_actualizacion = new Date(); // <--- Objeto Date para TIMESTAMP
+        // PRE-PROCESAMIENTO DE TODAS LAS FECHAS ANTES DE ENVIARLAS AL MODELO
+        const timestampFields = ['fecha_agendada', 'fecha_solicitud', 'fecha_pago_anticipo'];
+        
+        timestampFields.forEach(field => {
+            if (updateData[field] !== undefined) {
+                if (updateData[field] === null || updateData[field] === '') {
+                    updateData[field] = null;
+                } else {
+                    const date = new Date(updateData[field]);
+                    if (!isNaN(date.getTime())) {
+                        updateData[field] = date;
+                    } else {
+                        updateData[field] = null;
+                    }
+                }
+            }
+        });
 
-    console.log('Datos finales a enviar al modelo:', updateData); 
+        // ESTABLECER fecha_actualizacion AQUÍ EN EL BACKEND
+        updateData.fecha_actualizacion = new Date();
 
-    const success = await CotizacionModel.update(id_cotizacion, updateData);
-    if (!success) {
-        throw new Error('Could not update quote.');
+        const success = await CotizacionModel.update(id_cotizacion, updateData);
+        if (!success) {
+            throw new Error('Could not update quote.');
+        }
+
+        const updatedCotizacion = await CotizacionModel.findById(id_cotizacion);
+        return updatedCotizacion;
     }
-
-    const updatedCotizacion = await CotizacionModel.findById(id_cotizacion);
-    return updatedCotizacion;
-}
-
-
 
     /**
      * Deletes a quote.
@@ -164,6 +147,53 @@ async updateCotizacion(id_cotizacion, updateData) {
             throw new Error('Quote not found for deletion.');
         }
         return true;
+    }
+
+    // =========================================================
+    // NUEVOS MÉTODOS PARA EL DASHBOARD
+    // =========================================================
+
+    /**
+     * Obtiene el número total de cotizaciones registradas.
+     * @returns {Promise<number>} El número total de cotizaciones.
+     */
+    async getTotalCotizaciones() {
+        try {
+            const total = await CotizacionModel.countAll();
+            return total;
+        } catch (error) {
+            console.error('Error en CotizacionService.getTotalCotizaciones:', error);
+            throw new Error('No se pudo obtener el total de cotizaciones.');
+        }
+    }
+
+    /**
+     * Obtiene la suma de los totales estimados de cotizaciones por mes para un año dado.
+     * @param {number} year - El año para el cual se desea obtener los datos.
+     * @param {Array<string>} [estadosValidos] - Opcional. Un array de estados válidos para incluir en la suma (ej: ['Completada', 'Anticipo Pagado - Agendado']).
+     * @returns {Promise<Array<object>>} Un array de objetos con el formato { month: number, totalAmount: number }.
+     */
+    async getIngresosEstimadosPorMes(year, estadosValidos) { // estadosValidos es opcional, el modelo tiene un valor por defecto
+        try {
+            const data = await CotizacionModel.getAggregatedTotalByMonth(year, estadosValidos);
+            // El modelo ya rellena los meses con 0 si no hay datos, pero el servicio puede asegurar los 12 meses
+            const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+                month: i + 1,
+                totalAmount: 0.00,
+            }));
+
+            data.forEach(item => {
+                const monthIndex = monthlyData.findIndex(m => m.month === item.month);
+                if (monthIndex !== -1) {
+                    monthlyData[monthIndex].totalAmount = parseFloat(item.totalAmount);
+                }
+            });
+
+            return monthlyData;
+        } catch (error) {
+            console.error('Error en CotizacionService.getIngresosEstimadosPorMes:', error);
+            throw new Error('No se pudo obtener los ingresos estimados por mes.');
+        }
     }
 }
 

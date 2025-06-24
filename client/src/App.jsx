@@ -1,4 +1,4 @@
-// client/src/App.jsx (¡Este es el archivo principal del Router!)
+// client/src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -23,16 +23,16 @@ import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestio
 import MaterialesPage from './pages/Admin/Materiales/MaterialPage';
 
 // IMPORTA EL COMPONENTE DE GESTIÓN DE EMPLEADOS
-// Se corrige la ruta si era incorrecta, asumiendo EmpleadosGestionPage
 import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage';
-
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE CLIENTES
 import ClientesPage from './pages/Admin/Clientes/ClientesPage';
 
+// IMPORTA EL COMPONENTE DASHBOARD PRINCIPAL
 
 // Importa el selector de usuario desde tu slice de autenticación
 import { selectUser, selectIsAuthenticated } from './features/auth/authSlice';
+import Dashboard from './pages/dashboard/DashBoard';
 
 
 // Componente para proteger rutas (ProtectedRoute)
@@ -118,10 +118,8 @@ function App() {
                     path="/admin/dashboard"
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'empleado', 'gerente']}>
-                            <div style={{ padding: '20px', backgroundColor: '#1a1a1a', minHeight: 'calc(100vh - 60px)', color: '#fff' }}>
-                                <h2>Dashboard de Administración</h2>
-                                <p>Bienvenido, {user?.nombre || user?.username}. Tu rol es: {user?.role}.</p>
-                            </div>
+                            {/* ¡Aquí se renderiza el componente Dashboard! */}
+                            <Dashboard/> 
                         </ProtectedRoute>
                     }
                 />
@@ -186,9 +184,6 @@ function App() {
                     }
                 />
 
-                {/* Gestión de Usuarios (solo para administradores) */}
-                {/* NOTA: Había una duplicación de ruta /admin/usuarios, esta es la más restrictiva. */}
-             
                 {/* Gestión de Proyectos */}
                 <Route
                     path="/admin/proyectos"

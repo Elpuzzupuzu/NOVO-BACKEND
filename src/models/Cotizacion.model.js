@@ -105,7 +105,7 @@ class Cotizacion {
             JOIN
                 clientes cl ON c.cliente_id = cl.id_cliente
             LEFT JOIN
-                materiales m ON c.material_base_id = m.id_material -- <-- REVISADO: Se mantiene id_material aquí
+                materiales m ON c.material_base_id = m.id_material
         `;
         let countQuery = 'SELECT COUNT(c.id_cotizacion) as total FROM cotizaciones c JOIN clientes cl ON c.cliente_id = cl.id_cliente';
 
@@ -127,26 +127,22 @@ class Cotizacion {
             countValues.push(filters.estado);
         }
 
-        // >>> INICIO DEL CAMBIO CLAVE: Lógica refinada para searchTerm
+        // Lógica refinada para searchTerm
         if (filters.searchTerm) {
-            // Limpia y divide el término de búsqueda por uno o más espacios
             const cleanedSearchTerm = filters.searchTerm.trim();
             const searchTermsArray = cleanedSearchTerm.split(/\s+/).filter(s => s.length > 0);
 
             if (searchTermsArray.length > 0) {
-                // Si hay múltiples palabras (ej. "yael ruiz")
                 if (searchTermsArray.length > 1) {
                     const multiWordConditions = [];
                     searchTermsArray.forEach(term => {
                         const termLike = `%${term}%`;
-                        multiWordConditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ?)'); // Solo buscar en nombre/apellido para varias palabras
+                        multiWordConditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ?)');
                         values.push(termLike, termLike);
                         countValues.push(termLike, termLike);
                     });
-                    // Combina las condiciones de varias palabras con AND
                     conditions.push(`(${multiWordConditions.join(' AND ')})`);
                 } else {
-                    // Si hay solo una palabra (ej. "yael", "ruiz", o un ID parcial)
                     const termLike = `%${searchTermsArray[0]}%`;
                     conditions.push('(cl.nombre LIKE ? OR cl.apellido LIKE ? OR c.id_cotizacion LIKE ? OR c.cliente_id LIKE ?)');
                     values.push(termLike, termLike, termLike, termLike);
@@ -154,7 +150,6 @@ class Cotizacion {
                 }
             }
         }
-        // >>> FIN DEL CAMBIO CLAVE
 
         if (conditions.length > 0) {
             const whereClause = ' WHERE ' + conditions.join(' AND ');
@@ -167,14 +162,6 @@ class Cotizacion {
         const offset = (page - 1) * limit;
         query += ` LIMIT ? OFFSET ?`;
         values.push(limit, offset);
-
-        // --- ADD THESE CONSOLE.LOGS ---
-        console.log("--- Debugging Cotizacion.findAll (Backend) ---");
-        console.log("Final Data Query:", query);
-        console.log("Values for Data Query:", values);
-        console.log("Final Count Query:", countQuery);
-        console.log("Values for Count Query:", countValues);
-        console.log("--- End Debugging ---");
 
         try {
             const [rows] = await pool.query(query, values);
@@ -199,9 +186,7 @@ class Cotizacion {
             throw new Error('No se pudieron recuperar las cotizaciones.');
         }
     }
-c
 
-    
     /**
      * Updates an existing quote's data.
      * @param {string} id_cotizacion - The ID of the quote to update.
@@ -215,7 +200,7 @@ c
         for (const key in updateData) {
             if (updateData.hasOwnProperty(key) && key !== 'id_cotizacion') {
                 // Validation for 'estado' field if it's an ENUM
-                if (key === 'estado' && !['Pendiente de Anticipo', 'Anticipo Pagado - Agendado', 'Anticipo Pagado - En Cola', 'Rechazada', 'Completada', 'Cancelada'].includes(updateData[key])) { // Added Cancelada
+                if (key === 'estado' && !['Pendiente de Anticipo', 'Anticipo Pagado - Agendado', 'Anticipo Pagado - En Cola', 'Rechazada', 'Completada', 'Cancelada'].includes(updateData[key])) {
                     throw new Error(`The status '${updateData[key]}' is not valid.`);
                 }
                 fields.push(`${key} = ?`);
@@ -252,6 +237,65 @@ c
         } catch (error) {
             console.error('Error deleting quote:', error.message);
             throw new Error(`Could not delete quote: ${error.message}`);
+        }
+    }
+
+    // =========================================================
+    // NUEVOS MÉTODOS PARA EL DASHBOARD
+    // =========================================================
+
+    /**
+     * Obtiene el número total de cotizaciones registradas.
+     * @returns {Promise<number>} El número total de cotizaciones.
+     */
+    static async countAll() {
+        const query = 'SELECT COUNT(*) AS total FROM cotizaciones;';
+        try {
+            const [rows] = await pool.query(query);
+            return rows[0].total;
+        } catch (error) {
+            console.error('Error in CotizacionModel.countAll:', error.message);
+            throw new Error(`Could not count all quotes: ${error.message}`);
+        }
+    }
+
+    /**
+     * Obtiene la suma de los totales estimados de cotizaciones por mes para un año dado.
+     * Considera solo cotizaciones con estados que implican progreso o finalización.
+     * @param {number} year - El año para el cual se desea obtener los datos.
+     * @param {Array<string>} [estadosValidos] - Opcional. Un array de estados válidos para incluir en la suma.
+     * @returns {Promise<Array<object>>} Un array de objetos con el formato { month: number, totalAmount: number }.
+     */
+    static async getAggregatedTotalByMonth(year, estadosValidos = ['Anticipo Pagado - Agendado', 'Anticipo Pagado - En Cola', 'Completada']) {
+        let query = `
+            SELECT
+                MONTH(fecha_solicitud) AS month,
+                SUM(total_estimado) AS totalAmount
+            FROM
+                cotizaciones
+            WHERE
+                YEAR(fecha_solicitud) = ?
+        `;
+        const values = [year];
+
+        if (estadosValidos && estadosValidos.length > 0) {
+            query += ` AND estado IN (${estadosValidos.map(() => '?').join(', ')})`;
+            values.push(...estadosValidos);
+        }
+
+        query += `
+            GROUP BY
+                MONTH(fecha_solicitud)
+            ORDER BY
+                month;
+        `;
+
+        try {
+            const [rows] = await pool.query(query, values);
+            return rows;
+        } catch (error) {
+            console.error('Error in CotizacionModel.getAggregatedTotalByMonth:', error.message);
+            throw new Error(`Could not get aggregated totals by month: ${error.message}`);
         }
     }
 }

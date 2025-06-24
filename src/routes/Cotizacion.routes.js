@@ -7,27 +7,34 @@ import authorizeRoles from '../middlewares/authorizeRoles.js';
 
 const router = Router();
 
-// Rutas de cotizaciones protegidas por autenticación y autorización.
+// =========================================================
+// RUTAS PARA EL DASHBOARD (más específicas, deben ir PRIMERO)
+// =========================================================
+
+// GET /NOVO/cotizaciones/total - Obtener el número total de cotizaciones
+router.get('/total', authenticateToken, authorizeRoles('gerente', 'admin'), CotizacionController.getTotalCotizacionesController);
+
+// GET /NOVO/cotizaciones/ingresos-por-mes?year=YYYY&estados=estado1,estado2 - Obtener ingresos estimados por mes
+router.get('/ingresos-por-mes', authenticateToken, authorizeRoles('gerente', 'admin'), CotizacionController.getIngresosEstimadosPorMesController);
+
+// =========================================================
+// OTRAS RUTAS (más generales o con parámetros)
+// =========================================================
 
 // POST /NOVO/cotizaciones - Crear una nueva cotización
-// Solo empleados, gerentes, o admins pueden crear cotizaciones
 router.post('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin','cliente'), CotizacionController.createCotizacion);
 
-// GET /NOVO/cotizaciones - Obtener todas las cotizaciones (con filtros)
-// Solo gerentes y admins pueden ver TODAS las cotizaciones
+// GET /NOVO/cotizaciones - Obtener todas las cotizaciones (con filtros y paginación)
 router.get('/', authenticateToken, authorizeRoles('gerente', 'admin'), CotizacionController.getAllCotizaciones);
 
 // GET /NOVO/cotizaciones/:id_cotizacion - Obtener una cotización por su ID
-// Los clientes pueden ver sus propias cotizaciones, gerentes y admins pueden ver cualquiera.
-// La lógica para "solo su propia cotización" debe ir en el controlador/servicio si se desea restringir
+// Esta ruta debe ir DESPUÉS de las rutas fijas para evitar conflictos.
 router.get('/:id_cotizacion', authenticateToken, authorizeRoles('cliente', 'empleado', 'gerente', 'admin'), CotizacionController.getCotizacionById);
 
 // PUT /NOVO/cotizaciones/:id_cotizacion - Actualizar una cotización por su ID
-// Solo gerentes y admins pueden actualizar cotizaciones (o quizás empleados con ciertos permisos)
 router.put('/:id_cotizacion', authenticateToken, authorizeRoles('gerente', 'admin'), CotizacionController.updateCotizacion);
 
 // DELETE /NOVO/cotizaciones/:id_cotizacion - Eliminar una cotización por su ID
-// La eliminación de cotizaciones es una operación muy sensible, limitar a 'admin'
 router.delete('/:id_cotizacion', authenticateToken, authorizeRoles('admin'), CotizacionController.deleteCotizacion);
 
 export default router;

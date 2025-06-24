@@ -27,7 +27,7 @@ class CotizacionController {
             if (error.message.includes('Client not found') || error.message.includes('Base material not found')) {
                 return res.status(404).json({ message: error.message });
             }
-            if (error.message.includes('required')) { // For calculated fields error
+            if (error.message.includes('required')) {
                 return res.status(400).json({ message: error.message });
             }
             res.status(500).json({ message: 'Internal server error while creating quote.', error: error.message });
@@ -40,15 +40,13 @@ class CotizacionController {
      * @param {object} req - Request object (contains req.query for filters).
      * @param {object} res - Response object.
      */
-    
-    
-        async getAllCotizaciones(req, res) {
+    async getAllCotizaciones(req, res) {
         try {
-            const filters = req.query; // Los filtros se pasan como parámetros de consulta
+            const filters = req.query;
             
             // Extraer parámetros de paginación y convertirlos a números
-            const page = parseInt(req.query.page) || 1; // Página por defecto: 1
-            const limit = parseInt(req.query.limit) || 10; // Límite por defecto: 10
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
 
             // Eliminar 'page' y 'limit' de los filtros para no pasarlos como condiciones SQL
             delete filters.page;
@@ -62,7 +60,7 @@ class CotizacionController {
             });
         } catch (error) {
             console.error('Error en CotizacionController.getAllCotizaciones:', error);
-            res.status(500).json({ message: 'Error interno del servidor al recuperar cotizaciones.', error: error.message });
+            res.status(500).json({ message: 'Internal server error while retrieving quotes.', error: error.message });
         }
     }
 
@@ -105,7 +103,7 @@ class CotizacionController {
             if (error.message.includes('Quote not found')) {
                 return res.status(404).json({ message: error.message });
             }
-            if (error.message.includes('valid') || error.message.includes('deposit')) { // For ENUM status or deposit validation
+            if (error.message.includes('valid') || error.message.includes('deposit')) {
                 return res.status(400).json({ message: error.message });
             }
             console.error('Error in CotizacionController.updateCotizacion:', error);
@@ -129,6 +127,53 @@ class CotizacionController {
             }
             console.error('Error in CotizacionController.deleteCotizacion:', error);
             res.status(500).json({ message: 'Internal server error while deleting quote.', error: error.message });
+        }
+    }
+
+    // =========================================================
+    // NUEVOS MÉTODOS PARA EL DASHBOARD
+    // =========================================================
+
+    /**
+     * Obtiene el total de cotizaciones para el dashboard.
+     * GET /NOVO/cotizaciones/total
+     * @param {object} req - Objeto de solicitud.
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getTotalCotizacionesController(req, res) {
+        try {
+            const total = await CotizacionService.getTotalCotizaciones();
+            res.status(200).json({ totalCotizaciones: total });
+        } catch (error) {
+            console.error('Error en CotizacionController.getTotalCotizacionesController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener el total de cotizaciones.', error: error.message });
+        }
+    }
+
+    /**
+     * Obtiene los ingresos estimados por mes para un año dado.
+     * GET /NOVO/cotizaciones/ingresos-por-mes?year=YYYY&estados=estado1,estado2
+     * @param {object} req - Objeto de solicitud (contiene req.query.year y opcionalmente req.query.estados).
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getIngresosEstimadosPorMesController(req, res) {
+        try {
+            const { year, estados } = req.query;
+
+            if (!year || isNaN(parseInt(year))) {
+                return res.status(400).json({ message: 'El parámetro "year" es requerido y debe ser un número válido.' });
+            }
+
+            let estadosArray = [];
+            if (estados) {
+                estadosArray = estados.split(',').map(s => s.trim());
+            }
+
+            const data = await CotizacionService.getIngresosEstimadosPorMes(parseInt(year), estadosArray.length ? estadosArray : undefined);
+            res.status(200).json({ data });
+        } catch (error) {
+            console.error('Error en CotizacionController.getIngresosEstimadosPorMesController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener ingresos por mes.', error: error.message });
         }
     }
 }

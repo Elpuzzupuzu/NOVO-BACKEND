@@ -1,0 +1,228 @@
+/* Contenedor principal del dashboard */
+.dashboardContainer {
+    padding: 30px;
+    background-color: #1a1a1a; /* Fondo oscuro similar al de tu app */
+    color: #e0e0e0; /* Color de texto claro */
+    min-height: calc(100vh - 60px); /* Ajusta si tu header/footer tiene altura diferente */
+    font-family: 'Inter', sans-serif; /* Consistencia con tu interfaz */
+}
+
+/* Cabecera del dashboard */
+.dashboardHeader {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+}
+
+.dashboardHeader h1 {
+    font-size: 2.5em;
+    color: #92e66f; /* Color de acento verde */
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.dashboardHeader .headerIcon {
+    font-size: 1.1em;
+}
+
+.dashboardHeader p {
+    font-size: 1.1em;
+    color: #c0c0c0;
+    line-height: 1.6;
+}
+
+/*
+   Estilos específicos de las secciones (statsSection, chartsSection)
+   HAN SIDO MOVIDOS a CotizacionesDashboard.module.css
+   Aquí solo quedan los estilos para las secciones generales que NO se han modularizado aún.
+*/
+
+/* Secciones generales (estas aún están en Dashboard.jsx directamente) */
+.statsSection,
+.recentActivitySection {
+    background-color: #2c2c2c;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.statsSection h2,
+.recentActivitySection h2 {
+    font-size: 1.8em;
+    color: #92e66f;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+    font-weight: 600;
+}
+
+/* Estilos de la cuadrícula de estadísticas (para 'otherStats') */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.statCard {
+    background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+    border-radius: 10px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #444;
+}
+
+.statCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(146, 230, 111, 0.15);
+    border-color: #92e66f;
+}
+
+.statIcon {
+    font-size: 2.2em;
+    color: #92e66f;
+    background-color: rgba(146, 230, 111, 0.1);
+    padding: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    min-height: 60px;
+}
+
+.statContent h3 {
+    font-size: 1.1em;
+    color: #c0c0c0;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.statValue {
+    font-size: 2em;
+    font-weight: 700;
+    color: #e0e0e0;
+    line-height: 1;
+}
+
+.statTrend {
+    font-size: 0.9em;
+    color: #7bd35a;
+    margin-top: 5px;
+    display: block;
+}
+
+
+/* Sección de Actividad Reciente */
+.activityList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.activityItem {
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    padding: 18px 25px;
+    border: 1px solid #444;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.activityItem:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(146, 230, 111, 0.1);
+}
+
+.activityHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.activityType {
+    font-weight: 600;
+    color: #92e66f;
+    font-size: 1em;
+}
+
+.activityDate {
+    font-size: 0.85em;
+    color: #888;
+}
+
+.activityDescription {
+    color: #c0c0c0;
+    font-size: 0.95em;
+    margin: 0;
+}
+
+
+/* Media Queries para Responsividad */
+@media (max-width: 768px) {
+    .dashboardContainer {
+        padding: 20px;
+    }
+
+    .dashboardHeader h1 {
+        font-size: 2em;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .dashboardHeader p {
+        font-size: 1em;
+    }
+
+    .statsSection h2,
+    .recentActivitySection h2 {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .statCard {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .statIcon {
+        font-size: 1.8em;
+        padding: 10px;
+    }
+
+    .statValue {
+        font-size: 1.8em;
+    }
+
+    .statTrend {
+        font-size: 0.9em;
+    }
+
+    .activityHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .activityType {
+        font-size: 0.95em;
+    }
+
+    .activityDate {
+        font-size: 0.8em;
+    }
+}

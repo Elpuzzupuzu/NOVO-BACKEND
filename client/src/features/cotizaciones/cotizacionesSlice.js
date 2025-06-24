@@ -3,17 +3,22 @@ import axiosInstance from '../../config/axiosConfig'; // Asegúrate de que esta 
 
 // Define el estado inicial para las cotizaciones
 const initialState = {
-    cotizaciones: [], // Un array para almacenar las cotizaciones
+    cotizaciones: [], // Un array para almacenar las cotizaciones (listado principal)
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,    // Almacena cualquier mensaje de error
-    pagination: {   // Nuevo objeto para la información de paginación
+    pagination: {   // Información de paginación para el listado principal
         total: 0,
         page: 1,
-        limit: 10, // <--- CAMBIO REALIZADO AQUÍ: DE 3 A 10
+        limit: 10,
         totalPages: 0,
         hasNextPage: false,
         hasPrevPage: false,
     },
+    // Nuevos estados para los datos del dashboard
+    totalCotizaciones: 0, // Para la estadística de total de cotizaciones
+    ingresosEstimadosPorMes: [], // Para el gráfico de ingresos por mes
+    dashboardStatus: 'idle', // Estado de carga específico para los datos del dashboard
+    dashboardError: null,    // Errores específicos del dashboard
 };
 
 // =========================================================
@@ -26,10 +31,8 @@ export const createCotizacion = createAsyncThunk(
     async (cotizacionData, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.post('/NOVO/cotizaciones', cotizacionData);
-            // Asume que el backend devuelve { cotizacion: {...} }
             return response.data.cotizacion;
         } catch (error) {
-            // Usa rejectWithValue para pasar el mensaje de error del backend al slice
             if (error.response && error.response.data && error.response.data.message) {
                 return rejectWithValue(error.response.data.message);
             }
@@ -41,11 +44,9 @@ export const createCotizacion = createAsyncThunk(
 // Thunk para obtener todas las cotizaciones CON FILTROS Y PAGINACIÓN
 export const fetchCotizaciones = createAsyncThunk(
     'cotizaciones/fetchCotizaciones',
-    // Acepta un objeto 'params' que puede incluir filtros, page y limit
     async (params = {}, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get('/NOVO/cotizaciones', { params });
-            // Ahora el backend devuelve { data: [...], pagination: {...} }
             return response.data; // Esto contendrá { data, pagination }
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -62,7 +63,6 @@ export const fetchCotizacionById = createAsyncThunk(
     async (cotizacionId, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`/NOVO/cotizaciones/${cotizacionId}`);
-            // Asume que el backend devuelve { cotizacion: {...} }
             return response.data.cotizacion;
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -106,6 +106,46 @@ export const deleteCotizacion = createAsyncThunk(
 );
 
 // =========================================================
+// NUEVOS THUNKS PARA EL DASHBOARD
+// =========================================================
+
+// Thunk para obtener el total de cotizaciones
+export const fetchTotalCotizaciones = createAsyncThunk(
+    'cotizaciones/fetchTotalCotizaciones',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/NOVO/cotizaciones/total');
+            return response.data.totalCotizaciones; // Asume que el backend devuelve { totalCotizaciones: X }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                return rejectWithValue(error.response.data.message);
+            }
+            return rejectWithValue(error.message || 'Error al obtener el total de cotizaciones.');
+        }
+    }
+);
+
+// Thunk para obtener los ingresos estimados por mes
+export const fetchIngresosEstimadosPorMes = createAsyncThunk(
+    'cotizaciones/fetchIngresosEstimadosPorMes',
+    async ({ year, estados }, { rejectWithValue }) => {
+        try {
+            const params = { year };
+            if (estados && estados.length > 0) {
+                params.estados = estados.join(','); // Unir el array para el parámetro de consulta
+            }
+            const response = await axiosInstance.get('/NOVO/cotizaciones/ingresos-por-mes', { params });
+            return response.data.data; // Asume que el backend devuelve { data: [...] }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                return rejectWithValue(error.response.data.message);
+            }
+            return rejectWithValue(error.message || 'Error al obtener ingresos estimados por mes.');
+        }
+    }
+);
+
+// =========================================================
 // Creación del Slice
 // =========================================================
 const cotizacionesSlice = createSlice({
@@ -119,6 +159,11 @@ const cotizacionesSlice = createSlice({
         },
         clearCotizacionesError: (state) => {
             state.error = null;
+        },
+        // Nuevo reducer para resetear solo el estado del dashboard
+        resetDashboardStatus: (state) => {
+            state.dashboardStatus = 'idle';
+            state.dashboardError = null;
         }
     },
     extraReducers: (builder) => {
@@ -130,21 +175,20 @@ const cotizacionesSlice = createSlice({
             })
             .addCase(createCotizacion.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.cotizaciones.push(action.payload); // Añade la nueva cotización
+                state.cotizaciones.push(action.payload);
                 state.error = null;
             })
             .addCase(createCotizacion.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Error al crear la cotización.';
             })
-            // fetchCotizaciones
+            // fetchCotizaciones (listado principal)
             .addCase(fetchCotizaciones.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchCotizaciones.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // ASIGNACIÓN CLAVE AQUÍ: Actualiza tanto las cotizaciones como la información de paginación
                 state.cotizaciones = action.payload.data;
                 state.pagination = action.payload.pagination;
                 state.error = null;
@@ -152,7 +196,6 @@ const cotizacionesSlice = createSlice({
             .addCase(fetchCotizaciones.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Error al obtener las cotizaciones.';
-                // Opcional: Reiniciar paginación a valores por defecto en caso de error
                 state.pagination = { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPrevPage: false };
             })
             // fetchCotizacionById
@@ -162,12 +205,11 @@ const cotizacionesSlice = createSlice({
             })
             .addCase(fetchCotizacionById.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // Opcional: Actualizar una cotización existente si se obtuvo por ID
                 const index = state.cotizaciones.findIndex(c => c.id_cotizacion === action.payload.id_cotizacion);
                 if (index !== -1) {
                     state.cotizaciones[index] = action.payload;
                 } else {
-                    state.cotizaciones.push(action.payload); // Añadir si no existe
+                    state.cotizaciones.push(action.payload);
                 }
                 state.error = null;
             })
@@ -199,21 +241,52 @@ const cotizacionesSlice = createSlice({
             })
             .addCase(deleteCotizacion.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // Filtra la cotización eliminada del estado
                 state.cotizaciones = state.cotizaciones.filter(cot => cot.id_cotizacion !== action.payload);
                 state.error = null;
-                // Opcional: ajustar `total` en la paginación si se elimina un elemento
                 state.pagination.total = Math.max(0, state.pagination.total - 1);
             })
             .addCase(deleteCotizacion.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Error al eliminar la cotización.';
+            })
+            // =========================================================
+            // Manejo de extraReducers para los NUEVOS THUNKS DEL DASHBOARD
+            // =========================================================
+            // fetchTotalCotizaciones
+            .addCase(fetchTotalCotizaciones.pending, (state) => {
+                state.dashboardStatus = 'loading';
+                state.dashboardError = null;
+            })
+            .addCase(fetchTotalCotizaciones.fulfilled, (state, action) => {
+                state.dashboardStatus = 'succeeded';
+                state.totalCotizaciones = action.payload; // El payload es directamente el número total
+                state.dashboardError = null;
+            })
+            .addCase(fetchTotalCotizaciones.rejected, (state, action) => {
+                state.dashboardStatus = 'failed';
+                state.dashboardError = action.payload || 'Error al cargar el total de cotizaciones.';
+                state.totalCotizaciones = 0; // Resetear a 0 en caso de error
+            })
+            // fetchIngresosEstimadosPorMes
+            .addCase(fetchIngresosEstimadosPorMes.pending, (state) => {
+                state.dashboardStatus = 'loading';
+                state.dashboardError = null;
+            })
+            .addCase(fetchIngresosEstimadosPorMes.fulfilled, (state, action) => {
+                state.dashboardStatus = 'succeeded';
+                state.ingresosEstimadosPorMes = action.payload; // El payload es el array de datos mensuales
+                state.dashboardError = null;
+            })
+            .addCase(fetchIngresosEstimadosPorMes.rejected, (state, action) => {
+                state.dashboardStatus = 'failed';
+                state.dashboardError = action.payload || 'Error al cargar los ingresos por mes.';
+                state.ingresosEstimadosPorMes = []; // Resetear a array vacío en caso de error
             });
     },
 });
 
 // Exporta las acciones síncronas generadas por createSlice
-export const { resetCotizacionesStatus, clearCotizacionesError } = cotizacionesSlice.actions;
+export const { resetCotizacionesStatus, clearCotizacionesError, resetDashboardStatus } = cotizacionesSlice.actions;
 
 // Exporta el reducer principal
 export default cotizacionesSlice.reducer;
@@ -222,7 +295,13 @@ export default cotizacionesSlice.reducer;
 export const selectAllCotizaciones = (state) => state.cotizaciones.cotizaciones;
 export const selectCotizacionesStatus = (state) => state.cotizaciones.status;
 export const selectCotizacionesError = (state) => state.cotizaciones.error;
-export const selectCotizacionesPagination = (state) => state.cotizaciones.pagination; // Nuevo selector para la paginación
+export const selectCotizacionesPagination = (state) => state.cotizaciones.pagination;
 
 export const selectCotizacionById = (state, cotizacionId) =>
     state.cotizaciones.cotizaciones.find(cot => cot.id_cotizacion === cotizacionId);
+
+// Nuevos selectores para los datos del dashboard
+export const selectTotalCotizaciones = (state) => state.cotizaciones.totalCotizaciones;
+export const selectIngresosEstimadosPorMes = (state) => state.cotizaciones.ingresosEstimadosPorMes;
+export const selectDashboardStatus = (state) => state.cotizaciones.dashboardStatus;
+export const selectDashboardError = (state) => state.cotizaciones.dashboardError;
