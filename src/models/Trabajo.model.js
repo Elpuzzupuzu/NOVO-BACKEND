@@ -31,7 +31,7 @@ class Trabajo {
      * @param {number} [trabajoData.costo_mano_obra] - Costo de mano de obra.
      * @param {string} [trabajoData.notas] - Notas adicionales.
      * @returns {Promise<object>} El objeto del trabajo creado.
-     * @throws {Error} Si la cotización_id ya está en uso por otro trabajo o error de base de datos.
+     * @throws {Error} Si la cotizacion_id ya está en uso por otro trabajo o error de base de datos.
      */
     static async create(trabajoData) {
         const id_trabajo = uuidv4();
@@ -69,13 +69,11 @@ class Trabajo {
 
         try {
             await pool.query(query, values);
-            // Retorna el trabajo creado, re-convirtiendo materiales_usados a objeto para la respuesta
-            // y las fechas a su formato original o deseado para la respuesta
             return {
                 id_trabajo,
                 ...trabajoData,
-                materiales_usados: materiales_usados, // Devolver como objeto
-                fecha_inicio_estimada: trabajoData.fecha_inicio_estimada, // Devolver la original para coherencia con input
+                materiales_usados: materiales_usados,
+                fecha_inicio_estimada: trabajoData.fecha_inicio_estimada,
                 fecha_inicio_real: trabajoData.fecha_inicio_real,
                 fecha_fin_estimada: trabajoData.fecha_fin_estimada,
                 fecha_fin_real: trabajoData.fecha_fin_real
@@ -118,7 +116,6 @@ class Trabajo {
                 if (rows[0].materiales_usados) {
                     rows[0].materiales_usados = JSON.parse(rows[0].materiales_usados);
                 }
-                // Convertir fechas de MySQL (Date objects) a strings ISO para uniformidad en la respuesta
                 if (rows[0].fecha_inicio_estimada) rows[0].fecha_inicio_estimada = rows[0].fecha_inicio_estimada.toISOString();
                 if (rows[0].fecha_inicio_real) rows[0].fecha_inicio_real = rows[0].fecha_inicio_real.toISOString();
                 if (rows[0].fecha_fin_estimada) rows[0].fecha_fin_estimada = rows[0].fecha_fin_estimada.toISOString();
@@ -169,26 +166,22 @@ class Trabajo {
         const values = [];
         const countValues = [];
 
-        // Filter by estado
         if (filters.estado) {
             conditions.push('t.estado = ?');
             values.push(filters.estado);
             countValues.push(filters.estado);
         }
-        // Filter by empleado_id
         if (filters.empleado_id) {
             conditions.push('t.empleado_id = ?');
             values.push(filters.empleado_id);
             countValues.push(filters.empleado_id);
         }
-        // Filter by cotizacion_id
         if (filters.cotizacion_id) {
             conditions.push('t.cotizacion_id = ?');
             values.push(filters.cotizacion_id);
             countValues.push(filters.cotizacion_id);
         }
 
-        // Search by client name/apellido, employee name/apellido, or partial ID (trabajo_id, cotizacion_id, cliente_id, empleado_id)
         if (filters.searchTerm) {
             const cleanedSearchTerm = filters.searchTerm.trim();
             const searchTermsArray = cleanedSearchTerm.split(/\s+/).filter(s => s.length > 0);
@@ -206,7 +199,7 @@ class Trabajo {
                             t.id_trabajo LIKE ? OR
                             t.cotizacion_id LIKE ? OR
                             t.empleado_id LIKE ? OR
-                            co.cliente_id LIKE ? -- Permite buscar cliente_id a través de la cotización
+                            co.cliente_id LIKE ? 
                         )
                     `);
                     searchValues.push(termLike, termLike, termLike, termLike, termLike, termLike, termLike, termLike);
@@ -229,14 +222,6 @@ class Trabajo {
         query += ` LIMIT ? OFFSET ?`;
         values.push(limit, offset);
 
-        // --- Debugging Console Logs ---
-        console.log("--- Debugging Trabajo.findAll (Backend) ---");
-        console.log("Final Data Query:", query);
-        console.log("Values for Data Query:", values);
-        console.log("Final Count Query:", countQuery);
-        console.log("Values for Count Query:", countValues);
-        console.log("--- End Debugging ---");
-
         try {
             const [rows] = await pool.query(query, values);
             const [countResult] = await pool.query(countQuery, countValues);
@@ -244,18 +229,15 @@ class Trabajo {
             const total = countResult[0].total;
             const totalPages = Math.ceil(total / limit);
 
-            // Procesar cada fila para convertir materiales_usados de string a objeto
-            // y convertir fechas a formato ISO string
             const processedRows = rows.map(row => {
                 if (row.materiales_usados) {
                     try {
                         row.materiales_usados = JSON.parse(row.materiales_usados);
                     } catch (e) {
                         console.error('Error parsing materiales_usados JSON for row:', row.id_trabajo, e);
-                        row.materiales_usados = null; // Set to null if parsing fails
+                        row.materiales_usados = null;
                     }
                 }
-                // Convertir campos de fecha (objetos Date de MySQL) a strings ISO
                 if (row.fecha_inicio_estimada) row.fecha_inicio_estimada = row.fecha_inicio_estimada.toISOString();
                 if (row.fecha_inicio_real) row.fecha_inicio_real = row.fecha_inicio_real.toISOString();
                 if (row.fecha_fin_estimada) row.fecha_fin_estimada = row.fecha_fin_estimada.toISOString();
@@ -292,26 +274,20 @@ class Trabajo {
         const fields = [];
         const values = [];
 
-        // Convertir materiales_usados a string JSON si se está actualizando
         if (updateData.materiales_usados !== undefined && typeof updateData.materiales_usados === 'object' && updateData.materiales_usados !== null) {
             updateData.materiales_usados = JSON.stringify(updateData.materiales_usados);
         } else if (updateData.materiales_usados === null) {
-            // Permitir explícitamente el null para materiales_usados
             updateData.materiales_usados = null;
         }
 
-
-        // Formatear las fechas para MySQL si se están actualizando
         if (updateData.fecha_inicio_estimada !== undefined) updateData.fecha_inicio_estimada = formatDateTimeForMySQL(updateData.fecha_inicio_estimada);
         if (updateData.fecha_inicio_real !== undefined) updateData.fecha_inicio_real = formatDateTimeForMySQL(updateData.fecha_inicio_real);
         if (updateData.fecha_fin_estimada !== undefined) updateData.fecha_fin_estimada = formatDateTimeForMySQL(updateData.fecha_fin_estimada);
         if (updateData.fecha_fin_real !== undefined) updateData.fecha_fin_real = formatDateTimeForMySQL(updateData.fecha_fin_real);
 
-
         for (const key in updateData) {
             if (updateData.hasOwnProperty(key) && key !== 'id_trabajo') {
-                // Validación para el campo 'estado' si es un ENUM
-                if (key === 'estado' && !['Pendiente', 'En Proceso', 'En Medición', 'Listo para Entrega', 'Entregado', 'Cancelado', 'Completada'].includes(updateData[key])) { // 'Completada' added for cotizacion state sync
+                if (key === 'estado' && !['Pendiente', 'En Proceso', 'En Medición', 'Listo para Entrega', 'Entregado', 'Cancelado', 'Completada'].includes(updateData[key])) {
                     throw new Error(`El estado '${updateData[key]}' no es válido.`);
                 }
                 fields.push(`${key} = ?`);
@@ -320,7 +296,7 @@ class Trabajo {
         }
 
         if (fields.length === 0) {
-            return false; // No hay datos para actualizar
+            return false;
         }
 
         values.push(id_trabajo);
@@ -349,6 +325,44 @@ class Trabajo {
             console.error('Error al eliminar trabajo:', error.message);
             throw new Error(`No se pudo eliminar el trabajo: ${error.message}`);
         }
+    }
+
+    /**
+     * Cuenta el número de trabajos que se encuentran en uno o varios estados específicos.
+     * @param {Array<string>} estados - Un array de estados por los cuales filtrar los trabajos.
+     * @returns {Promise<number>} El número total de trabajos en los estados especificados.
+     */
+    static async countByEstados(estados) {
+        if (!estados || estados.length === 0) {
+            throw new Error('Se requiere al menos un estado para contar trabajos.');
+        }
+
+        const placeholders = estados.map(() => '?').join(',');
+        const query = `SELECT COUNT(*) AS total FROM trabajos WHERE estado IN (${placeholders});`;
+
+        try {
+            const [rows] = await pool.query(query, estados);
+            return rows[0].total;
+        } catch (error) {
+            console.error('Error in TrabajoModel.countByEstados:', error.message);
+            throw new Error(`Could not count jobs by status: ${error.message}`);
+        }
+    }
+
+    // =========================================================
+    // NUEVO MÉTODO PARA EL DASHBOARD: CONTEO DE TRABAJOS COMPLETADOS
+    // =========================================================
+
+    /**
+     * Cuenta el número total de trabajos que se han completado o entregado.
+     * @returns {Promise<number>} El número total de trabajos completados.
+     */
+    static async countCompleted() {
+        // Los estados que consideramos "completados" o "finalizados"
+        const completedStates = ['Entregado', 'Completada']; 
+        
+        // Reutilizamos el método countByEstados
+        return await this.countByEstados(completedStates);
     }
 }
 

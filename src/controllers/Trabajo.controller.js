@@ -41,9 +41,7 @@ class TrabajoController {
      * @param {object} req - Objeto de solicitud (contiene req.query para filtros, page, limit, searchTerm).
      * @param {object} res - Objeto de respuesta.
      */
-  async getAllTrabajos(req, res) {
-        console.log('--- ENTRA EN TrabajoController.getAllTrabajos ---'); // Log de entrada al controlador
-
+    async getAllTrabajos(req, res) {
         try {
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
@@ -51,8 +49,6 @@ class TrabajoController {
             const estado = req.query.estado || '';
             const empleado_id = req.query.empleado_id || '';
             const cotizacion_id = req.query.cotizacion_id || '';
-
-            console.log('Parámetros de consulta recibidos:', { page, limit, searchTerm, estado, empleado_id, cotizacion_id }); // Log de parámetros
 
             const filters = {
                 searchTerm: searchTerm,
@@ -66,29 +62,22 @@ class TrabajoController {
                     delete filters[key];
                 }
             });
-            console.log('Filtros finales para el servicio:', filters); // Log de filtros
 
             const result = await TrabajoService.getAllTrabajos(filters, page, limit);
-            console.log('Resultado del TrabajoService.getAllTrabajos:', JSON.stringify(result, null, 2)); // Log del resultado del servicio
-
+            
             // Establecer encabezados de no-caché
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
-            console.log('Encabezados de no-caché establecidos.'); // Log de encabezados
 
             // Enviar la respuesta
             res.status(200).send(JSON.stringify(result));
-            console.log('Respuesta 200 OK enviada con datos.'); // Log de éxito
 
         } catch (error) {
-            console.error('--- ERROR en TrabajoController.getAllTrabajos ---:', error); // Log de error
+            console.error('Error en TrabajoController.getAllTrabajos:', error);
             res.status(500).json({ message: 'Error interno del servidor al obtener trabajos.', error: error.message });
         }
-        console.log('--- SALE DE TrabajoController.getAllTrabajos ---'); // Log de salida del controlador
     }
-
-
 
     /**
      * Maneja la obtención de un trabajo por su ID.
@@ -157,6 +146,42 @@ class TrabajoController {
             }
             console.error('Error en TrabajoController.deleteTrabajo:', error);
             res.status(500).json({ message: 'Error interno del servidor al eliminar trabajo.', error: error.message });
+        }
+    }
+
+    // =========================================================
+    // NUEVOS MÉTODOS PARA EL DASHBOARD
+    // =========================================================
+
+    /**
+     * Obtiene el número total de trabajos activos para el dashboard.
+     * GET /NOVO/trabajos/activos-count
+     * @param {object} req - Objeto de solicitud.
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getTrabajosActivosCountController(req, res) {
+        try {
+            const totalActivos = await TrabajoService.getTrabajosActivosCount();
+            res.status(200).json({ totalTrabajosActivos: totalActivos });
+        } catch (error) {
+            console.error('Error en TrabajoController.getTrabajosActivosCountController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener el total de trabajos activos.', error: error.message });
+        }
+    }
+
+    /**
+     * Obtiene el número total de trabajos completados para el dashboard.
+     * GET /NOVO/trabajos/completados-count
+     * @param {object} req - Objeto de solicitud.
+     * @param {object} res - Objeto de respuesta.
+     */
+    async getTrabajosCompletadosCountController(req, res) {
+        try {
+            const totalCompletados = await TrabajoService.getTrabajosCompletadosCount();
+            res.status(200).json({ totalTrabajosCompletados: totalCompletados });
+        } catch (error) {
+            console.error('Error en TrabajoController.getTrabajosCompletadosCountController:', error);
+            res.status(500).json({ message: 'Error interno del servidor al obtener el total de trabajos completados.', error: error.message });
         }
     }
 }

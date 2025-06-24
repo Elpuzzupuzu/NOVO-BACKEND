@@ -13,7 +13,7 @@ const Footer = () => {
             <h3 className={styles.footerTitle}>NOVO Tapicería</h3>
             <p className={styles.footerDescription}>
               Expertos en tapicería automotriz y de muebles. 
-              Calidad y tradición desde hace más de 20 años.
+              Calidad y tradición.
             </p>
           </div>
 

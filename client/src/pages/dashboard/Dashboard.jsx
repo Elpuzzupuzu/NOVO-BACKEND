@@ -1,16 +1,18 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faTasks, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faUsers } from '@fortawesome/free-solid-svg-icons'; // Eliminado faTasks de aquí
+
 import styles from './Dashboard.module.css'; // Estilos principales del dashboard
 
 // Importamos los componentes de las secciones específicas
-import CotizacionesDashboard from '../dashboard/cotizaciones/CotizacionesDashBoard';
+import CotizacionesDashboard from '../dashboard/cotizaciones/CotizacionesDashBoard'; // Ajusta la ruta si es necesario
+import TrabajosDashboard from '../dashboard/trabajos/TrabajosDashboard'; // Importa el nuevo componente de Trabajos
 
 const Dashboard = () => {
-    // Datos estáticos temporales para otras secciones, que eventualmente serán sus propios componentes
+    // Las estadísticas de cotizaciones y trabajos se manejan en sus propios componentes.
+    // Solo dejamos aquí otras estadísticas o componentes que no tengan una sección dedicada aún.
     const otherStats = [
-        // Las cotizaciones ahora se manejan en CotizacionesDashboard
-        { id: 2, title: 'Proyectos Activos', value: '85', icon: faTasks, trend: '2 nuevos' },
+        // La tarjeta de Proyectos Activos ahora se maneja en TrabajosDashboard
         { id: 3, title: 'Nuevos Clientes (Últimos 30 días)', value: '32', icon: faUsers, trend: '+8% respecto al mes pasado' },
     ];
 
@@ -29,29 +31,37 @@ const Dashboard = () => {
                 <p>Bienvenido al panel de administración de NOVO. Aquí puedes ver un resumen rápido de la actividad de tu negocio.</p>
             </header>
 
-            {/* Renderiza el componente de Cotizaciones del Dashboard */}
-            <CotizacionesDashboard />
+            {/* Contenedor flexible para las secciones del dashboard */}
+            <div className={styles.dashboardSectionsGrid}>
+                {/* Renderiza el componente de Cotizaciones del Dashboard */}
+                <CotizacionesDashboard />
 
-            {/* Sección de Estadísticas Rápidas (Resto de Tarjetas, temporalmente aquí) */}
-            <section className={styles.statsSection}>
-                <h2>Otras Estadísticas Clave</h2>
-                <div className={styles.statsGrid}>
-                    {otherStats.map(stat => (
-                        <div key={stat.id} className={styles.statCard}>
-                            <div className={styles.statIcon}>
-                                <FontAwesomeIcon icon={stat.icon} />
+                {/* Renderiza el componente de Trabajos del Dashboard */}
+                <TrabajosDashboard />
+
+                {/* Sección de Estadísticas Rápidas (Resto de Tarjetas, temporalmente aquí) */}
+                {/* Puedes mover esto a su propio componente 'ClientesDashboard' más adelante */}
+                <section className={styles.statsSection}>
+                    <h2>Estadísticas de Clientes</h2>
+                    <div className={styles.statsGrid}>
+                        {otherStats.map(stat => (
+                            <div key={stat.id} className={styles.statCard}>
+                                <div className={styles.statIcon}>
+                                    <FontAwesomeIcon icon={stat.icon} />
+                                </div>
+                                <div className={styles.statContent}>
+                                    <h3>{stat.title}</h3>
+                                    <p className={styles.statValue}>{stat.value}</p>
+                                    <span className={styles.statTrend}>{stat.trend}</span>
+                                </div>
                             </div>
-                            <div className={styles.statContent}>
-                                <h3>{stat.title}</h3>
-                                <p className={styles.statValue}>{stat.value}</p>
-                                <span className={styles.statTrend}>{stat.trend}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                        ))}
+                    </div>
+                </section>
+            </div>
 
             {/* Sección de Actividad Reciente (temporalmente aquí) */}
+            {/* Esto podría ser un componente ActividadRecienteDashboard que consolide datos de varios slices */}
             <section className={styles.recentActivitySection}>
                 <h2>Actividad Reciente</h2>
                 <div className={styles.activityList}>
@@ -66,9 +76,6 @@ const Dashboard = () => {
                     ))}
                 </div>
             </section>
-
-            {/* La sección de gráficos de cotizaciones se ha movido a CotizacionesDashboard */}
-            {/* Si hubiera otros gráficos de otras entidades, irían aquí en sus propios componentes */}
         </div>
     );
 };
