@@ -80,7 +80,7 @@ const RegisterForm = () => {
 
   return (
     <div className={styles.registerContainer}>
-      <h3 className={styles.formTitle}>REGISTRAR NUEVA CUENTA</h3>
+      <h3 className={styles.formTitle}>REGISTRP</h3>
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Mensajes de estado y error */}
         {error && <p className={styles.errorMessage}>{error}</p>}

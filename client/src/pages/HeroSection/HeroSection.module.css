@@ -1,159 +1,163 @@
 /* client/src/pages/HeroSection/HeroSection.module.css */
 
 .heroSection {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  min-height: 700px;
-  background-image: 
-    linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%),
-    url('/hero3.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-attachment: fixed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  text-align: left;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    width: 100%;
+    /* Si tienes 'height: 100vh;' aquí, y el contenido de la sección es más grande,
+       y si también tienes 'overflow: hidden;' en .heroSection, esto causará el recorte.
+       La clave es que .heroSection NO tenga 'overflow: hidden;'. */
+    min-height: 700px; /* Mantiene una altura mínima para la sección */
+    background-image:
+        linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%),
+        url('/hero3.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: left;
+    /* overflow: hidden; */ /* <--- ¡¡¡MUY IMPORTANTE: ESTA LÍNEA DEBE ESTAR COMENTADA O ELIMINADA!!! */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .heroSection.visible {
-  opacity: 1;
-  transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(
-      circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
-      rgba(255, 215, 0, 0.15) 0%, 
-      rgba(0, 0, 0, 0.3) 50%, 
-      rgba(0, 0, 0, 0.6) 100%
-    );
-  z-index: 1;
-  transition: all 0.3s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(
+            circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255, 215, 0, 0.15) 0%,
+            rgba(0, 0, 0, 0.3) 50%,
+            rgba(0, 0, 0, 0.6) 100%
+        );
+    z-index: 1;
+    transition: all 0.3s ease;
 }
 
 .floatingElements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .floatingElement {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: linear-gradient(45deg, #ffd700, #ffed4e);
-  border-radius: 50%;
-  animation: float 6s ease-in-out infinite;
-  opacity: 0.7;
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+    opacity: 0.7;
 }
 
 .floatingElement:nth-child(1) {
-  top: 20%;
-  left: 10%;
-  animation-delay: 0s;
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
 }
 
 .floatingElement:nth-child(2) {
-  top: 60%;
-  right: 15%;
-  animation-delay: 2s;
+    top: 60%;
+    right: 15%;
+    animation-delay: 2s;
 }
 
 .floatingElement:nth-child(3) {
-  bottom: 30%;
-  left: 20%;
-  animation-delay: 4s;
+    bottom: 30%;
+    left: 20%;
+    animation-delay: 4s;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-20px) scale(1.2); }
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-20px) scale(1.2); }
 }
 
 .content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 1400px;
-  padding: 0 4rem;
-  gap: 4rem;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 4rem;
+    gap: 4rem;
+    /* Si el .content también tiene un max-height o height fijo, podría causar el problema.
+       Asegúrate de que permita expandirse o que tenga overflow-y:auto si lo necesita. */
 }
 
 .textContainer {
-  flex: 1;
-  max-width: 600px;
-  animation: slideInLeft 0.8s ease-out 0.2s both;
+    flex: 1;
+    max-width: 600px;
+    animation: slideInLeft 0.8s ease-out 0.2s both;
 }
 
 @keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #000;
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-  animation: pulse 2s infinite;
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #000;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
 }
 
 .badgeText {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .mainTitle {
-  font-size: 4rem;
-  font-weight: 900;
-  line-height: 1.1;
-  margin-bottom: 2rem;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
 }
 
 .titleLine {
-  display: block;
-  opacity: 0;
-  transform: translateY(30px);
-  animation: slideUp 0.6s ease-out forwards;
+    display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: slideUp 0.6s ease-out forwards;
 }
 
 .titleLine:nth-child(1) { animation-delay: 0.4s; }
@@ -161,380 +165,393 @@
 .titleLine:nth-child(3) { animation-delay: 0.8s; }
 
 .highlight {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
 }
 
 @keyframes slideUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .description {
-  font-size: 1.3rem;
-  line-height: 1.7;
-  margin-bottom: 2.5rem;
-  color: #e0e0e0;
-  animation: fadeIn 0.8s ease-out 1s both;
+    font-size: 1.3rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    color: #e0e0e0;
+    animation: fadeIn 0.8s ease-out 1s both;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .features {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 3rem;
-  animation: fadeIn 0.8s ease-out 1.2s both;
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    animation: fadeIn 0.8s ease-out 1.2s both;
 }
 
 .feature {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  color: #ccc;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: #ccc;
 }
 
 .featureIcon {
-  font-size: 1.2rem;
+    font-size: 1.2rem;
 }
 
 .buttons {
-  display: flex;
-  gap: 1.5rem;
-  animation: fadeIn 0.8s ease-out 1.4s both;
+    display: flex;
+    gap: 1.5rem;
+    animation: fadeIn 0.8s ease-out 1.4s both;
 }
 
 .ctaButtonPrimary,
 .ctaButtonSecondary {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1.2rem 2.5rem;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.2rem 2.5rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
 }
 
 .ctaButtonPrimary {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #000;
-  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #000;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
 .ctaButtonPrimary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.5s ease;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s ease;
 }
 
 .ctaButtonPrimary:hover::before {
-  left: 100%;
+    left: 100%;
 }
 
 .ctaButtonPrimary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.4);
 }
 
 .ctaButtonSecondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
 }
 
 .ctaButtonSecondary:hover {
-  background: rgba(255, 215, 0, 0.2);
-  border-color: #ffd700;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
 }
 
 .buttonText {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .buttonIcon {
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
 }
 
 .ctaButtonPrimary:hover .buttonIcon {
-  transform: translateX(5px);
+    transform: translateX(5px);
 }
 
 .formWrapper {
-  flex-shrink: 0;
-  animation: slideInRight 0.8s ease-out 0.4s both;
-  /* Ajustes para el contenedor del formulario */
-  display: flex; /* Asegura que el contenido (los formularios) se centre o se alinee */
-  flex-direction: column; /* Apila el toggle y el formulario */
-  align-items: center; /* Centra horizontalmente el contenido del wrapper */
-  width: 100%; /* Permite que el formContainer controle su ancho máximo */
-  max-width: 400px; /* Ancho máximo para el wrapper del formulario */
+    flex-shrink: 0;
+    animation: slideInRight 0.8s ease-out 0.4s both;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    /* Considera añadir un min-height: 0; o height: auto; aquí si .formContainer sigue sin scroll */
 }
 
 @keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .formContainer {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  width: 100%; /* El formulario dentro ocupará el 100% de su contenedor */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    width: 100%;
+
+    /* **¡¡¡ ESTOS SON LOS AJUSTES CRÍTICOS PARA EL SCROLL DEL FORMULARIO !!!** */
+    /* Define una altura máxima para el contenedor del formulario */
+    max-height: 90vh; /* Ajusta este valor si necesitas más o menos espacio */
+    /* Permite que el contenido se desplace verticalmente si excede max-height */
+    overflow-y: auto; 
+    /* Asegura que el padding inferior sea visible incluso con scroll */
+    padding-bottom: 2rem; 
+    /* Incluye padding y border en el tamaño total */
+    box-sizing: border-box; 
+    
+    /* Si aún no funciona, puedes probar a añadir un height: auto; aquí, pero max-height + overflow-y
+       suele ser suficiente. */
+    /* height: auto; */
 }
 
 .formContainer:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .formTitle {
-  color: #ffd700;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  text-align: center;
+    color: #ffd700;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
 }
 
 .scrollIndicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  animation: bounce 2s infinite;
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    animation: bounce 2s infinite;
 }
 
 .scrollArrow {
-  width: 2px;
-  height: 30px;
-  background: linear-gradient(to bottom, #ffd700, transparent);
-  position: relative;
+    width: 2px;
+    height: 30px;
+    background: linear-gradient(to bottom, #ffd700, transparent);
+    position: relative;
 }
 
 .scrollArrow::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 6px solid #ffd700;
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #ffd700;
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-  40% { transform: translateX(-50%) translateY(-10px); }
-  60% { transform: translateX(-50%) translateY(-5px); }
+    0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+    40% { transform: translateX(-50%) translateY(-10px); }
+    60% { transform: translateX(-50%) translateY(-5px); }
 }
 
-/* --- NUEVOS ESTILOS PARA LOS BOTONES DE ALTERNAR --- */
+/* --- ESTILOS PARA LOS BOTONES DE ALTERNAR (Login/Registrarse) --- */
 .toggleButtons {
-  display: flex;
-  width: 100%; /* Ocupa todo el ancho del formWrapper */
-  margin-bottom: 1.5rem; /* Espacio debajo de los botones */
-  border-radius: 8px;
-  overflow: hidden; /* Para que los bordes redondeados se apliquen bien */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Borde sutil para el grupo de botones */
-  background-color: rgba(43, 43, 43, 0.8); /* Fondo para el grupo de botones */
+    display: flex;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    overflow: hidden; /* Esto es para que el border-radius funcione bien en los botones internos */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(43, 43, 43, 0.8);
 }
 
 .toggleButton {
-  flex: 1; /* Distribuye el espacio equitativamente entre los botones */
-  padding: 0.8rem 1.2rem;
-  border: none;
-  background-color: transparent; /* Fondo transparente, el color de fondo viene del .toggleButtons */
-  color: #ccc;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  text-align: center;
-  outline: none; /* Remover el contorno al hacer clic */
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    border: none;
+    background-color: transparent;
+    color: #ccc;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    text-align: center;
+    outline: none;
 }
 
 .toggleButton:first-child {
-  border-right: 1px solid rgba(255, 255, 255, 0.2); /* Separador entre botones */
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .toggleButton:hover:not(.activeToggle) {
-  background-color: rgba(60, 60, 60, 0.8); /* Oscurecer un poco al pasar el ratón */
-  color: #fff;
+    background-color: rgba(60, 60, 60, 0.8);
+    color: #fff;
 }
 
 .activeToggle {
-  background-color: #ff9900; /* Color activo naranja */
-  color: #fff;
-  box-shadow: 0 2px 10px rgba(255, 153, 0, 0.4);
+    background-color: #ff9900;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(255, 153, 0, 0.4);
 }
-
 
 /* Media Queries Mejoradas */
 @media (max-width: 1200px) {
-  .content {
-    padding: 0 2rem;
-    gap: 2rem;
-  }
-  
-  .mainTitle {
-    font-size: 3.5rem;
-  }
+    .content {
+        padding: 0 2rem;
+        gap: 2rem;
+    }
+
+    .mainTitle {
+        font-size: 3.5rem;
+    }
 }
 
 @media (max-width: 992px) {
-  .heroSection {
-    height: auto;
-    min-height: 100vh;
-    padding: 4rem 0;
-    background-attachment: scroll;
-  }
-  
-  .content {
-    flex-direction: column;
-    text-align: center;
-    padding: 0 1.5rem;
-    gap: 3rem;
-  }
-  
-  .textContainer {
-    max-width: 100%;
-  }
-  
-  .mainTitle {
-    font-size: 3rem;
-  }
-  
-  .features {
-    justify-content: center;
-  }
-  
-  .buttons {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+    .heroSection {
+        height: auto; /* Permite que la altura se adapte al contenido en pantallas medianas */
+        min-height: 100vh;
+        padding: 4rem 0;
+        background-attachment: scroll;
+    }
 
-  .formWrapper {
-    width: 90%; /* Ajusta el ancho del wrapper en pantallas medianas */
-    max-width: 400px; /* Mantiene un ancho máximo para el formulario */
-  }
+    .content {
+        flex-direction: column;
+        text-align: center;
+        padding: 0 1.5rem;
+        gap: 3rem;
+    }
+
+    .textContainer {
+        max-width: 100%;
+    }
+
+    .mainTitle {
+        font-size: 3rem;
+    }
+
+    .features {
+        justify-content: center;
+    }
+
+    .buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .formWrapper {
+        width: 90%;
+        max-width: 400px;
+    }
 }
 
 @media (max-width: 768px) {
-  .mainTitle {
-    font-size: 2.5rem;
-  }
-  
-  .description {
-    font-size: 1.1rem;
-  }
-  
-  .features {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-  }
-  
-  .ctaButtonPrimary,
-  .ctaButtonSecondary {
-    padding: 1rem 2rem;
-    font-size: 1rem;
-  }
-  
-  .formContainer {
-    padding: 1.5rem;
-  }
+    .mainTitle {
+        font-size: 2.5rem;
+    }
+
+    .description {
+        font-size: 1.1rem;
+    }
+
+    .features {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .ctaButtonPrimary,
+    .ctaButtonSecondary {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+    }
+
+    .formContainer {
+        padding: 1.5rem;
+    }
 }
 
 @media (max-width: 576px) {
-  .heroSection {
-    padding: 2rem 0;
-  }
-  
-  .content {
-    padding: 0 1rem;
-  }
-  
-  .mainTitle {
-    font-size: 2rem;
-  }
-  
-  .buttons {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .ctaButtonPrimary,
-  .ctaButtonSecondary {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .scrollIndicator {
-    bottom: 1rem;
-  }
-  
-  .formWrapper {
-    max-width: 320px; /* Más estrecho en pantallas pequeñas */
-  }
+    .heroSection {
+        padding: 2rem 0;
+    }
+
+    .content {
+        padding: 0 1rem;
+    }
+
+    .mainTitle {
+        font-size: 2rem;
+    }
+
+    .buttons {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .ctaButtonPrimary,
+    .ctaButtonSecondary {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .scrollIndicator {
+        bottom: 1rem;
+    }
+
+    .formWrapper {
+        max-width: 320px;
+    }
 }
 
 /* Animaciones adicionales para elementos interactivos */
 @media (prefers-reduced-motion: reduce) {
-  .heroSection,
-  .textContainer,
-  .formWrapper,
-  .titleLine,
-  .badge {
-    animation: none;
-  }
-  
-  .heroSection {
-    opacity: 1;
-    transform: none;
-  }
+    .heroSection,
+    .textContainer,
+    .formWrapper,
+    .titleLine,
+    .badge {
+        animation: none;
+    }
+
+    .heroSection {
+        opacity: 1;
+        transform: none;
+    }
 }
