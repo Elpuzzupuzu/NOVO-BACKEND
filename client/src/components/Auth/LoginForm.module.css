@@ -78,6 +78,7 @@
   gap: 0.5rem;
   font-size: 0.9rem;
   color: #ccc;
+  margin-bottom: 1rem; /* Añade un poco de espacio debajo del toggle */
 }
 
 .loggedInMessage {
@@ -88,4 +89,41 @@
   text-align: center;
   font-size: 0.95rem;
   color: #e0ffe0; /* Texto claro */
+}
+
+/* --- Nuevos estilos para la sección de registro --- */
+.registerSection {
+  margin-top: 25px; /* Más espacio para separarlo del formulario de login */
+  padding-top: 20px; /* Espacio interno superior */
+  border-top: 1px solid #444; /* Línea divisoria sutil */
+  text-align: center;
+}
+
+.registerSection p {
+  color: #ccc; /* Color de texto para el párrafo "¿No tienes una cuenta?" */
+  margin-bottom: 15px; /* Espacio entre el texto y el botón */
+  font-size: 0.95em;
+}
+
+.registerButton {
+  background-color: #007bff; /* Un azul vibrante para el botón de registro */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sutil sombra para darle relieve */
+}
+
+.registerButton:hover {
+  background-color: #0056b3; /* Azul más oscuro al pasar el ratón */
+  transform: translateY(-1px); /* Ligero levantamiento al pasar el ratón */
+}
+
+.registerButton:active {
+  transform: translateY(0); /* Vuelve a su posición al hacer clic */
+  background-color: #004085;
 }

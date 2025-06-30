@@ -16,22 +16,26 @@ class Cliente {
      * Hashea la contraseña antes de guardarla.
      * @param {object} clienteData - Objeto con los datos del nuevo cliente.
      * @param {string} clienteData.nombre - Nombre del cliente.
-     * @param {string} [clienteData.apellido] - Apellido del cliente (opcional).
+     * @param {string} [clienteData.apellido] - Apellido del cliente (opcional, se guardará como NULL si no se proporciona).
      * @param {string} clienteData.contacto - Contacto del cliente (número de WhatsApp, único).
-     * @param {string} [clienteData.email] - Email del cliente (opcional).
-     * @param {string} [clienteData.direccion] - Dirección del cliente (opcional).
+     * @param {string} [clienteData.email] - Email del cliente (opcional, se guardará como NULL si no se proporciona).
+     * @param {string} [clienteData.direccion] - Dirección del cliente (opcional, se guardará como NULL si no se proporciona).
      * @param {string} clienteData.username - Nombre de usuario (único).
      * @param {string} clienteData.password - Contraseña en texto plano.
-     * @param {string} [clienteData.foto_perfil_url] - URL de la foto de perfil del cliente.
+     * @param {string} [clienteData.foto_perfil_url] - URL de la foto de perfil del cliente (opcional, se guardará como NULL si no se proporciona).
      * @param {string} [clienteData.role='cliente'] - Rol del cliente (por defecto 'cliente').
      * @returns {Promise<object>} El objeto del cliente creado (sin la contraseña hasheada para seguridad).
      * @throws {Error} Si el contacto o el username ya están registrados o hay un error.
      */
     static async create(clienteData) {
         const id_cliente = uuidv4();
-        const { nombre, apellido, contacto, email, direccion, username, password, foto_perfil_url = null } = clienteData;
-        // El rol se toma de clienteData, o se usa 'cliente' si no se proporciona (la DB también tiene un DEFAULT)
-        const role = clienteData.role || 'cliente';
+        // Desestructurar campos requeridos y asignar null explícitamente a los opcionales si no existen
+        const { nombre, contacto, username, password } = clienteData;
+        const apellido = clienteData.apellido ?? null; // Usa nullish coalescing para null si es undefined o null
+        const email = clienteData.email ?? null;
+        const direccion = clienteData.direccion ?? null;
+        const foto_perfil_url = clienteData.foto_perfil_url ?? null;
+        const role = clienteData.role || 'cliente'; // El rol se toma de clienteData, o se usa 'cliente' si no se proporciona
 
         // Validar que username y password no sean nulos o vacíos
         if (!username || !password) {
@@ -45,13 +49,37 @@ class Cliente {
             INSERT INTO clientes (id_cliente, nombre, apellido, contacto, email, direccion, username, password, foto_perfil_url, role)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        const values = [id_cliente, nombre, apellido, contacto, email, direccion, username, hashedPassword, foto_perfil_url, role];
+        const values = [
+            id_cliente,
+            nombre,
+            apellido, // Ahora será null si no se proporcionó en clienteData
+            contacto,
+            email,      // Ahora será null si no se proporcionó en clienteData
+            direccion,  // Ahora será null si no se proporcionó en clienteData
+            username,
+            hashedPassword,
+            foto_perfil_url, // Ahora será null si no se proporcionó en clienteData
+            role
+        ];
 
         try {
             await pool.query(query, values);
             // Retorna el cliente creado, excluyendo la contraseña hasheada por seguridad
+            // Se construye el objeto de retorno con los valores que se usaron para la inserción
             const { password: _, ...clientWithoutPassword } = clienteData; // Destructuring para excluir password
-            return { id_cliente, role, ...clientWithoutPassword };
+            return {
+                id_cliente,
+                nombre,
+                apellido,
+                contacto,
+                email,
+                direccion,
+                username,
+                foto_perfil_url,
+                role,
+                // No incluir fecha_registro y fecha_actualizacion aquí, ya que son generadas por la DB
+                // Si necesitas el objeto completo con fechas, deberías hacer un findById después de la creación.
+            };
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
                 if (error.message.includes('for key \'contacto\'')) {
@@ -59,6 +87,10 @@ class Cliente {
                 }
                 if (error.message.includes('for key \'username\'')) {
                     throw new Error('El nombre de usuario ya está en uso.');
+                }
+                // Manejo de error para email duplicado si la columna 'email' es UNIQUE (aunque tu DDL no lo indica como UNIQUE, es buena práctica)
+                if (error.message.includes('for key \'email\'')) {
+                    throw new Error('El correo electrónico ya está registrado.');
                 }
             }
             console.error('Error al crear cliente:', error.message);
@@ -73,8 +105,8 @@ class Cliente {
      * @returns {Promise<object|null>} El objeto del cliente si se encuentra, o null si no.
      */
     static async findById(id_cliente, includePassword = false) {
-        const selectFields = includePassword 
-            ? '*' 
+        const selectFields = includePassword
+            ? '*'
             : 'id_cliente, nombre, apellido, contacto, email, direccion, username, foto_perfil_url, role, fecha_registro, fecha_actualizacion';
         const query = `SELECT ${selectFields} FROM clientes WHERE id_cliente = ?`;
         try {
@@ -100,6 +132,23 @@ class Cliente {
         } catch (error) {
             console.error('Error al buscar cliente por username:', error.message);
             throw new Error(`No se pudo encontrar el cliente por username: ${error.message}`);
+        }
+    }
+
+    /**
+     * Obtiene un cliente por su dirección de correo electrónico.
+     * Este método es necesario para la validación de registro y otras funcionalidades.
+     * @param {string} email - La dirección de correo electrónico del cliente a buscar.
+     * @returns {Promise<object|null>} El objeto del cliente si se encuentra, o null si no.
+     */
+    static async findByEmail(email) {
+        const query = 'SELECT * FROM clientes WHERE email = ?';
+        try {
+            const [rows] = await pool.query(query, [email]);
+            return rows[0] || null;
+        } catch (error) {
+            console.error('Error al buscar cliente por email:', error.message);
+            throw new Error(`No se pudo encontrar el cliente por email: ${error.message}`);
         }
     }
 
@@ -198,9 +247,6 @@ class Cliente {
         query += ` LIMIT ? OFFSET ?`;
         values.push(limit, offset);
 
-        // --- Debugging (opcional, puedes quitarlo en producción) ---
-      
-
         try {
             const [rows] = await pool.query(query, values);
             const [countResult] = await pool.query(countQuery, countValues);
@@ -245,7 +291,8 @@ class Cliente {
                     // Si la contraseña se está actualizando, hashearla
                     values.push(await bcrypt.hash(updateData[key], SALT_ROUNDS));
                 } else {
-                    values.push(updateData[key]);
+                    // Asegurarse de que los campos opcionales se conviertan a null si son undefined o vacíos
+                    values.push(updateData[key] === undefined || updateData[key] === '' ? null : updateData[key]);
                 }
                 fields.push(`${key} = ?`);
             }
@@ -268,6 +315,10 @@ class Cliente {
                 }
                 if (error.message.includes('for key \'username\'')) {
                     throw new Error('El nuevo nombre de usuario ya está en uso.');
+                }
+                // Manejo de error para email duplicado si la columna 'email' es UNIQUE (aunque tu DDL no lo indica como UNIQUE, es buena práctica)
+                if (error.message.includes('for key \'email\'')) {
+                    throw new Error('El nuevo correo electrónico ya está registrado.');
                 }
             }
             console.error('Error al actualizar cliente:', error.message);

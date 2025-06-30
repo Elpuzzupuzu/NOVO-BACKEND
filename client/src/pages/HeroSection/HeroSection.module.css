@@ -289,6 +289,12 @@
 .formWrapper {
   flex-shrink: 0;
   animation: slideInRight 0.8s ease-out 0.4s both;
+  /* Ajustes para el contenedor del formulario */
+  display: flex; /* Asegura que el contenido (los formularios) se centre o se alinee */
+  flex-direction: column; /* Apila el toggle y el formulario */
+  align-items: center; /* Centra horizontalmente el contenido del wrapper */
+  width: 100%; /* Permite que el formContainer controle su ancho máximo */
+  max-width: 400px; /* Ancho máximo para el wrapper del formulario */
 }
 
 @keyframes slideInRight {
@@ -310,6 +316,7 @@
   padding: 2rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  width: 100%; /* El formulario dentro ocupará el 100% de su contenedor */
 }
 
 .formContainer:hover {
@@ -365,6 +372,47 @@
   60% { transform: translateX(-50%) translateY(-5px); }
 }
 
+/* --- NUEVOS ESTILOS PARA LOS BOTONES DE ALTERNAR --- */
+.toggleButtons {
+  display: flex;
+  width: 100%; /* Ocupa todo el ancho del formWrapper */
+  margin-bottom: 1.5rem; /* Espacio debajo de los botones */
+  border-radius: 8px;
+  overflow: hidden; /* Para que los bordes redondeados se apliquen bien */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Borde sutil para el grupo de botones */
+  background-color: rgba(43, 43, 43, 0.8); /* Fondo para el grupo de botones */
+}
+
+.toggleButton {
+  flex: 1; /* Distribuye el espacio equitativamente entre los botones */
+  padding: 0.8rem 1.2rem;
+  border: none;
+  background-color: transparent; /* Fondo transparente, el color de fondo viene del .toggleButtons */
+  color: #ccc;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  text-align: center;
+  outline: none; /* Remover el contorno al hacer clic */
+}
+
+.toggleButton:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.2); /* Separador entre botones */
+}
+
+.toggleButton:hover:not(.activeToggle) {
+  background-color: rgba(60, 60, 60, 0.8); /* Oscurecer un poco al pasar el ratón */
+  color: #fff;
+}
+
+.activeToggle {
+  background-color: #ff9900; /* Color activo naranja */
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(255, 153, 0, 0.4);
+}
+
+
 /* Media Queries Mejoradas */
 @media (max-width: 1200px) {
   .content {
@@ -407,6 +455,11 @@
   .buttons {
     justify-content: center;
     flex-wrap: wrap;
+  }
+
+  .formWrapper {
+    width: 90%; /* Ajusta el ancho del wrapper en pantallas medianas */
+    max-width: 400px; /* Mantiene un ancho máximo para el formulario */
   }
 }
 
@@ -463,6 +516,10 @@
   
   .scrollIndicator {
     bottom: 1rem;
+  }
+  
+  .formWrapper {
+    max-width: 320px; /* Más estrecho en pantallas pequeñas */
   }
 }
 

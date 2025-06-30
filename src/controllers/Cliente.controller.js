@@ -16,8 +16,9 @@ class ClienteController {
             let clienteData = req.body; // Se crea una copia mutable
 
             // Validación básica de entrada para el registro
-            if (!clienteData.nombre || !clienteData.contacto || !clienteData.username || !clienteData.password) {
-                return res.status(400).json({ message: 'Nombre, contacto, username y password son campos requeridos.' });
+            if (!clienteData.nombre || !clienteData.contacto || !clienteData.username || !clienteData.password || !clienteData.email) {
+                // Añadí 'email' como campo requerido en la validación del controlador para mayor claridad
+                return res.status(400).json({ message: 'Nombre, contacto, username, email y password son campos requeridos.' });
             }
 
             // --- Lógica para manejar la foto de perfil (Base64 a Cloudinary) ---
@@ -28,8 +29,8 @@ class ClienteController {
                     clienteData.foto_perfil_url = result.secure_url; // Reemplaza Base64 con la URL de Cloudinary
                 } catch (uploadError) {
                     console.error("Error al subir imagen a Cloudinary durante la creación:", uploadError.message);
-                    // Opcional: Podrías retornar un error específico aquí o continuar sin la imagen
-                    clienteData.foto_perfil_url = null; // Si falla la subida, se guarda como null
+                    // Si falla la subida, se guarda como null, pero podrías decidir fallar el registro
+                    clienteData.foto_perfil_url = null;
                     // return res.status(500).json({ message: 'Error al subir la foto de perfil.', error: uploadError.message });
                 }
             } else if (clienteData.foto_perfil_url === '') {
@@ -39,11 +40,17 @@ class ClienteController {
             // Si foto_perfil_url es una URL válida ya (no Base64), o null, no se hace nada y se pasa directamente
             // --- Fin lógica foto de perfil ---
 
+            // La llamada al servicio es correcta: ClienteService.createCliente
+            // Asegúrate de que el ClienteService.js tenga este método definido y que a su vez llame a Cliente.create
             const newCliente = await ClienteService.createCliente(clienteData);
             res.status(201).json({ message: 'Cliente registrado exitosamente.', cliente: newCliente });
+
         } catch (error) {
             // Manejo de errores específicos del servicio para duplicados
-            if (error.message.includes('contacto ya está registrado') || error.message.includes('nombre de usuario ya está en uso')) {
+            // Ahora también se incluye el error de 'email'
+            if (error.message.includes('contacto ya está registrado') || 
+                error.message.includes('nombre de usuario ya está en uso') ||
+                error.message.includes('correo electrónico ya está registrado')) { // <-- Añadido
                 return res.status(409).json({ message: error.message }); // 409 Conflict
             }
             console.error('Error en ClienteController.createCliente (registro):', error);
@@ -157,7 +164,9 @@ class ClienteController {
             if (error.message.includes('Cliente no encontrado')) {
                 return res.status(404).json({ message: error.message });
             }
-            if (error.message.includes('contacto ya está registrado') || error.message.includes('username ya está en uso')) {
+            if (error.message.includes('contacto ya está registrado') || 
+                error.message.includes('username ya está en uso') ||
+                error.message.includes('correo electrónico ya está registrado')) { // <-- Añadido
                 return res.status(409).json({ message: error.message });
             }
             console.error('Error en ClienteController.updateCliente:', error);

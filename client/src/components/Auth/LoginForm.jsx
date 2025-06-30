@@ -1,7 +1,6 @@
-// client/src/components/Auth/LoginForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom'; // <--- ¡Importa useNavigate!
+import { useNavigate } from 'react-router-dom';
 import { loginEmployee, loginClient, clearError } from '../../features/auth/authSlice';
 import styles from './LoginForm.module.css';
 
@@ -11,7 +10,7 @@ const LoginForm = () => {
   const [isEmployeeLogin, setIsEmployeeLogin] = useState(true);
 
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // <--- ¡Inicializa useNavigate!
+  const navigate = useNavigate();
   const { isLoading, error, isAuthenticated, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -23,12 +22,12 @@ const LoginForm = () => {
     if (isAuthenticated && user) {
       console.log(`¡Login exitoso! Bienvenido, ${user.nombre || user.username}. Rol: ${user.role}`);
       // Redirige al usuario a la página de inicio protegida
-      navigate('/home'); // <--- ¡Redirección aquí!
+      navigate('/home');
       // Opcionalmente, resetear el formulario después de un login exitoso si no hay redirección
       setUsername('');
       setPassword('');
     }
-  }, [isAuthenticated, user, navigate]); // Añade 'navigate' a las dependencias
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +39,11 @@ const LoginForm = () => {
     } else {
       dispatch(loginClient(credentials));
     }
+  };
+
+  const handleRegisterRedirect = () => {
+    // Redirige al usuario a la página de registro de clientes
+    navigate('/register');
   };
 
   return (
@@ -84,12 +88,20 @@ const LoginForm = () => {
           {isLoading ? 'Cargando...' : 'ENTRAR'}
         </button>
       </form>
-      {/* Ya no necesitamos este mensaje de loggedInMessage aquí porque el usuario será redirigido */}
-      {/* {isAuthenticated && (
-        <div className={styles.loggedInMessage}>
-          <p>¡Has iniciado sesión como {user?.username} ({user?.role})!</p>
+
+      {/* Nueva sección para registrarse */}
+      {!isEmployeeLogin && ( // Solo muestra la opción de registrarse si no es un login de empleado
+        <div className={styles.registerSection}>
+          <p>¿No tienes una cuenta?</p>
+          <button
+            type="button"
+            className={styles.registerButton}
+            onClick={handleRegisterRedirect}
+          >
+            Registrarse como Cliente
+          </button>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

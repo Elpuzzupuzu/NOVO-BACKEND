@@ -8,7 +8,10 @@ import LandingPageContent from './pages/LandingPage/LandingPageContent';
 import Home from './pages/Home/Home';
 import ServicePage from './pages/ServicePage/ServicePage';
 // IMPORTA EL COMPONENTE DE LA PÁGINA DE CONTACTO
-import ContactPage from './pages/contacto/contactPage'; // <--- ¡Aquí está la importación!
+import ContactPage from './pages/contacto/contactPage';
+
+// IMPORTA EL NUEVO COMPONENTE DE REGISTRO
+import RegisterForm from './components/Auth/RegisterForm'; // <--- ¡Nueva importación!
 
 // Importa ambos headers
 import AuthHeader from './components/User/AuthHeader/AuthHeader'; // Header para clientes
@@ -122,6 +125,12 @@ function App() {
                 <Route
                     path="/contacto" // Puedes elegir la ruta que prefieras, por ejemplo, /contacto
                     element={<ContactPage />} // La página de contacto no necesita ser protegida por roles
+                />
+
+                {/* NUEVA RUTA PARA EL REGISTRO DE CLIENTES */}
+                <Route
+                    path="/register" // Ruta para el formulario de registro
+                    element={<RegisterForm />} // El componente de registro
                 />
 
                 {/* NUEVA RUTA PARA LAS COTIZACIONES DEL CLIENTE */}

@@ -1,7 +1,7 @@
 // src/services/Auth.service.js
 
 // Importa los modelos necesarios para la autenticación
-import ClienteModel from '../models/Cliente.model.js';     // Para buscar clientes
+import ClienteModel from '../models/Cliente.model.js';       // Para buscar y crear clientes
 import EmpleadoAuthModel from '../models/EmpleadoAuth.model.js'; // Para buscar empleados y comparar contraseñas
 // Importa jsonwebtoken para crear y firmar tokens
 import jwt from 'jsonwebtoken';
@@ -82,6 +82,49 @@ class AuthService {
 
         const { password: _, ...empleadoWithoutPassword } = empleado;
         return { user: empleadoWithoutPassword, token };
+    }
+
+    /**
+     * Registra un nuevo cliente en la base de datos.
+     * @param {object} userData - Datos del cliente a registrar (username, password, email, nombre, contacto, apellido, direccion, foto_perfil_url).
+     * @returns {Promise<object>} El objeto del cliente recién creado (sin la contraseña).
+     * @throws {Error} Si el nombre de usuario, email o contacto ya existen, o si la validación falla.
+     */
+    async registerClient(userData) {
+        // Desestructuramos los campos clave para validaciones explícitas, incluyendo 'contacto'.
+        const { username, email, contacto } = userData;
+
+        // 1. Verificar si el nombre de usuario ya existe
+        const existingClientByUsername = await ClienteModel.findByUsername(username);
+        if (existingClientByUsername) {
+            throw new Error('El nombre de usuario ya existe. Por favor, elige otro.');
+        }
+
+        // 2. Verificar si el email ya existe (recomendado para evitar duplicados)
+        // Asegúrate de que ClienteModel.findByEmail() esté implementado en tu modelo.
+        const existingClientByEmail = await ClienteModel.findByEmail(email);
+        if (existingClientByEmail) {
+            throw new Error('Ya existe una cuenta con este email.');
+        }
+
+        // 3. Verificar si el contacto ya existe (CRÍTICO, ya que es UNIQUE y NOT NULL en la DB)
+        // Asegúrate de que ClienteModel.findByContacto() esté implementado en tu modelo.
+        const existingClientByContacto = await ClienteModel.findByContacto(contacto);
+        if (existingClientByContacto) {
+            throw new Error('El número de contacto ya está registrado.');
+        }
+
+        // 4. Crear el nuevo cliente en la base de datos
+        // ClienteModel.create() debe manejar el hashing de la contraseña
+        // y el mapeo de todos los campos de userData a las columnas de la DB.
+        const newClient = await ClienteModel.create({
+            ...userData,
+            role: 'cliente' // Asignar el rol por defecto de 'cliente'
+        });
+
+        // Retorna el cliente creado, excluyendo la contraseña
+        const { password: _, ...clientWithoutPassword } = newClient;
+        return clientWithoutPassword;
     }
 }
 

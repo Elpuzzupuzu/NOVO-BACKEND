@@ -1,12 +1,13 @@
-// client/src/pages/HeroSection/HeroSection.jsx
 import React, { useState, useEffect } from 'react';
-// import ServicesForm from '../../components/ServicesForm/ServicesForm'; // ¡Ya no importamos ServicesForm aquí!
-import LoginForm from '../../components/Auth/LoginForm'; // <--- ¡Importa el nuevo LoginForm!
+import LoginForm from '../../components/Auth/LoginForm';
+import RegisterForm from '../../components/Auth/RegisterForm'; // <--- ¡Importa el nuevo RegisterForm!
 import styles from './HeroSection.module.css';
 
 const HeroSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // --- NUEVO ESTADO para controlar qué formulario mostrar ---
+  const [showLoginForm, setShowLoginForm] = useState(true); // true = LoginForm, false = RegisterForm
 
   useEffect(() => {
     // Animación de entrada
@@ -23,9 +24,7 @@ const HeroSection = () => {
   };
 
   const handleCTAClick = (action) => {
-    // Aquí puedes agregar lógica para manejar los clicks
     console.log(`Acción: ${action}`);
-    // Ejemplo: Si el botón de cotización debe desplazar al formulario de servicios
     if (action === 'cotización') {
         const formElement = document.getElementById('services-form-section'); // Asegúrate de añadir un ID al ServicesForm
         if (formElement) {
@@ -112,9 +111,24 @@ const HeroSection = () => {
 
         <div className={styles.formWrapper}>
           <div className={styles.formContainer}>
-            {/* Aquí es donde se cambia el componente */}
-            {/* <h3 className={styles.formTitle}>Cotización Instantánea</h3> */}
-            <LoginForm /> {/* <--- ¡Ahora usamos el LoginForm aquí! */}
+            {/* --- NUEVOS BOTONES para alternar entre Login y Registro --- */}
+            <div className={styles.toggleButtons}>
+              <button
+                className={`${styles.toggleButton} ${showLoginForm ? styles.activeToggle : ''}`}
+                onClick={() => setShowLoginForm(true)}
+              >
+                Iniciar Sesión
+              </button>
+              <button
+                className={`${styles.toggleButton} ${!showLoginForm ? styles.activeToggle : ''}`}
+                onClick={() => setShowLoginForm(false)}
+              >
+                Registrarse
+              </button>
+            </div>
+            
+            {/* --- Renderizado condicional del formulario --- */}
+            {showLoginForm ? <LoginForm /> : <RegisterForm />}
           </div>
         </div>
       </div>
