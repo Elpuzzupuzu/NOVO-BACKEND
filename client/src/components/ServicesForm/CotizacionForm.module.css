@@ -1,195 +1,383 @@
 /* client/src/components/ServicesForm/CotizacionForm.module.css */
 
 .cotizacionContainer {
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 2.5rem; /* Aumentado ligeramente el padding interno para más "aire" alrededor del contenido */
-    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.8));
+    padding: 2rem;
+    border-radius: 15px;
     color: #fff;
-    width: 90%; /* Usar un porcentaje del ancho disponible */
-    max-width: 700px; /* Aumentado a 700px para pantallas grandes, era 500px */
-    margin: 40px auto; /* Centrar el formulario y añadir espacio vertical */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-    border: 1px solid #ff9900; /* Borde sutil del color de acento */
-    box-sizing: border-box; /* Asegurar que el padding se incluya en el width */
+    width: 95%;
+    max-width: 1200px;
+    margin: 40px auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 2px solid #ff9900;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.cotizacionContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff9900, #ffd700, #ff9900);
+    animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
 }
 
 .title {
-    font-size: 2.2rem; /* Aumentado un poco más para visibilidad */
+    font-size: 2.5rem;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 2rem; /* Aumentado ligeramente */
-    color: #ffd700; /* Un dorado brillante para el título */
-    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); /* Sutil brillo */
+    margin-bottom: 2rem;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    position: relative;
+}
+
+.title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #ff9900, transparent);
 }
 
 .form {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* Secciones del formulario */
+.formSection {
+    background: rgba(40, 40, 40, 0.6);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid #ff9900;
+    transition: all 0.3s ease;
+}
+
+.formSection:hover {
+    background: rgba(45, 45, 45, 0.7);
+    transform: translateX(5px);
+}
+
+.sectionTitle {
+    font-size: 1.3rem;
+    color: #ffd700;
+    margin-bottom: 1rem;
+    font-weight: 600;
     display: flex;
-    flex-direction: column;
-    gap: 1rem; /* Ligeramente reducido el espaciado entre grupos de formulario (era 1.2rem) */
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sectionIcon {
+    width: 20px;
+    height: 20px;
+    background: #ff9900;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Grid para campos en línea */
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.formGridTwoCol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
 }
 
 .formGroup {
-    margin-bottom: 0.8rem; /* Ligeramente reducido el espacio debajo de cada grupo de entrada (era 1rem) */
+    position: relative;
 }
 
 .label {
     display: block;
     margin-bottom: 0.5rem;
-    font-size: 1rem;
-    color: #e0e0e0; /* Color claro para las etiquetas */
-    font-weight: bold;
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.formGroup:focus-within .label {
+    color: #ffd700;
 }
 
 .input,
 .select,
 .textarea {
-    width: 100%; /* Asegura que siempre ocupe el 100% del ancho del contenedor del formulario */
-    padding: 0.9rem 1.2rem; /* Ligeramente más padding para los campos */
-    border: 1px solid #444;
-    border-radius: 5px;
-    background-color: #2a2a2a;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #444;
+    border-radius: 8px;
+    background: rgba(30, 30, 30, 0.8);
     color: #fff;
-    font-size: 1rem;
+    font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .input:focus,
 .select:focus,
 .textarea:focus {
-    border-color: #ffcc00;
-    box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.3);
+    border-color: #ff9900;
+    background: rgba(35, 35, 35, 0.9);
+    box-shadow: 0 0 0 4px rgba(255, 153, 0, 0.2);
+    transform: translateY(-1px);
 }
 
 .select {
     appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 20 20%22 fill%3D%22%23ccc%22%3E%3Cpath d%3D%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule%3D%22evenodd%22 fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 20 20%22 fill%3D%22%23ff9900%22%3E%3Cpath d%3D%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule%3D%22evenodd%22 fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
     background-repeat: no-repeat;
-    background-position: right 0.7em top 50%;
-    background-size: 0.65em auto;
-    padding-right: 2.5rem;
+    background-position: right 1rem center;
+    background-size: 1rem auto;
+    padding-right: 3rem;
+}
+
+/* Checkbox con mejor estilo */
+.checkboxGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(50, 50, 50, 0.4);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.checkboxGroup:hover {
+    border-color: #ff9900;
+    background: rgba(60, 60, 60, 0.5);
 }
 
 .checkbox {
-    margin-right: 0.5rem;
+    width: 20px;
+    height: 20px;
     accent-color: #ff9900;
-    transform: scale(1.2);
+    cursor: pointer;
 }
 
 .labelCheckbox {
     color: #e0e0e0;
     font-size: 1rem;
-    vertical-align: middle;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Área de diseño personalizado */
+.designSection {
+    background: rgba(255, 153, 0, 0.1);
+    border: 2px dashed #ff9900;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .helpText {
     font-size: 0.85rem;
-    color: #aaa;
-    margin-top: 0.4rem;
-    display: block;
+    color: #bbb;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
+.helpText::before {
+    content: 'ℹ️';
+    font-size: 0.8rem;
+}
+
+/* Botón mejorado */
 .submitButton {
-    background-color: #ff9900;
+    background: linear-gradient(135deg, #ff9900, #cc7a00);
     color: #fff;
     border: none;
-    padding: 1.1rem 1.8rem; /* Ligeramente más padding para el botón */
-    border-radius: 5px;
+    padding: 1.2rem 2rem;
+    border-radius: 50px;
     cursor: pointer;
-    font-size: 1.2rem; /* Ligeramente más grande */
+    font-size: 1.1rem;
     font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    margin-top: 1.8rem; /* Ligeramente más espacio superior */
-    box-shadow: 0 2px 8px rgba(255, 153, 0, 0.4);
+    transition: all 0.3s ease;
+    margin: 2rem auto 0;
+    display: block;
+    min-width: 200px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(255, 153, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.submitButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.submitButton:hover::before {
+    left: 100%;
 }
 
 .submitButton:hover {
-    background-color: #cc7a00;
+    background: linear-gradient(135deg, #ffaa00, #dd8800);
     transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(255, 153, 0, 0.6);
+    box-shadow: 0 8px 25px rgba(255, 153, 0, 0.6);
+}
+
+.submitButton:active {
+    transform: translateY(-1px);
 }
 
 .submitButton:disabled {
-    background-color: #555;
+    background: #555;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-.message {
+/* Mensajes con mejor estilo */
+.message,
+.errorMessage,
+.successMessage {
     text-align: center;
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.message {
+    background: rgba(255, 235, 59, 0.1);
     color: #ffeb3b;
-    margin-top: 1rem;
-    font-size: 0.95rem;
+    border: 1px solid #ffeb3b;
 }
 
 .errorMessage {
-    text-align: center;
+    background: rgba(255, 107, 107, 0.1);
     color: #ff6b6b;
-    margin-top: 1rem;
-    font-size: 0.95rem;
-    font-weight: bold;
+    border: 1px solid #ff6b6b;
 }
 
 .successMessage {
-    text-align: center;
+    background: rgba(107, 255, 107, 0.1);
     color: #6bff6b;
-    margin-top: 1rem;
-    font-size: 0.95rem;
-    font-weight: bold;
+    border: 1px solid #6bff6b;
 }
 
-/* Media Queries para responsividad del formulario */
+/* Enlaces de login/register */
+.loginLink,
+.registerLink {
+    color: #ff9900;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.loginLink:hover,
+.registerLink:hover {
+    color: #ffd700;
+    text-decoration: underline;
+}
+
+/* Media Queries */
 @media (max-width: 768px) {
     .cotizacionContainer {
-        padding: 1.5rem; /* Menos padding en pantallas pequeñas */
-        margin: 20px auto; /* Menos margen vertical en móviles */
-        width: 95%; /* Ocupa más ancho en pantallas más estrechas */
+        padding: 1.5rem;
+        margin: 20px auto;
+        width: 98%;
     }
+    
     .title {
-        font-size: 1.8rem;
+        font-size: 2rem;
         margin-bottom: 1.5rem;
     }
-    .form {
-        gap: 0.8rem;
+    
+    .formGrid,
+    .formGridTwoCol {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
-    .formGroup {
-        margin-bottom: 0.6rem;
+    
+    .formSection {
+        padding: 1rem;
     }
-    .input,
-    .select,
-    .textarea {
-        padding: 0.7rem 1rem;
+    
+    .sectionTitle {
+        font-size: 1.1rem;
     }
+    
     .submitButton {
-        padding: 1rem 1.2rem;
+        padding: 1rem 1.5rem;
         font-size: 1rem;
-        margin-top: 1.2rem;
+        min-width: 180px;
     }
 }
 
 @media (max-width: 480px) {
     .cotizacionContainer {
         padding: 1rem;
+        border-radius: 10px;
     }
+    
     .title {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
         margin-bottom: 1rem;
     }
+    
     .input,
     .select,
     .textarea {
         font-size: 0.9rem;
+        padding: 0.75rem;
     }
+    
     .label {
         font-size: 0.9rem;
     }
-    .helpText {
-        font-size: 0.8rem;
-    }
+    
     .submitButton {
         font-size: 0.95rem;
-        padding: 0.9rem 1rem;
+        padding: 0.9rem 1.2rem;
+        min-width: 160px;
     }
 }

@@ -1,29 +1,43 @@
 /* client/src/pages/Home/Home.module.css */
-.homeContainer {
+
+/* Wrapper principal */
+.homeWrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: #1a1a1a; /* Fondo oscuro */
-  color: #f0f0f0; /* Texto claro */
-  padding: 2rem;
-  text-align: center;
-  font-family: 'Arial', sans-serif;
+  background-color: #1a1a1a;
 }
 
+/* Container principal del contenido */
+.homeContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #1a1a1a; /* Fondo oscuro original */
+  color: #f0f0f0; /* Texto claro original */
+  padding: 2rem;
+  font-family: 'Arial', sans-serif;
+  gap: 2rem;
+}
 
+/* Sección de bienvenida */
+.welcomeSection {
+  text-align: center;
+  margin-bottom: 1rem;
+}
 
 .welcomeTitle {
   font-size: 3rem;
-  color: #ffd700; /* Dorado para el título */
+  color: #ffd700; /* Dorado original */
   margin-bottom: 1rem;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  animation: fadeInDown 0.8s ease-out;
 }
 
 .userInfo {
   font-size: 1.2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: #ccc;
 }
 
@@ -31,16 +45,239 @@
   color: #fff;
 }
 
+.userEmail {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-top: 0.5rem;
+}
+
+/* Sección de contenido principal */
+.contentSection {
+  max-width: 1200px;
+  width: 100%;
+}
+
 .message {
   font-size: 1.1rem;
-  max-width: 600px;
+  max-width: 700px;
   line-height: 1.6;
-  margin-bottom: 2rem;
+  margin: 0 auto 3rem;
   color: #aaa;
+  text-align: center;
+}
+
+/* Títulos de sección */
+.sectionTitle {
+  color: #ffd700; /* Dorado original */
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+}
+
+/* Servicios para el cliente */
+.servicesSection {
+  margin: 3rem 0;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.serviceCard {
+  background: linear-gradient(135deg, #2a2a2a, #1f1f1f);
+  border: 1px solid #333;
+  border-radius: 15px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.serviceCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.serviceCard:hover::before {
+  left: 100%;
+}
+
+.serviceCard:hover {
+  background: linear-gradient(135deg, #333, #2a2a2a);
+  border-color: #ffd700; /* Dorado original */
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+}
+
+.serviceCard:focus {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+}
+
+.serviceIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.serviceTitle {
+  color: #ffd700; /* Dorado original */
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  font-weight: bold;
+}
+
+.serviceDescription {
+  color: #ccc;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Sección destacada */
+.highlightSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.promoCard {
+  background: linear-gradient(135deg, #4a4a00, #3a3a00);
+  border: 2px solid #ffd700; /* Dorado original */
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.promoCard::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+.promoTitle {
+  color: #ffd700; /* Dorado original */
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.promoText {
+  color: #f0f0f0;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.promoButton {
+  background-color: #ffd700; /* Dorado original */
+  color: #1a1a1a;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.promoButton:hover {
+  background-color: #ffed4e;
+  transform: scale(1.05);
+}
+
+.infoCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.infoTitle {
+  color: #ffd700; /* Dorado original */
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.infoText {
+  color: #ccc;
+  margin-bottom: 1.5rem;
+}
+
+.contactInfo p {
+  color: #f0f0f0;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+/* Resumen de actividad */
+.activitySummary {
+  margin: 3rem 0;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.summaryCard {
+  background: linear-gradient(135deg, #2a2a2a, #1f1f1f);
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.summaryIcon {
+  font-size: 2rem;
+}
+
+.summaryContent h4 {
+  color: #ffd700; /* Dorado original */
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.summaryNumber {
+  color: #f0f0f0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Sección de logout */
+.logoutSection {
+  margin-top: 2rem;
+  text-align: center;
 }
 
 .logoutButton {
-  background-color: #ff4d4d; /* Rojo para cerrar sesión */
+  background-color: #ff4d4d; /* Rojo original */
   color: #fff;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -48,12 +285,84 @@
   cursor: pointer;
   font-size: 1rem;
   font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  min-width: 160px;
 }
 
-.logoutButton:hover {
+.logoutButton:hover:not(:disabled) {
   background-color: #cc3333;
   transform: translateY(-2px);
+}
+
+.logoutButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.logoutButton.loading {
+  background-color: #cc3333;
+}
+
+/* Loading states */
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.loadingSpinner,
+.buttonSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border-width: 3px;
+  border-top-color: #ffd700;
+}
+
+.loadingText {
+  margin-top: 1rem;
+  color: #ccc;
+}
+
+/* Animaciones */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Media Queries para responsividad */
@@ -61,8 +370,34 @@
   .welcomeTitle {
     font-size: 2.5rem;
   }
+  
   .userInfo, .message {
     font-size: 1rem;
+  }
+  
+  .servicesGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .highlightSection {
+    grid-template-columns: 1fr;
+  }
+  
+  .summaryCards {
+    grid-template-columns: 1fr;
+  }
+  
+  .homeContainer {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .serviceCard {
+    padding: 1.5rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
   }
 }
 
@@ -70,7 +405,25 @@
   .welcomeTitle {
     font-size: 2rem;
   }
+  
   .homeContainer {
     padding: 1rem;
+  }
+  
+  .serviceCard {
+    padding: 1rem;
+  }
+  
+  .serviceIcon {
+    font-size: 2.5rem;
+  }
+  
+  .serviceTitle {
+    font-size: 1.1rem;
+  }
+  
+  .promoCard,
+  .infoCard {
+    padding: 1.5rem;
   }
 }

@@ -12,6 +12,7 @@ import CotizacionDetailModal from '../../Admin/Cotizaciones/CotizacionDetailModa
 import styles from './ClientCotizaciones.module.css';
 import Footer from '../../../components/Footer/Footer';
 import SearchInput from '../../../components/SearchInput/SearchInput';
+import ClientCotizacionDetailModal from './ClientCotizacionDetailModal';
 
 const ClientCotizacionesPage = () => {
     const dispatch = useDispatch();
@@ -250,7 +251,7 @@ const ClientCotizacionesPage = () => {
             )}
 
             {selectedCotizacion && (
-                <CotizacionDetailModal
+                <ClientCotizacionDetailModal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     cotizacion={selectedCotizacion}

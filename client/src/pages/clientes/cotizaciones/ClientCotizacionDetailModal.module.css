@@ -1,0 +1,233 @@
+/* client/src/pages/ClientCotizacionesPage/ClientCotizacionDetailModal.module.css */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente oscuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px; /* Para asegurar espacio en pantallas muy pequeñas */
+}
+
+.modalContent {
+    background-color: #2a2a2a; /* Fondo oscuro del modal */
+    color: #f0f0f0;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 700px; /* Ancho máximo del modal */
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    position: relative;
+    max-height: 90vh; /* Altura máxima para permitir scroll */
+    overflow-y: auto; /* Habilitar scroll si el contenido es muy largo */
+    font-family: 'Inter', sans-serif;
+}
+
+.closeButton {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+    color: #ff4d4d; /* Rojo al pasar el ratón */
+}
+
+.modalTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4CAF50; /* Verde de acento */
+    margin-bottom: 25px;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    display: flex; /* Añadido para alinear ID si es en línea */
+    align-items: center; /* Añadido para alinear ID si es en línea */
+    justify-content: center; /* Centrar el título y el ID */
+    flex-wrap: wrap; /* Permitir que el ID salte de línea si no hay espacio */
+}
+
+.cotizacionId {
+    font-size: 1.2rem;
+    color: #bbb;
+    margin-left: 10px; /* Espacio entre el título y el ID */
+    display: inline-block; /* Asegurar que se muestre en línea por defecto */
+    margin-top: 0; /* Asegurar que no tenga margen superior extra */
+}
+
+@media (max-width: 600px) { /* Ajustado de 768px a 600px para que coincida con el grid */
+    .cotizacionId {
+        display: block; /* Para que aparezca debajo en móviles */
+        margin-top: 5px;
+        margin-left: 0; /* Eliminar margen izquierdo en móvil */
+    }
+}
+
+
+/* Mensajes locales - ESTOS SE ELIMINAN YA QUE EL MODAL DEL CLIENTE NO TIENE MENSAJES DE OPERACIÓN */
+/* .localMessage {} */
+/* .successMessage {} */
+/* .errorMessage {} */
+/* .loadingMessage {} */
+
+/* Contenido del formulario/detalle */
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 15px 25px; /* Espacio vertical y horizontal */
+    margin-bottom: 25px;
+}
+
+@media (max-width: 600px) {
+    .formGrid {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    }
+}
+
+.formGroup {
+    margin-bottom: 0; /* Ya tenemos gap en el grid */
+}
+
+.modalLabel {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    color: #ccc;
+    font-weight: 600;
+}
+
+.fieldValue {
+    background-color: #3a3a3a; /* Fondo para valores de solo lectura */
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #fff;
+    word-break: break-word; /* Para texto largo */
+    /* Añadimos un borde sutil para que se vea como un campo */
+    border: 1px solid #555; 
+}
+
+/* ESTILOS PARA LOS BADGES DE ESTADO (copiados del CSS anterior) */
+.fieldValue.statusBadge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+    text-align: center;
+    min-width: 120px;
+    /* Aseguramos que el color del texto sea claro para fondos oscuros */
+    color: #fff;
+    border: none; /* Los badges no necesitan borde */
+}
+
+/* Colores para los estados, deben coincidir con los de ClientCotizaciones.module.css */
+.statusBadge.pendiente_de_anticipo { background-color: #FFA500; } /* Naranja */
+.statusBadge.anticipo_pagado___agendado,
+.statusBadge.anticipo_pagado___en_cola { background-color: #007bff; } /* Azul */
+.statusBadge.rechazada,
+.statusBadge.cancelada { background-color: #dc3545; } /* Rojo */
+.statusBadge.completada { background-color: #28a745; } /* Verde */
+
+
+/* Los siguientes selectores se ELIMINAN porque no hay inputs editables en este modal para clientes */
+/* .modalInput,
+.modalSelect,
+.modalTextarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background-color: #3a3a3a;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modalInput:focus,
+.modalSelect:focus,
+.modalTextarea:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+.modalSelect {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 20 20%22 fill%3D%22%23ccc%22%3E%3Cpath d%3D%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule%3D%22evenodd%22 fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%;
+    background-size: 0.65em auto;
+    padding-right: 2.5rem;
+}
+
+.modalTextarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modalCheckbox {
+    margin-right: 0.5rem;
+    accent-color: #4CAF50;
+    transform: scale(1.1);
+} */
+
+.fullWidth {
+    grid-column: span 2; /* Ocupa ambas columnas en el grid */
+}
+
+@media (max-width: 600px) {
+    .fullWidth {
+        grid-column: span 1; /* Vuelve a una columna en móvil */
+    }
+}
+
+
+/* Botones de acción del modal */
+.modalActions {
+    display: flex;
+    justify-content: flex-end; /* Alinear botones a la derecha */
+    gap: 15px;
+    flex-wrap: wrap; /* Permitir que los botones se envuelvan */
+    margin-top: 25px;
+    border-top: 1px solid #3a3a3a; /* Agregado un borde superior para separar de los campos */
+    padding-top: 20px; /* Espacio después del borde */
+}
+
+/* SOLO MANTENEMOS EL BOTÓN DE CERRAR */
+/* .editButton, */
+/* .saveButton, */
+/* .cancelEditButton, */
+/* .deleteButton, */
+.closeModalButton {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    background-color: #343a40; /* Gris oscuro para cerrar */
+    color: #fff;
+}
+.closeModalButton:hover { 
+    background-color: #23272b; 
+    transform: translateY(-1px); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra al pasar el ratón */
+}
+
+.closeModalButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
