@@ -18,6 +18,15 @@ router.get('/total', authenticateToken, authorizeRoles('gerente', 'admin'), Coti
 router.get('/ingresos-por-mes', authenticateToken, authorizeRoles('gerente', 'admin'), CotizacionController.getIngresosEstimadosPorMesController);
 
 // =========================================================
+// NUEVA RUTA PARA EL CLIENTE AUTENTICADO
+// =========================================================
+
+// GET /NOVO/cotizaciones/my-cotizaciones - Obtener las cotizaciones del cliente autenticado
+// Esta ruta usa el ID del cliente del token y está protegida por auth y roles
+router.get('/my-cotizaciones', authenticateToken, authorizeRoles('cliente'), CotizacionController.getMyCotizaciones);
+
+
+// =========================================================
 // OTRAS RUTAS (más generales o con parámetros)
 // =========================================================
 
@@ -25,6 +34,7 @@ router.get('/ingresos-por-mes', authenticateToken, authorizeRoles('gerente', 'ad
 router.post('/', authenticateToken, authorizeRoles('empleado', 'gerente', 'admin','cliente'), CotizacionController.createCotizacion);
 
 // GET /NOVO/cotizaciones - Obtener todas las cotizaciones (con filtros y paginación)
+// Esta ruta es para que admins/gerentes vean TODAS las cotizaciones
 router.get('/', authenticateToken, authorizeRoles('gerente', 'admin'), CotizacionController.getAllCotizaciones);
 
 // GET /NOVO/cotizaciones/:id_cotizacion - Obtener una cotización por su ID

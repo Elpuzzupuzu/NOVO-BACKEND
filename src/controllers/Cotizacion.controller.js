@@ -176,6 +176,42 @@ class CotizacionController {
             res.status(500).json({ message: 'Error interno del servidor al obtener ingresos por mes.', error: error.message });
         }
     }
+
+    async getMyCotizaciones(req, res) {
+        try {
+            // console.log('Contenido de req.user en getMyCotizaciones:', req.user);
+
+            // ¡CORRECCIÓN AQUÍ! Usa req.user.id
+            const cliente_id = req.user.id; // <-- CAMBIADO A req.user.id
+
+            if (!cliente_id) {
+                return res.status(401).json({ message: 'No autenticado o ID de cliente no disponible en el token.' });
+            }
+
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            const filters = { cliente_id: cliente_id }; // Usamos el ID correctamente obtenido
+
+            if (req.query.estado && req.query.estado !== 'all') {
+                filters.estado = req.query.estado;
+            }
+
+            if (req.query.searchTerm) {
+                filters.searchTerm = req.query.searchTerm;
+            }
+
+            const { data, pagination } = await CotizacionService.getAllCotizaciones(filters, page, limit);
+
+            res.status(200).json({
+                data,
+                pagination
+            });
+        } catch (error) {
+            console.error('Error en CotizacionController.getMyCotizaciones:', error);
+            res.status(500).json({ message: 'Error interno del servidor al recuperar mis cotizaciones.', error: error.message });
+        }
+    }
 }
 
 // Export an instance of the class as a singleton

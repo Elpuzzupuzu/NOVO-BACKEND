@@ -1,0 +1,237 @@
+/* client/src/pages/ClientCotizacionesPage/ClientCotizaciones.module.css */
+
+.container {
+    background-color: #1a1a1a; /* Fondo oscuro similar al tema */
+    color: #f0f0f0;
+    padding: 30px;
+    min-height: calc(100vh - 120px); /* Ajusta según la altura de tu header/footer */
+    font-family: 'Inter', sans-serif;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #4CAF50; /* Verde brillante de acento */
+    margin-bottom: 25px;
+    text-align: center;
+    text-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+}
+
+/* Controles de búsqueda y filtro */
+.controls {
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: center; /* Centrar los controles */
+}
+
+.searchFilterGroup {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap; /* Permitir que los elementos se envuelvan en pantallas pequeñas */
+    justify-content: center;
+    padding-top: 20px;
+}
+
+
+.searchInput,
+.filterSelect { /* Este estilo se aplica ahora también al select de "items por página" */
+    padding: 12px 18px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    flex: 1; /* Permite que crezcan */
+    min-width: 200px; /* Ancho mínimo para cada input/select */
+}
+
+.searchInput::placeholder {
+    color: #aaa;
+}
+
+.searchInput:focus,
+.filterSelect:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+.filterSelect {
+    appearance: none; /* Elimina la flecha predeterminada del select */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 20 20%22 fill%3D%22%23ccc%22%3E%3Cpath d%3D%22M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z%22 clip-rule%3D%22evenodd%22 fill-rule%3D%22evenodd%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%;
+    background-size: 0.65em auto;
+    padding-right: 2.5em; /* Espacio para la flecha personalizada */
+}
+
+
+/* Estilos de la tabla */
+.tableWrapper {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    overflow-x: auto; /* Permite scroll horizontal en pantallas pequeñas */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 25px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate; /* Para border-radius en las celdas */
+    border-spacing: 0;
+    min-width: 800px; /* Asegura que la tabla no sea demasiado estrecha */
+}
+
+.table th,
+.table td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #3a3a3a; /* Líneas divisorias */
+}
+
+.table th {
+    background-color: #3a3a3a; /* Fondo de encabezado de tabla */
+    color: #999;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    position: sticky; /* Encabezado pegajoso al hacer scroll */
+    top: 0;
+    z-index: 1;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.table tbody tr:hover {
+    background-color: #333; /* Fondo más claro al pasar el ratón */
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none; /* No hay borde en la última fila */
+}
+
+.table tbody tr:active {
+    background-color: #3e3e3e; /* Fondo al hacer clic */
+}
+
+.noResults {
+    text-align: center;
+    padding: 20px;
+    color: #aaa;
+    font-style: italic;
+}
+
+/* Badges de estado */
+.statusBadge {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    display: inline-block; /* Para que no ocupe todo el ancho */
+    text-transform: capitalize;
+}
+
+/* Nombres de clases generados para estados */
+.statusBadge.pendiente_de_anticipo { background-color: #ffc107; color: #333; } /* Amarillo/Naranja */
+.statusBadge.anticipo_pagado_agendado { background-color: #17a2b8; color: #fff; } /* Azul cian */
+.statusBadge.anticipo_pagado_en_cola { background-color: #007bff; color: #fff; } /* Azul más oscuro, si no tienes en_revision */
+.statusBadge.rechazada { background-color: #dc3545; color: #fff; } /* Rojo */
+.statusBadge.completada { background-color: #28a745; color: #fff; } /* Verde */
+.statusBadge.cancelada { background-color: #6f42c1; color: #fff; } /* Púrpura */
+
+
+/* Botón de acción en la tabla */
+.actionButton {
+    background-color: #4CAF50; /* Verde */
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.actionButton:hover {
+    background-color: #43A047;
+    transform: translateY(-1px);
+}
+
+.actionButton:active {
+    transform: translateY(0);
+}
+
+
+/* Paginación */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding-bottom: 20px; /* Para que no se corte con el final del div */
+}
+
+.paginationButton {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    border: 1px solid #444;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background-color: #3a3a3a;
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.paginationButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paginationButton.activePage {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: #fff;
+    font-weight: bold;
+}
+
+.pageInfo { /* Estilo para el texto "Página X de Y" */
+    color: #ccc;
+    font-size: 1rem;
+}
+
+
+/* Mensajes de carga y error */
+.loading, .error, .permissionDenied {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+    color: #f0f0f0;
+}
+
+.error {
+    color: #F44336;
+}
+
+.loading {
+    color: #4CAF50;
+}
+
+.permissionDenied {
+    color: #FFC107;
+}
+
+.permissionDenied h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}

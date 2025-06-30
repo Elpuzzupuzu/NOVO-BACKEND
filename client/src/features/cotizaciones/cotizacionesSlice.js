@@ -14,6 +14,17 @@ const initialState = {
         hasNextPage: false,
         hasPrevPage: false,
     },
+    clientCotizaciones: [], // Nuevo: Un array para las cotizaciones específicas del cliente
+    clientCotizacionesStatus: 'idle', // Nuevo: Estado de carga para las cotizaciones del cliente
+    clientCotizacionesError: null, // Nuevo: Errores específicos de las cotizaciones del cliente
+    clientCotizacionesPagination: { // Nuevo: Paginación para las cotizaciones del cliente
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+    },
     // Nuevos estados para los datos del dashboard
     totalCotizaciones: 0, // Para la estadística de total de cotizaciones
     ingresosEstimadosPorMes: [], // Para el gráfico de ingresos por mes
@@ -41,7 +52,7 @@ export const createCotizacion = createAsyncThunk(
     }
 );
 
-// Thunk para obtener todas las cotizaciones CON FILTROS Y PAGINACIÓN
+// Thunk para obtener todas las cotizaciones CON FILTROS Y PAGINACIÓN (general, para admins/empleados)
 export const fetchCotizaciones = createAsyncThunk(
     'cotizaciones/fetchCotizaciones',
     async (params = {}, { rejectWithValue }) => {
@@ -57,13 +68,35 @@ export const fetchCotizaciones = createAsyncThunk(
     }
 );
 
+// NUEVO THUNK: Para obtener las cotizaciones de un cliente autenticado
+export const fetchClientCotizaciones = createAsyncThunk(
+    'cotizaciones/fetchClientCotizaciones',
+    async (params = {}, { rejectWithValue }) => {
+        // params podría contener { page, limit } para la paginación
+        try {
+            // La ruta es /NOVO/cotizaciones/my-cotizaciones
+            // El backend ya sabe el cliente_id por el token, así que solo pasamos paginación si hay.
+            const response = await axiosInstance.get('/NOVO/cotizaciones/my-cotizaciones', { params });
+            return response.data; // Esto contendrá { data, pagination }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+                return rejectWithValue(error.response.data.message);
+            }
+            return rejectWithValue(error.message || 'Error de red desconocido al obtener las cotizaciones del cliente.');
+        }
+    }
+);
+
+
 // Thunk para obtener una cotización por ID
 export const fetchCotizacionById = createAsyncThunk(
     'cotizaciones/fetchCotizacionById',
     async (cotizacionId, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`/NOVO/cotizaciones/${cotizacionId}`);
-            return response.data.cotizacion;
+            // Nota: Aquí el backend devuelve la cotización directamente.
+            // Si necesitaras un campo adicional para "cotizacionActual" o similar, lo añadirías.
+            return response.data; // Asume que devuelve el objeto de cotización directamente, no cotizacion.cotizacion
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
                 return rejectWithValue(error.response.data.message);
@@ -84,7 +117,7 @@ export const updateCotizacion = createAsyncThunk(
             if (error.response && error.response.data && error.response.data.message) {
                 return rejectWithValue(error.response.data.message);
             }
-            return rejectWithValue(error.message || 'Error de red desconocido');
+            return rejectWithValue(error.message || 'Error al actualizar la cotización.');
         }
     }
 );
@@ -106,7 +139,7 @@ export const deleteCotizacion = createAsyncThunk(
 );
 
 // =========================================================
-// NUEVOS THUNKS PARA EL DASHBOARD
+// THUNKS PARA EL DASHBOARD
 // =========================================================
 
 // Thunk para obtener el total de cotizaciones
@@ -164,7 +197,12 @@ const cotizacionesSlice = createSlice({
         resetDashboardStatus: (state) => {
             state.dashboardStatus = 'idle';
             state.dashboardError = null;
-        }
+        },
+        // Nuevo reducer para resetear el estado de las cotizaciones del cliente
+        resetClientCotizacionesStatus: (state) => {
+            state.clientCotizacionesStatus = 'idle';
+            state.clientCotizacionesError = null;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -182,7 +220,7 @@ const cotizacionesSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.payload || 'Error al crear la cotización.';
             })
-            // fetchCotizaciones (listado principal)
+            // fetchCotizaciones (listado principal para admins/empleados)
             .addCase(fetchCotizaciones.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -198,6 +236,22 @@ const cotizacionesSlice = createSlice({
                 state.error = action.payload || 'Error al obtener las cotizaciones.';
                 state.pagination = { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPrevPage: false };
             })
+            // NUEVO: fetchClientCotizaciones (para el cliente autenticado)
+            .addCase(fetchClientCotizaciones.pending, (state) => {
+                state.clientCotizacionesStatus = 'loading';
+                state.clientCotizacionesError = null;
+            })
+            .addCase(fetchClientCotizaciones.fulfilled, (state, action) => {
+                state.clientCotizacionesStatus = 'succeeded';
+                state.clientCotizaciones = action.payload.data;
+                state.clientCotizacionesPagination = action.payload.pagination;
+                state.clientCotizacionesError = null;
+            })
+            .addCase(fetchClientCotizaciones.rejected, (state, action) => {
+                state.clientCotizacionesStatus = 'failed';
+                state.clientCotizacionesError = action.payload || 'Error al obtener las cotizaciones del cliente.';
+                state.clientCotizacionesPagination = { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPrevPage: false };
+            })
             // fetchCotizacionById
             .addCase(fetchCotizacionById.pending, (state) => {
                 state.status = 'loading';
@@ -205,6 +259,9 @@ const cotizacionesSlice = createSlice({
             })
             .addCase(fetchCotizacionById.fulfilled, (state, action) => {
                 state.status = 'succeeded';
+                // Asume que este thunk es para cargar una cotización para ver/editar.
+                // Podrías decidir si la añades o actualizas en 'cotizaciones' o en un nuevo campo 'currentCotizacion'
+                // Para simplificar, la añadimos/actualizamos en el array principal si no existe.
                 const index = state.cotizaciones.findIndex(c => c.id_cotizacion === action.payload.id_cotizacion);
                 if (index !== -1) {
                     state.cotizaciones[index] = action.payload;
@@ -228,6 +285,11 @@ const cotizacionesSlice = createSlice({
                 if (index !== -1) {
                     state.cotizaciones[index] = action.payload;
                 }
+                // Si la cotización actualizada era parte del listado del cliente, también actualizarla allí
+                const clientIndex = state.clientCotizaciones.findIndex(cot => cot.id_cotizacion === action.payload.id_cotizacion);
+                if (clientIndex !== -1) {
+                    state.clientCotizaciones[clientIndex] = action.payload;
+                }
                 state.error = null;
             })
             .addCase(updateCotizacion.rejected, (state, action) => {
@@ -242,15 +304,19 @@ const cotizacionesSlice = createSlice({
             .addCase(deleteCotizacion.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.cotizaciones = state.cotizaciones.filter(cot => cot.id_cotizacion !== action.payload);
-                state.error = null;
                 state.pagination.total = Math.max(0, state.pagination.total - 1);
+                // Si la cotización eliminada era parte del listado del cliente, también eliminarla de allí
+                state.clientCotizaciones = state.clientCotizaciones.filter(cot => cot.id_cotizacion !== action.payload);
+                state.clientCotizacionesPagination.total = Math.max(0, state.clientCotizacionesPagination.total - 1);
+
+                state.error = null;
             })
             .addCase(deleteCotizacion.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Error al eliminar la cotización.';
             })
             // =========================================================
-            // Manejo de extraReducers para los NUEVOS THUNKS DEL DASHBOARD
+            // Manejo de extraReducers para los THUNKS DEL DASHBOARD
             // =========================================================
             // fetchTotalCotizaciones
             .addCase(fetchTotalCotizaciones.pending, (state) => {
@@ -286,7 +352,7 @@ const cotizacionesSlice = createSlice({
 });
 
 // Exporta las acciones síncronas generadas por createSlice
-export const { resetCotizacionesStatus, clearCotizacionesError, resetDashboardStatus } = cotizacionesSlice.actions;
+export const { resetCotizacionesStatus, clearCotizacionesError, resetDashboardStatus, resetClientCotizacionesStatus } = cotizacionesSlice.actions;
 
 // Exporta el reducer principal
 export default cotizacionesSlice.reducer;
@@ -297,8 +363,16 @@ export const selectCotizacionesStatus = (state) => state.cotizaciones.status;
 export const selectCotizacionesError = (state) => state.cotizaciones.error;
 export const selectCotizacionesPagination = (state) => state.cotizaciones.pagination;
 
+// NUEVOS SELECTORES para las cotizaciones del cliente
+export const selectClientCotizaciones = (state) => state.cotizaciones.clientCotizaciones;
+export const selectClientCotizacionesStatus = (state) => state.cotizaciones.clientCotizacionesStatus;
+export const selectClientCotizacionesError = (state) => state.cotizaciones.clientCotizacionesError;
+export const selectClientCotizacionesPagination = (state) => state.cotizaciones.clientCotizacionesPagination;
+
 export const selectCotizacionById = (state, cotizacionId) =>
-    state.cotizaciones.cotizaciones.find(cot => cot.id_cotizacion === cotizacionId);
+    state.cotizaciones.cotizaciones.find(cot => cot.id_cotizacion === cotizacionId) ||
+    state.cotizaciones.clientCotizaciones.find(cot => cot.id_cotizacion === cotizacionId); // Busca también en las cotizaciones del cliente
+
 
 // Nuevos selectores para los datos del dashboard
 export const selectTotalCotizaciones = (state) => state.cotizaciones.totalCotizaciones;

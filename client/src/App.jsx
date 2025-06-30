@@ -29,10 +29,14 @@ import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage';
 import ClientesPage from './pages/Admin/Clientes/ClientesPage';
 
 // IMPORTA EL COMPONENTE DASHBOARD PRINCIPAL
+import Dashboard from './pages/dashboard/DashBoard';
+
+// IMPORTA EL NUEVO COMPONENTE PARA LAS COTIZACIONES DEL CLIENTE
+import ClientCotizacionesPage from './pages/clientes/cotizaciones/ClientCotizacionesPage';
+
 
 // Importa el selector de usuario desde tu slice de autenticación
 import { selectUser, selectIsAuthenticated } from './features/auth/authSlice';
-import Dashboard from './pages/dashboard/DashBoard';
 
 
 // Componente para proteger rutas (ProtectedRoute)
@@ -112,6 +116,16 @@ function App() {
                     }
                 />
 
+                {/* NUEVA RUTA PARA LAS COTIZACIONES DEL CLIENTE */}
+                <Route
+                    path="/my-cotizaciones" // La ruta que el cliente usará para ver sus cotizaciones
+                    element={
+                        <ProtectedRoute allowedRoles={['cliente']}>
+                            <ClientCotizacionesPage/>
+                        </ProtectedRoute>
+                    }
+                />
+
                 {/* Rutas para el panel de administración / empleados */}
                 {/* Dashboard principal de administración */}
                 <Route
@@ -119,7 +133,7 @@ function App() {
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'empleado', 'gerente']}>
                             {/* ¡Aquí se renderiza el componente Dashboard! */}
-                            <Dashboard/> 
+                            <Dashboard/>
                         </ProtectedRoute>
                     }
                 />
@@ -225,6 +239,8 @@ function App() {
                             </button>
                         </div>
                 } />
+                {/* Ruta por defecto o "catch-all" */}
+                <Route path="*" element={<LandingPageContent />} /> {/* Redirige a LandingPage si la ruta no existe */}
             </Routes>
         </Router>
     );
