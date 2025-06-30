@@ -2,255 +2,304 @@
 
 /* HEADER CONTAINER GLOBAL */
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  /* padding se ajustará para el diseño de dos filas */
-  background-color: #222; /* Color de fondo inicial */
-  color: #fff;
-  display: flex;
-  flex-direction: column; /* Cambiado a columna para dos filas */
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  transition: background-color 0.3s ease, padding 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* padding se ajustará para el diseño de dos filas */
+    background-color: #222; /* Color de fondo inicial */
+    color: #fff;
+    display: flex;
+    flex-direction: column; /* Cambiado a columna para dos filas */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: background-color 0.3s ease, padding 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
 .scrolled {
-  background-color: rgba(0, 0, 0, 0.9); /* Más oscuro cuando se hace scroll */
-  /* padding se ajustará para el diseño de dos filas */
+    background-color: rgba(0, 0, 0, 0.9); /* Más oscuro cuando se hace scroll */
+    /* padding se ajustará para el diseño de dos filas */
 }
 
 /* SECCIÓN SUPERIOR DEL HEADER (LOGO, BÚSQUEDA, ICONOS) */
 .headerTop {
-  display: flex;
-  justify-content: space-between; /* Espacio entre las 3 secciones */
-  align-items: center;
-  width: 100%;
-  padding: 10px 30px; /* Padding para la fila superior */
-  max-width: 1200px; /* Ancho máximo para el contenido */
-  box-sizing: border-box; /* Incluir padding en el ancho */
+    display: flex;
+    justify-content: space-between; /* Espacio entre las 3 secciones */
+    align-items: center;
+    width: 100%;
+    padding: 10px 30px; /* Padding para la fila superior */
+    max-width: 1200px; /* Ancho máximo para el contenido */
+    box-sizing: border-box; /* Incluir padding en el ancho */
 }
 
 /* LOGO */
 .logoContainer {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .logoLink {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: inherit;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
 }
 
 .logoImage {
-  height: 50px; /* Ajusta según el tamaño de tu logo */
-  margin-right: 10px;
+    height: 50px; /* Ajusta según el tamaño de tu logo */
+    margin-right: 10px;
 }
 
 .logoText {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .mainLogo {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #ffd700; /* Dorado */
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #ffd700; /* Dorado */
 }
 
 .subLogo {
-  font-size: 0.8rem;
-  opacity: 0.8;
+    font-size: 0.8rem;
+    opacity: 0.8;
 }
 
 /* SECCIÓN CENTRAL (MENÚ CUADRÍCULA Y BARRA DE BÚSQUEDA) */
 .centerSection {
-  display: flex;
-  align-items: center;
-  flex-grow: 1; /* Permite que ocupe el espacio disponible */
-  justify-content: center; /* Centra el contenido dentro de esta sección */
-  gap: 15px; /* Espacio entre botón de cuadrícula y barra de búsqueda */
-  max-width: 600px; /* Ancho máximo para la sección central */
-  margin: 0 20px; /* Margen a los lados */
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Permite que ocupe el espacio disponible */
+    justify-content: center; /* Centra el contenido dentro de esta sección */
+    gap: 15px; /* Espacio entre botón de cuadrícula y barra de búsqueda */
+    max-width: 600px; /* Ancho máximo para la sección central */
+    margin: 0 20px; /* Margen a los lados */
 }
 
 .gridMenuButton {
-  background: none;
-  border: none;
-  color: #f0f0f0;
-  font-size: 1.8rem; /* Tamaño del icono */
-  cursor: pointer;
-  padding: 5px;
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    font-size: 1.8rem; /* Tamaño del icono */
+    cursor: pointer;
+    padding: 5px;
 }
 
 .gridMenuButton:hover {
-  color: #ffd700;
+    color: #ffd700;
 }
 
 .searchBar {
-  display: flex;
-  align-items: center;
-  border-radius: 25px; /* Bordes más redondos */
-  background-color: #333;
-  overflow: hidden;
-  flex-grow: 1; /* Permite que la barra de búsqueda se expanda */
-  max-width: 400px; /* Ancho máximo de la barra de búsqueda */
+    display: flex;
+    align-items: center;
+    border-radius: 25px; /* Bordes más redondos */
+    background-color: #333;
+    overflow: hidden;
+    flex-grow: 1; /* Permite que la barra de búsqueda se expanda */
+    max-width: 400px; /* Ancho máximo de la barra de búsqueda */
 }
 
 .searchInput {
-  border: none;
-  background: transparent;
-  padding: 10px 20px; /* Más padding */
-  color: #f0f0f0;
-  outline: none;
-  flex-grow: 1; /* Permite que el input ocupe el espacio */
+    border: none;
+    background: transparent;
+    padding: 10px 20px; /* Más padding */
+    color: #f0f0f0;
+    outline: none;
+    flex-grow: 1; /* Permite que el input ocupe el espacio */
 }
 
 .searchInput::placeholder {
-  color: #aaa;
+    color: #aaa;
 }
 
 .searchButton {
-  background: none;
-  border: none;
-  color: #ffd700;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 1.1rem; /* Tamaño del icono */
+    background: none;
+    border: none;
+    color: #ffd700;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1.1rem; /* Tamaño del icono */
 }
 
 /* ICONOS DE USUARIO Y CARRITO */
 .userIcons {
-  display: flex;
-  align-items: center;
-  gap: 15px; /* Espacio entre los iconos y la hamburguesa */
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre los iconos y la hamburguesa */
 }
 
 .navIcon {
-  background: none;
-  border: none;
-  color: #f0f0f0;
-  font-size: 1.6rem; /* Tamaño de los iconos */
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap; /* Evita que el nombre de usuario se rompa */
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    /* font-size: 1.6rem; */ /* Eliminamos el font-size aquí para que la imagen de perfil pueda tener su propio tamaño */
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap; /* Evita que el nombre de usuario se rompa */
 }
 
 .navIcon:hover {
-  color: #ffd700;
+    color: #ffd700;
 }
 
 .profileSection {
-  position: relative;
+    position: relative;
+}
+
+/* ESTILOS PARA LA IMAGEN DE PERFIL EN EL HEADER (JUNTO AL NOMBRE) */
+.profileImage {
+    width: 40px; /* Ajusta el tamaño de la imagen de perfil en el header */
+    height: 40px;
+    border-radius: 50%; /* Para hacerla circular */
+    object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+    border: 1px solid #ffd700; /* Pequeño borde dorado para destacar */
 }
 
 .profileName {
-  font-size: 1rem;
-  font-weight: bold;
+    font-size: 1rem;
+    font-weight: bold;
 }
 
 .profileDropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: #2a2a2a;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  min-width: 180px; /* Un poco más ancho */
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  padding: 10px 0;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 220px; /* Un poco más ancho para el contenido del perfil */
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 0; /* Cambiado a 0 para que el dropdownHeader tenga su propio padding */
 }
+
+/* NUEVOS ESTILOS PARA LA SECCIÓN DE USUARIO EN EL DROPDOWN */
+.dropdownHeader {
+    display: flex;
+    flex-direction: column; /* Para apilar imagen, nombre y rol */
+    align-items: center;
+    padding: 15px 20px; /* Padding para esta sección */
+    border-bottom: 1px solid #444; /* Separador */
+    margin-bottom: 10px; /* Espacio antes de los enlaces */
+    text-align: center;
+}
+
+.dropdownProfileImage {
+    width: 100px; /* Tamaño más grande para la imagen en el dropdown */
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffd700; /* Borde un poco más grueso */
+    margin-bottom: 10px;
+}
+
+.dropdownProfileIcon {
+    font-size: 3.5rem; /* Tamaño grande para el ícono por defecto */
+    color: #ffd700; /* Color del ícono */
+    margin-bottom: 10px;
+}
+
+.dropdownUserName {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f0f0f0;
+    margin-bottom: 5px;
+}
+
+.dropdownUserRole {
+    font-size: 0.85rem;
+    color: #aaa;
+    /* text-transform: capitalize; (Si el backend no lo envía capitalizado y quieres hacerlo aquí) */
+}
+
 
 .dropdownItem,
 .dropdownItemLogout {
-  display: block;
-  padding: 10px 15px;
-  text-decoration: none;
-  color: #f0f0f0;
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  font-size: 0.95rem;
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #f0f0f0;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.95rem;
 }
 
 .dropdownItem:hover {
-  background-color: #3a3a3a;
-  color: #ffd700;
+    background-color: #3a3a3a;
+    color: #ffd700;
 }
 
 .dropdownItemLogout {
-  color: #ff4d4d;
-  border-top: 1px solid #444;
-  margin-top: 5px;
-  padding-top: 10px;
+    color: #ff4d4d;
+    border-top: 1px solid #444;
+    margin-top: 10px; /* Aumentar el margen superior para separarlo de los enlaces */
+    padding-top: 10px;
 }
 
 .dropdownItemLogout:hover {
-  background-color: #cc3333;
-  color: #fff;
+    background-color: #cc3333;
+    color: #fff;
 }
 
 
 /* SEGUNDO NIVEL DE NAVEGACIÓN (DEBAJO DEL HEADER PRINCIPAL) */
 .secondaryNav {
-  width: 100%;
-  background-color: #1a1a1a; /* Fondo más oscuro para la barra de navegación */
-  padding: 8px 30px;
-  box-sizing: border-box;
-  border-top: 1px solid #333; /* Separador */
-  max-width: 100%; /* Ocupa todo el ancho */
+    width: 100%;
+    background-color: #1a1a1a; /* Fondo más oscuro para la barra de navegación */
+    padding: 8px 30px;
+    box-sizing: border-box;
+    border-top: 1px solid #333; /* Separador */
+    max-width: 100%; /* Ocupa todo el ancho */
 }
 
 .secondaryNavList {
-  display: flex;
-  justify-content: center; /* Centrar los enlaces */
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 30px; /* Espacio entre los enlaces */
+    display: flex;
+    justify-content: center; /* Centrar los enlaces */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 30px; /* Espacio entre los enlaces */
 }
 
 .secondaryNavLink {
-  color: #f0f0f0;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 5px 0;
-  transition: color 0.3s ease;
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 5px 0;
+    transition: color 0.3s ease;
 }
 
 .secondaryNavLink:hover {
-  color: #ffd700;
+    color: #ffd700;
 }
 
 /* ASIDE DEL CARRITO */
 .cartAside, .gridMenuAside { /* Estilos compartidos para ambos asides */
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 320px; /* Ancho del aside */
-  height: 100%;
-  background-color: #2a2a2a;
-  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.4);
-  z-index: 2000; /* Alto z-index para estar por encima de todo */
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  transform: translateX(0); /* Ya está abierto */
-  transition: transform 0.3s ease-out; /* Animación de entrada/salida */
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px; /* Ancho del aside */
+    height: 100%;
+    background-color: #2a2a2a;
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.4);
+    z-index: 2000; /* Alto z-index para estar por encima de todo */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transform: translateX(0); /* Ya está abierto */
+    transition: transform 0.3s ease-out; /* Animación de entrada/salida */
 }
 
 /* Si quieres que se oculte a la derecha y aparezca, tendrías que manejar el estado 'isCartOpen' con una clase adicional: */
@@ -258,193 +307,195 @@
 /* .cartAside.open { transform: translateX(0); } */
 
 .closeCartButton, .closeGridMenuButton {
-  align-self: flex-end;
-  background: none;
-  border: none;
-  color: #f0f0f0;
-  font-size: 1.5rem;
-  cursor: pointer;
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: #f0f0f0;
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
 .closeCartButton:hover, .closeGridMenuButton:hover {
-  color: #ff4d4d;
+    color: #ff4d4d;
 }
 
 .checkoutButton {
-  background-color: #ffd700;
-  color: #1a1a1a;
-  border: none;
-  padding: 12px 25px; /* Más padding */
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin-top: auto;
-  align-self: center; /* Centra el botón en el aside */
+    background-color: #ffd700;
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 25px; /* Más padding */
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: auto;
+    align-self: center; /* Centra el botón en el aside */
 }
 
 .checkoutButton:hover {
-  background-color: #e0b800;
+    background-color: #e0b800;
 }
 
 .gridMenuNavList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .gridMenuNavList li a {
-  display: block;
-  padding: 10px 0;
-  color: #f0f0f0;
-  text-decoration: none;
-  font-size: 1.1rem;
-  border-bottom: 1px solid #444;
+    display: block;
+    padding: 10px 0;
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #444;
 }
 
 .gridMenuNavList li a:hover {
-  color: #ffd700;
-  background-color: #3a3a3a;
+    color: #ffd700;
+    background-color: #3a3a3a;
 }
 
 /* HAMBURGUESA Y MENÚ MÓVIL */
 .hamburger {
-  display: none; /* Oculta por defecto en escritorio */
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  z-index: 1010;
-  margin-left: 15px; /* Espacio con los iconos de usuario */
+    display: none; /* Oculta por defecto en escritorio */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1010;
+    margin-left: 15px; /* Espacio con los iconos de usuario */
 }
 
+/* Nota: Si estás usando FontAwesomeIcon para el botón de hamburguesa,
+   las reglas `.hamburger span` no serán necesarias y pueden eliminarse. */
 .hamburger span {
-  display: block;
-  width: 28px; /* Un poco más grande */
-  height: 3px;
-  background-color: #f0f0f0;
-  margin-bottom: 6px; /* Más espacio */
-  transition: all 0.3s ease;
+    display: block;
+    width: 28px; /* Un poco más grande */
+    height: 3px;
+    background-color: #f0f0f0;
+    margin-bottom: 6px; /* Más espacio */
+    transition: all 0.3s ease;
 }
 .hamburger span:last-child {
     margin-bottom: 0;
 }
 
 .mobileMenuOpen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.95); /* Más opaco */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1999; /* Por debajo de los asides, pero por encima de todo lo demás */
-  transform: translateX(0);
-  transition: transform 0.3s ease-out;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95); /* Más opaco */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1999; /* Por debajo de los asides, pero por encima de todo lo demás */
+    transform: translateX(0);
+    transition: transform 0.3s ease-out;
 }
 
 .mobileMenuOpen .navList {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .mobileMenuOpen .navLink {
-  color: #f0f0f0;
-  text-decoration: none;
-  font-size: 1.6rem; /* Más grande para móvil */
-  padding: 15px;
-  display: block;
-  width: 100%;
-  text-align: center;
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1.6rem; /* Más grande para móvil */
+    padding: 15px;
+    display: block;
+    width: 100%;
+    text-align: center;
 }
 
 .mobileMenuOpen .navLink:hover {
-  color: #ffd700;
+    color: #ffd700;
 }
 
 /* MEDIA QUERIES */
 @media (max-width: 1024px) {
-  .headerTop {
-    padding: 10px 20px;
-  }
-  .secondaryNav {
-    padding: 8px 20px;
-  }
-  .secondaryNavList {
-    gap: 20px;
-    font-size: 0.95rem;
-  }
-  .searchBar {
-    max-width: 300px; /* Ajusta el ancho de la barra de búsqueda */
-  }
+    .headerTop {
+        padding: 10px 20px;
+    }
+    .secondaryNav {
+        padding: 8px 20px;
+    }
+    .secondaryNavList {
+        gap: 20px;
+        font-size: 0.95rem;
+    }
+    .searchBar {
+        max-width: 300px; /* Ajusta el ancho de la barra de búsqueda */
+    }
 }
 
 
 @media (max-width: 768px) {
-  .headerTop {
-    flex-wrap: wrap; /* Permite que los elementos se envuelvan */
-    justify-content: center; /* Centra los elementos */
-    gap: 15px; /* Espacio entre elementos envueltos */
-    padding: 10px 15px;
-  }
+    .headerTop {
+        flex-wrap: wrap; /* Permite que los elementos se envuelvan */
+        justify-content: center; /* Centra los elementos */
+        gap: 15px; /* Espacio entre elementos envueltos */
+        padding: 10px 15px;
+    }
 
-  .logoContainer {
-    flex-basis: 100%; /* Logo en su propia línea */
-    justify-content: center;
-  }
+    .logoContainer {
+        flex-basis: 100%; /* Logo en su propia línea */
+        justify-content: center;
+    }
 
-  .centerSection {
-    flex-basis: 100%; /* Barra de búsqueda en su propia línea */
-    justify-content: center;
-    order: 3; /* Ordena la sección central para que vaya después del logo y los iconos */
-    margin: 10px 0;
-  }
+    .centerSection {
+        flex-basis: 100%; /* Barra de búsqueda en su propia línea */
+        justify-content: center;
+        order: 3; /* Ordena la sección central para que vaya después del logo y los iconos */
+        margin: 10px 0;
+    }
 
-  .userIcons {
-    order: 2; /* Después del logo */
-    justify-content: flex-end;
-    flex-grow: 1; /* Ocupa el espacio restante en la línea */
-    margin-left: auto; /* Empuja a la derecha */
-    gap: 10px;
-  }
-  .profileName {
-    display: none; /* Ocultar nombre de usuario en móvil */
-  }
+    .userIcons {
+        order: 2; /* Después del logo */
+        justify-content: flex-end;
+        flex-grow: 1; /* Ocupa el espacio restante en la línea */
+        margin-left: auto; /* Empuja a la derecha */
+        gap: 10px;
+    }
+    .profileName {
+        display: none; /* Ocultar nombre de usuario en móvil */
+    }
 
-  .hamburger {
-    display: block; /* Mostrar hamburguesa en móvil */
-  }
+    .hamburger {
+        display: block; /* Mostrar hamburguesa en móvil */
+    }
 
-  .secondaryNav {
-    display: none; /* Ocultar navegación secundaria en móvil (se manejará en el menú hamburguesa) */
-  }
+    .secondaryNav {
+        display: none; /* Ocultar navegación secundaria en móvil (se manejará en el menú hamburguesa) */
+    }
 
-  .cartAside, .gridMenuAside {
-    width: 100%; /* Ocupa todo el ancho en móvil */
-  }
+    .cartAside, .gridMenuAside {
+        width: 100%; /* Ocupa todo el ancho en móvil */
+    }
 }
 
 @media (max-width: 480px) {
-  .logoImage {
-    height: 40px;
-  }
-  .mainLogo {
-    font-size: 1.5rem;
-  }
-  .subLogo {
-    font-size: 0.7rem;
-  }
-  .navIcon {
-    font-size: 1.3rem;
-  }
-  .searchBar {
-    width: 100%;
-    max-width: none; /* Permite que ocupe todo el ancho disponible */
-  }
+    .logoImage {
+        height: 40px;
+    }
+    .mainLogo {
+        font-size: 1.5rem;
+    }
+    .subLogo {
+        font-size: 0.7rem;
+    }
+    .navIcon {
+        font-size: 1.3rem;
+    }
+    .searchBar {
+        width: 100%;
+        max-width: none; /* Permite que ocupe todo el ancho disponible */
+    }
 }

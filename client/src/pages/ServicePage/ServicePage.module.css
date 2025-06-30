@@ -1,0 +1,69 @@
+/* client/src/pages/ServicePage/ServicePage.module.css */
+
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Asegura que el contenedor ocupe al menos toda la altura de la ventana */
+}
+
+.mainContent {
+    flex-grow: 1; /* Permite que el contenido principal ocupe todo el espacio disponible */
+    background-color: #333; /* Fondo oscuro consistente con el header */
+    color: #fff; /* Color de texto predeterminado para el contenido principal */
+    padding: 120px 20px 40px 20px; /* Ajuste para el header fijo (aproximadamente 100px de altura del header + 20px de espacio extra) */
+    display: flex; /* Usar flexbox para centrar y organizar el contenido */
+    flex-direction: column; /* Apilar elementos verticalmente */
+    align-items: center; /* Centrar horizontalmente los elementos hijos */
+    text-align: center; /* Centrar el texto en general */
+    max-width: 100%; /* Asegurarse de que no desborde */
+    box-sizing: border-box; /* Incluir padding en el ancho */
+}
+
+/* Títulos y descripciones de la página */
+.pageTitle {
+    color: #ffd700; /* Dorado para el título */
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.pageDescription {
+    color: #ccc;
+    font-size: 1.1rem;
+    max-width: 800px; /* Limita el ancho del párrafo para legibilidad */
+    margin-bottom: 40px; /* Espacio antes del formulario */
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* Media Queries para responsividad */
+@media (max-width: 1024px) {
+    .pageTitle {
+        font-size: 2.2rem;
+    }
+    .mainContent {
+        padding-top: 100px; /* Ajuste para pantallas medianas */
+    }
+}
+
+@media (max-width: 768px) {
+    .pageTitle {
+        font-size: 2rem;
+    }
+    .pageDescription {
+        font-size: 1rem;
+        padding: 0 15px; /* Pequeño padding a los lados para texto */
+    }
+    .mainContent {
+        padding-top: 180px; /* Ajuste para móviles, considerando que el header se envuelve */
+    }
+}
+
+@media (max-width: 480px) {
+    .pageTitle {
+        font-size: 1.8rem;
+    }
+    .mainContent {
+        padding-top: 180px; /* Puede que necesite más ajuste dependiendo de la altura final del header móvil */
+    }
+}

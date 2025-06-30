@@ -1,25 +1,24 @@
 /* client/src/components/ServicesForm/CotizacionForm.module.css */
-/* Este archivo CSS debe tener el nombre que corresponde a tu importación en CotizacionForm.jsx */
-/* Es decir, si importas styles from './CotizacionForm.module.css';, este es el nombre del archivo. */
 
-.cotizacionContainer { /* Esto era 'formContainer' en tu CSS base */
+.cotizacionContainer {
     background-color: rgba(0, 0, 0, 0.7);
-    padding: 2rem;
+    padding: 2.5rem; /* Aumentado ligeramente el padding interno para más "aire" alrededor del contenido */
     border-radius: 10px;
     color: #fff;
-    width: 100%;
-    max-width: 500px; /* Incrementado para mejor espacio en formulario de cotización */
+    width: 90%; /* Usar un porcentaje del ancho disponible */
+    max-width: 700px; /* Aumentado a 700px para pantallas grandes, era 500px */
     margin: 40px auto; /* Centrar el formulario y añadir espacio vertical */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(5px);
     border: 1px solid #ff9900; /* Borde sutil del color de acento */
+    box-sizing: border-box; /* Asegurar que el padding se incluya en el width */
 }
 
-.title { /* Esto era 'formTitle' en tu CSS base */
-    font-size: 2rem; /* Aumentado ligeramente para mayor impacto */
+.title {
+    font-size: 2.2rem; /* Aumentado un poco más para visibilidad */
     font-weight: bold;
     text-align: center;
-    margin-bottom: 1.8rem; /* Aumentado ligeramente */
+    margin-bottom: 2rem; /* Aumentado ligeramente */
     color: #ffd700; /* Un dorado brillante para el título */
     text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); /* Sutil brillo */
 }
@@ -27,11 +26,11 @@
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem; /* Espaciado entre grupos de formulario */
+    gap: 1rem; /* Ligeramente reducido el espaciado entre grupos de formulario (era 1.2rem) */
 }
 
 .formGroup {
-    margin-bottom: 1rem; /* Espacio debajo de cada grupo de entrada */
+    margin-bottom: 0.8rem; /* Ligeramente reducido el espacio debajo de cada grupo de entrada (era 1rem) */
 }
 
 .label {
@@ -42,14 +41,14 @@
     font-weight: bold;
 }
 
-.input, /* Esto era 'inputField' en tu CSS base */
-.select, /* Esto era 'selectField' en tu CSS base */
-.textarea { /* Añadido para el textarea */
-    width: 100%;
-    padding: 0.8rem 1rem;
-    border: 1px solid #444; /* Borde un poco más oscuro */
+.input,
+.select,
+.textarea {
+    width: 100%; /* Asegura que siempre ocupe el 100% del ancho del contenedor del formulario */
+    padding: 0.9rem 1.2rem; /* Ligeramente más padding para los campos */
+    border: 1px solid #444;
     border-radius: 5px;
-    background-color: #2a2a2a; /* Fondo más oscuro */
+    background-color: #2a2a2a;
     color: #fff;
     font-size: 1rem;
     outline: none;
@@ -59,8 +58,8 @@
 .input:focus,
 .select:focus,
 .textarea:focus {
-    border-color: #ffcc00; /* Un color de enfoque más vibrante */
-    box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.3); /* Resplandor al enfocar */
+    border-color: #ffcc00;
+    box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.3);
 }
 
 .select {
@@ -74,41 +73,41 @@
 
 .checkbox {
     margin-right: 0.5rem;
-    accent-color: #ff9900; /* Color del checkbox al seleccionarlo */
-    transform: scale(1.2); /* Hacer el checkbox un poco más grande */
+    accent-color: #ff9900;
+    transform: scale(1.2);
 }
 
 .labelCheckbox {
     color: #e0e0e0;
     font-size: 1rem;
-    vertical-align: middle; /* Alinea el texto con el checkbox */
+    vertical-align: middle;
 }
 
 .helpText {
     font-size: 0.85rem;
     color: #aaa;
     margin-top: 0.4rem;
-    display: block; /* Asegura que ocupe su propia línea */
+    display: block;
 }
 
 .submitButton {
-    background-color: #ff9900; /* Naranja fuerte */
+    background-color: #ff9900;
     color: #fff;
     border: none;
-    padding: 1rem 1.5rem;
+    padding: 1.1rem 1.8rem; /* Ligeramente más padding para el botón */
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.2rem; /* Ligeramente más grande */
     font-weight: bold;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    margin-top: 1.5rem; /* Espacio superior */
-    box-shadow: 0 2px 8px rgba(255, 153, 0, 0.4); /* Sombra para el botón */
+    margin-top: 1.8rem; /* Ligeramente más espacio superior */
+    box-shadow: 0 2px 8px rgba(255, 153, 0, 0.4);
 }
 
 .submitButton:hover {
-    background-color: #cc7a00; /* Naranja más oscuro al pasar el ratón */
-    transform: translateY(-3px); /* Efecto de "levantar" */
-    box-shadow: 0 6px 15px rgba(255, 153, 0, 0.6); /* Sombra más pronunciada al pasar el ratón */
+    background-color: #cc7a00;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 153, 0, 0.6);
 }
 
 .submitButton:disabled {
@@ -120,14 +119,14 @@
 
 .message {
     text-align: center;
-    color: #ffeb3b; /* Amarillo claro para mensajes de carga */
+    color: #ffeb3b;
     margin-top: 1rem;
     font-size: 0.95rem;
 }
 
 .errorMessage {
     text-align: center;
-    color: #ff6b6b; /* Rojo para errores */
+    color: #ff6b6b;
     margin-top: 1rem;
     font-size: 0.95rem;
     font-weight: bold;
@@ -135,8 +134,62 @@
 
 .successMessage {
     text-align: center;
-    color: #6bff6b; /* Verde para éxito */
+    color: #6bff6b;
     margin-top: 1rem;
     font-size: 0.95rem;
     font-weight: bold;
+}
+
+/* Media Queries para responsividad del formulario */
+@media (max-width: 768px) {
+    .cotizacionContainer {
+        padding: 1.5rem; /* Menos padding en pantallas pequeñas */
+        margin: 20px auto; /* Menos margen vertical en móviles */
+        width: 95%; /* Ocupa más ancho en pantallas más estrechas */
+    }
+    .title {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .form {
+        gap: 0.8rem;
+    }
+    .formGroup {
+        margin-bottom: 0.6rem;
+    }
+    .input,
+    .select,
+    .textarea {
+        padding: 0.7rem 1rem;
+    }
+    .submitButton {
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        margin-top: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .cotizacionContainer {
+        padding: 1rem;
+    }
+    .title {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+    .input,
+    .select,
+    .textarea {
+        font-size: 0.9rem;
+    }
+    .label {
+        font-size: 0.9rem;
+    }
+    .helpText {
+        font-size: 0.8rem;
+    }
+    .submitButton {
+        font-size: 0.95rem;
+        padding: 0.9rem 1rem;
+    }
 }

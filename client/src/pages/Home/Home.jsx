@@ -6,6 +6,7 @@ import { logout } from '../../features/auth/authSlice';
 import Header from '../../components/Header/Header'; // <--- ¡Importa el Header!
 import styles from './Home.module.css';
 import AuthHeader from '../../components/User/AuthHeader/AuthHeader';
+import Footer from '../../components/Footer/Footer';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -45,6 +46,8 @@ const Home = () => {
           Cerrar Sesión
         </button>
       </div>
+      <Footer/>
+      
     </div>
   );
 };

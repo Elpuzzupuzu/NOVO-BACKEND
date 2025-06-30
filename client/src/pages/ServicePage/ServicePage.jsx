@@ -1,13 +1,14 @@
-// client/src/pages/ServicePage/ServicePage.jsx
 import React from 'react';
-import CotizacionForm from '../../components/ServicesForm/CotizacionForm'; // Ajusta la ruta de CotizacionForm
+import CotizacionForm from '../../components/ServicesForm/CotizacionForm';
 import AuthHeader from '../../components/User/AuthHeader/AuthHeader';
-
+import Footer from '../../components/Footer/Footer';
+import styles from './ServicePage.module.css'; // Importa el CSS modularizado
 
 const ServicePage = () => {
     // Aquí puedes obtener el ID del cliente del contexto de autenticación
     // Por ahora, usaremos un ID de prueba o lo dejaremos vacío si es para visitantes no logueados.
-    const currentUserClienteId = 'some-logged-in-client-id'; // Reemplazar con lógica real de autenticación (ej: de un Contexto)
+    // **Importante:** Debes reemplazar esto con la lógica real de Redux/Context para obtener el ID del usuario.
+    const currentUserClienteId = 'some-logged-in-client-id'; // Reemplazar con lógica real
 
     const handleQuoteSubmit = (newQuote) => {
         console.log('Cotización enviada exitosamente desde Service Page:', newQuote);
@@ -17,14 +18,13 @@ const ServicePage = () => {
     };
 
     return (
-        <div>
-            {/* Incluye el encabezado en todas tus páginas si es parte del layout principal */}
+        <div className={styles.pageContainer}> {/* Contenedor principal para el layout */}
             <AuthHeader />
 
-            <main style={{ padding: '20px', backgroundColor: '#333', minHeight: 'calc(100vh - 60px)' }}> {/* Ajusta el padding y minHeight según tu AuthHeader y Footer */}
-                <h1 style={{ color: 'yellow', textAlign: 'center', marginBottom: '30px' }}>Nuestros Servicios y Cotizaciones</h1>
-                <p style={{ color: '#ccc', textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}>
-                    En NOVO Tapicería de Lujo, estamos listos para transformar tus vehículos y muebles.
+            <main className={styles.mainContent}> {/* Aplica la clase del CSS modularizado */}
+                <h1 className={styles.pageTitle}>Nuestros Servicios y Cotizaciones</h1>
+                <p className={styles.pageDescription}>
+                    En NOVO Tapicería, estamos listos para transformar tus vehículos y muebles.
                     Describe tu proyecto a continuación para obtener una cotización personalizada.
                 </p>
 
@@ -34,8 +34,7 @@ const ServicePage = () => {
                 />
             </main>
 
-            {/* Opcional: Incluye un pie de página si tienes uno */}
-            {/* <Footer /> */}
+            <Footer/>
         </div>
     );
 };
