@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './ContactPage.module.css'; // Importa los estilos CSS Modules
+import styles from './contactPage.module.css'; // Importa los estilos CSS Modules
 import Footer from '../../components/Footer/Footer';
 
 const ContactPage = () => {
