@@ -32,7 +32,11 @@ app.use(cors(corsOptions));
 
 
 // Middleware para parsear JSON en las solicitudes
-app.use(express.json());
+// ¡CAMBIO CLAVE AQUÍ! Aumenta el límite de tamaño del cuerpo de la solicitud.
+// Por ejemplo, '10mb' para 10 megabytes. Puedes ajustarlo según tus necesidades.
+app.use(express.json({ limit: '10mb' })); // Aumenta el límite para JSON
+app.use(express.urlencoded({ limit: '10mb', extended: true })); // También para URL-encoded si lo usas
+
 
 // --- NUEVO MIDDLEWARE PARA DESHABILITAR CACHÉ ---
 // Aplica este middleware antes de tus rutas principales de API para asegurar
