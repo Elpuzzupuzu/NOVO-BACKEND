@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000/NOVO'; // Asegúrate de que esta URL sea correcta
+const API_BASE_URL = process.env.REACT_APP_API_HOOKS || 'http://localhost:3000/NOVO';
 
 const useMaterials = () => {
     const [materials, setMaterials] = useState([]);
