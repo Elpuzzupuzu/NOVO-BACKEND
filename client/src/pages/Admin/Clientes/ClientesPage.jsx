@@ -18,7 +18,7 @@ import {
     setClienteSearchTerm,
     clearClientesError,
     resetClientesStatus,
-} from '../../../features/clientes/clientesSlice';
+} from '../../../features/clientes/ClientesSlice';
 import ClienteDetailModal from './ClienteDetailModal'; // Asume que este modal existe
 import ConfirmationModal from './ConfirmationModal'; // Asume que este modal existe
 import styles from './ClientesPage.module.css'; // Asegúrate de crear este archivo CSS
