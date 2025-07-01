@@ -216,7 +216,7 @@ const AdminHeader = () => {
                     <ul className={styles.navList}>
                         <li className={styles.navItem}><Link to="/admin/dashboard" className={styles.navLink} onClick={toggleMobileMenu}>Dashboard</Link></li>
                         <li className={styles.navItem}><Link to="/admin/cotizaciones" className={styles.navLink} onClick={toggleMobileMenu}>Cotizaciones</Link></li>
-                        <li className={styles.navItem}><Link to="/admin/proyectos" className={styles.navLink} onClick={toggleMobileMenu}>Proyectos</Link></li>
+                        <li className={styles.navItem}><Link to="/admin/trabajos" className={styles.navLink} onClick={toggleMobileMenu}>Proyectos</Link></li>
                         {(user?.role === 'empleado' || user?.role === 'gerente' || user?.role === 'admin') && (
                             <li className={styles.navItem}><Link to="/admin/materiales" className={styles.navLink} onClick={toggleMobileMenu}>Materiales</Link></li>
                         )}
