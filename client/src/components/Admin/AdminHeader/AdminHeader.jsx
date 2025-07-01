@@ -15,7 +15,7 @@ const AdminHeader = () => {
     // Referencia para la sección de perfil (botón + dropdown)
     const profileSectionRef = useRef(null);
 
-    const user = useSelector(selectUser);
+    const user = useSelector(selectUser); // Obtener el usuario del store de Redux
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -105,27 +105,43 @@ const AdminHeader = () => {
         navigate('/');
     };
 
-    const SecondaryNav = () => (
-        <nav className={styles.secondaryNav}>
-            <ul className={styles.secondaryNavList}>
-                <li><Link to="/admin/dashboard" className={styles.secondaryNavLink}>DASHBOARD</Link></li>
-                <li><Link to="/admin/cotizaciones" className={styles.secondaryNavLink}>COTIZACIONES</Link></li>
-                <li><Link to="/admin/trabajos" className={styles.secondaryNavLink}>PROYECTOS</Link></li>
-                {(user?.role === 'empleado' || user?.role === 'gerente' || user?.role === 'admin') && (
-                    <li><Link to="/admin/materiales" className={styles.secondaryNavLink}>MATERIALES</Link></li>
-                )}
-                {(user?.role === 'gerente' || user?.role === 'admin') && (
-                    <li><Link to="/admin/empleados" className={styles.secondaryNavLink}>EMPLEADOS</Link></li>
-                )}
-                {(user?.role === 'gerente' || user?.role === 'admin') && (
-                    <li><Link to="/admin/clientes" className={styles.secondaryNavLink}>CLIENTES</Link></li>
-                )}
-                {(user?.role === 'gerente' || user?.role === 'admin') && (
-                    <li><Link to="/admin/reportes" className={styles.secondaryNavLink}>REPORTES</Link></li>
-                )}
-            </ul>
-        </nav>
-    );
+    // Componente del segundo nivel de navegación (los enlaces de "DASHBOARD", "COTIZACIONES" etc.)
+    const SecondaryNav = () => {
+        // Verifica si el objeto 'user' existe y tiene la propiedad 'role'
+        // Esto es crucial para saber si los datos del usuario están "completos"
+        const isUserReady = user && user.role; 
+
+        return (
+            <nav className={styles.secondaryNav}>
+                <ul className={styles.secondaryNavList}>
+                    {isUserReady ? (
+                        // Renderiza los enlaces reales una vez que 'user' y 'role' estén disponibles
+                        <>
+                            <li><Link to="/admin/dashboard" className={styles.secondaryNavLink}>DASHBOARD</Link></li>
+                            <li><Link to="/admin/cotizaciones" className={styles.secondaryNavLink}>COTIZACIONES</Link></li>
+                            <li><Link to="/admin/trabajos" className={styles.secondaryNavLink}>PROYECTOS</Link></li>
+                            {(user.role === 'empleado' || user.role === 'gerente' || user.role === 'admin') && (
+                                <li><Link to="/admin/materiales" className={styles.secondaryNavLink}>MATERIALES</Link></li>
+                            )}
+                            {(user.role === 'gerente' || user.role === 'admin') && (
+                                <li><Link to="/admin/empleados" className={styles.secondaryNavLink}>EMPLEADOS</Link></li>
+                            )}
+                            {(user.role === 'gerente' || user.role === 'admin') && (
+                                <li><Link to="/admin/clientes" className={styles.secondaryNavLink}>CLIENTES</Link></li>
+                            )}
+                            {(user.role === 'gerente' || user.role === 'admin') && (
+                                <li><Link to="/admin/reportes" className={styles.secondaryNavLink}>REPORTES</Link></li>
+                            )}
+                        </>
+                    ) : (
+                        // Muestra un estado de carga o un mensaje genérico mientras se carga el usuario
+                        // Puedes ajustar esto para que se vea mejor o un spinner, o simplemente null para que no aparezca nada.
+                        <li><span className={styles.secondaryNavLink} style={{ color: '#aaa', cursor: 'default' }}>Cargando navegación...</span></li>
+                    )}
+                </ul>
+            </nav>
+        );
+    };
 
     return (
         <header className={`${styles.header} ${isScrolled ? styles.scrolled : ''}`}>
@@ -209,7 +225,7 @@ const AdminHeader = () => {
                 </div>
             </div>
 
-            <SecondaryNav />
+            <SecondaryNav /> {/* Esto renderizará el nav condicionalmente */}
 
             {isMobileMenuOpen && (
                 <nav className={styles.mobileMenuOpen}>
