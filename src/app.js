@@ -17,14 +17,16 @@ import authRoutes from './routes/Auth.routes.js';
 const app = express();
 
 // Configuración de CORS
-// Es mejor aplicar CORS una sola vez y de forma correcta.
-// Si ya tienes un corsOptions, úsalo directamente con app.use(cors(corsOptions));
-// Elimina la línea `app.use(cors());` si usas la configuración con `corsOptions`.
+// Se ha actualizado 'origin' para incluir la URL del frontend desplegado en Render,
+// manteniendo 'http://localhost:5173' para desarrollo local.
 const corsOptions = {
-  origin: 'http://localhost:5173', // O tu URL de frontend en producción
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204
+    origin: [
+        'http://localhost:5173', // Para desarrollo local del frontend
+        'https://novo-front.onrender.com' // URL de tu frontend desplegado en Render
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
 
@@ -36,15 +38,15 @@ app.use(express.json());
 // Aplica este middleware antes de tus rutas principales de API para asegurar
 // que no se envíen encabezados de caché que puedan causar respuestas 304.
 app.use((req, res, next) => {
-  // Solo aplicar a rutas que comienzan con /NOVO/
-  if (req.path.startsWith('/NOVO/')) {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    // Si tu servidor web (nginx, apache) no está añadiendo Surrogate-Control, esta línea no es estrictamente necesaria.
-    // res.set('Surrogate-Control', 'no-store'); 
-  }
-  next();
+    // Solo aplicar a rutas que comienzan con /NOVO/
+    if (req.path.startsWith('/NOVO/')) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        // Si tu servidor web (nginx, apache) no está añadiendo Surrogate-Control, esta línea no es estrictamente necesaria.
+        // res.set('Surrogate-Control', 'no-store');
+    }
+    next();
 });
 // --- FIN DEL NUEVO MIDDLEWARE ---
 
