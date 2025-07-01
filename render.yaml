@@ -2,7 +2,7 @@
 
 services:
   - name: NOVO-FRONT # Este nombre DEBE coincidir con el nombre de tu servicio en Render.
-    type: static # ¡CAMBIO CLAVE AQUÍ! De 'static_site' a 'static'
+    type: static_site # ¡REVERTIDO A LA SINTAXIS CORRECTA!
     rootDir: client/ # Apunta a la carpeta de tu frontend dentro del monorepo.
     buildCommand: npm install && npm run build # Comando para construir los archivos estáticos.
     publishPath: dist # La carpeta 'dist' se generará dentro de 'client/'
