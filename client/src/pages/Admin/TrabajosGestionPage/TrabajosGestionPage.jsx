@@ -14,7 +14,7 @@ import {
 // Asegúrate que la ruta sea correcta, si TrabajoDetailModal está en el mismo nivel
 // que TrabajosGestionPage, entonces sería: import TrabajoDetailModal from './TrabajoDetailModal';
 // Si está en el directorio components, como se suele hacer, sería:
-import TrabajoDetailModal from './TrabajoDetailModal/TrabajoDetailModal.jsx'; // ASUMO esta ruta
+import TrabajoDetailModal from './TrabajoDetailModal'; // ASUMO esta ruta
 import SearchInput from '../../../components/SearchInput/SearchInput';
 import styles from './TrabajosGestionPage.module.css';
 
