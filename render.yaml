@@ -1,11 +1,11 @@
 # render.yaml (en la raíz de tu repositorio NOVO_BACKEND)
 
 services:
-  - type: static_site # ¡CAMBIO CLAVE AQUÍ! De 'web' a 'static_site'
-    name: NOVO-FRONT # Este nombre DEBE coincidir con el nombre de tu servicio en Render.
+  - name: NOVO-FRONT # Este nombre DEBE coincidir con el nombre de tu servicio en Render.
+    type: static # ¡CAMBIO CLAVE AQUÍ! De 'static_site' a 'static'
     rootDir: client/ # Apunta a la carpeta de tu frontend dentro del monorepo.
     buildCommand: npm install && npm run build # Comando para construir los archivos estáticos.
-    publishPath: dist # ¡CAMBIO AQUÍ! De 'staticPublishPath' a 'publishPath' y sin './'
+    publishPath: dist # La carpeta 'dist' se generará dentro de 'client/'
     routes:
       - type: rewrite
         source: /* # Cualquier ruta que no sea un archivo estático.
