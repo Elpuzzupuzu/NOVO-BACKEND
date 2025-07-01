@@ -107,7 +107,7 @@ const AuthHeader = () => {
         <nav className={styles.secondaryNav}>
             <ul className={styles.secondaryNavList}>
                 <li><Link to="/home" className={styles.secondaryNavLink}>INICIO</Link></li>
-                <li><Link to="/my-cotizaciones" className={styles.secondaryNavLink}>PEDIDOS</Link></li>
+                <li><Link to="/my-cotizaciones" className={styles.secondaryNavLink}>PEDIDOSSSSS</Link></li>
                 <li><Link to="/servicios" className={styles.secondaryNavLink}>SOLICITAR SERVICIOS</Link></li>
                 <li><Link to="/contacto" className={styles.secondaryNavLink}>CONTACTO</Link></li>
             </ul>
