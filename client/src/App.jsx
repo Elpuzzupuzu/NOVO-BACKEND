@@ -34,7 +34,7 @@ import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage.jsx'; // Añadi
 import ClientesPage from './pages/Admin/Clientes/ClientesPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL COMPONENTE DASHBOARD PRINCIPAL
-import Dashboard from './pages/dashboard/DashBoard.jsx'; // Añadido .jsx
+import Dashboard from './pages/dashboard/Dashboard.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE PARA LAS COTIZACIONES DEL CLIENTE
 import ClientCotizacionesPage from './pages/clientes/cotizaciones/ClientCotizacionesPage.jsx'; // Añadido .jsx
