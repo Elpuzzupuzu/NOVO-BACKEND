@@ -4,99 +4,99 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import { useSelector } from 'react-redux';
 
 // Importa los componentes de tus páginas
-import LandingPageContent from './pages/LandingPage/LandingPageContent.jsx';
-import Home from './pages/Home/Home.jsx';
-import ServicePage from './pages/ServicePage/ServicePage.jsx';
-import ContactPage from './pages/contacto/contactPage.jsx';
+import LandingPageContent from './pages/LandingPage/LandingPageContent.jsx'; // Añadido .jsx
+import Home from './pages/Home/Home.jsx'; // Añadido .jsx
+import ServicePage from './pages/ServicePage/ServicePage.jsx'; // Añadido .jsx
+// IMPORTA EL COMPONENTE DE LA PÁGINA DE CONTACTO
+import ContactPage from './pages/contacto/contactPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE REGISTRO
-import RegisterForm from './components/Auth/RegisterForm.jsx';
+import RegisterForm from './components/Auth/RegisterForm.jsx'; // Añadido .jsx <--- ¡Nueva importación!
 
 // Importa ambos headers
-import AuthHeader from './components/User/AuthHeader/AuthHeader.jsx'; // Header para clientes
-import AdminHeader from './components/Admin/AdminHeader/AdminHeader.jsx'; // Header para admin/empleados
+import AuthHeader from './components/User/AuthHeader/AuthHeader.jsx'; // Añadido .jsx // Header para clientes
+import AdminHeader from './components/Admin/AdminHeader/AdminHeader.jsx'; // Añadido .jsx // Header para admin/empleados
 
 // Importa los componentes de gestión de cotizaciones
-import CotizacionesGestionPage from './pages/Admin/Cotizaciones/CotizacionesGestionPage.jsx';
-import CotizacionEditPage from './pages/Admin/Cotizaciones/CotizacionEditPage.jsx';
+import CotizacionesGestionPage from './pages/Admin/Cotizaciones/CotizacionesGestionPage.jsx'; // Añadido .jsx
+import CotizacionEditPage from './pages/Admin/Cotizaciones/CotizacionEditPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE TRABAJOS
-import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage.jsx';
+import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE MATERIALES
-import MaterialesPage from './pages/Admin/Materiales/MaterialPage.jsx';
+import MaterialesPage from './pages/Admin/Materiales/MaterialPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL COMPONENTE DE GESTIÓN DE EMPLEADOS
-import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage.jsx';
+import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE CLIENTES
-import ClientesPage from './pages/Admin/Clientes/ClientesPage.jsx';
+import ClientesPage from './pages/Admin/Clientes/ClientesPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL COMPONENTE DASHBOARD PRINCIPAL
-import Dashboard from './pages/dashboard/Dashboard.jsx';
+import Dashboard from './pages/dashboard/Dashboard.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE PARA LAS COTIZACIONES DEL CLIENTE
-import ClientCotizacionesPage from './pages/clientes/cotizaciones/ClientCotizacionesPage.jsx';
+import ClientCotizacionesPage from './pages/clientes/cotizaciones/ClientCotizacionesPage.jsx'; // Añadido .jsx
 
 
 // Importa el selector de usuario desde tu slice de autenticación
-import { selectUser, selectIsAuthenticated } from './features/auth/authSlice.js';
+import { selectUser, selectIsAuthenticated } from './features/auth/authSlice.js'; // Añadido .js (asumiendo que es un archivo .js)
 
 
 // Componente para proteger rutas (ProtectedRoute)
 // Envuelve los componentes que requieren autenticación y/o roles específicos.
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const isAuthenticated = useSelector(selectIsAuthenticated);
-    const user = useSelector(selectUser);
-    const navigate = useNavigate();
+    const isAuthenticated = useSelector(selectIsAuthenticated); // Obtiene el estado de autenticación del store
+    const user = useSelector(selectUser); // Obtiene el objeto de usuario del store
+    const navigate = useNavigate(); // Hook para la navegación
 
+    // Efecto para manejar la lógica de redirección basada en la autenticación y los roles
     React.useEffect(() => {
+        // Si no está autenticado, redirige a la página de inicio (LandingPage)
         if (!isAuthenticated) {
             navigate('/', { replace: true });
-        } else if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-            navigate('/acceso-denegado', { replace: true });
+        }
+        // Si está autenticado pero no tiene un rol permitido para la ruta actual
+        else if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+            navigate('/acceso-denegado', { replace: true }); // Redirige a una página de acceso denegado
             console.error('No tienes permisos para acceder a esta página.');
         }
-    }, [isAuthenticated, user, navigate, allowedRoles]);
+    }, [isAuthenticated, user, navigate, allowedRoles]); // Dependencias del efecto
 
+    // Si el usuario no está autenticado o no tiene los roles permitidos, no renderiza los children
     if (!isAuthenticated || (allowedRoles && user && !allowedRoles.includes(user.role))) {
-        return null;
+        return null; // No renderiza nada mientras se produce la redirección
     }
 
+    // Si el usuario está autenticado y tiene los roles permitidos, renderiza los children
     return children;
 };
 
 // Componente principal de la aplicación
 function App() {
-    const user = useSelector(selectUser);
-    const isAuthenticated = useSelector(selectIsAuthenticated);
+    const user = useSelector(selectUser); // Obtiene el objeto de usuario del estado de Redux
+    const isAuthenticated = useSelector(selectIsAuthenticated); // Obtiene el estado de autenticación
 
+    // Lógica para determinar qué encabezado (Header) se debe renderizar
+    // Esto permite cambiar el Header globalmente basado en el rol del usuario
     let CurrentHeaderComponent = null;
-    // Definimos una 'key' única para cada tipo de Header
-    // Esto fuerza a React a desmontar el componente anterior y montar uno nuevo
-    // cuando el tipo de Header cambia, evitando artefactos visuales.
-    let headerKey = 'default-unauthenticated-header'; 
-
     if (isAuthenticated) {
+        // Si el usuario es un 'cliente', usa el AuthHeader normal
         if (user?.role === 'cliente') {
             CurrentHeaderComponent = AuthHeader;
-            headerKey = 'authenticated-client-header'; // Key específica para cliente autenticado
-        } else if (user?.role === 'empleado' || user?.role === 'admin' || user?.role === 'gerente') {
-            CurrentHeaderComponent = AdminHeader;
-            headerKey = 'authenticated-admin-header'; // Key específica para admin/empleado/gerente
         }
-    } else {
-        // Si no está autenticado, siempre muestra el AuthHeader
-        CurrentHeaderComponent = AuthHeader;
-        // Si el usuario no está autenticado, pero AuthHeader es el componente por defecto,
-        // la key sigue siendo 'default-unauthenticated-header'.
-        // Si antes era cliente autenticado y se desloguea, la key cambia y se desmonta.
+        // Si el usuario es un 'empleado', 'admin' o 'gerente', usa el AdminHeader
+        else if (user?.role === 'empleado' || user?.role === 'admin' || user?.role === 'gerente') {
+            CurrentHeaderComponent = AdminHeader;
+        }
     }
 
     return (
         <Router>
-            {/* Renderiza el encabezado con la 'key' dinámica */}
-            {CurrentHeaderComponent && <CurrentHeaderComponent key={headerKey} />}
+            {/* El encabezado se renderiza aquí, antes de todas las rutas.
+                Se renderizará condicionalmente basado en el rol del usuario. */}
+            {CurrentHeaderComponent && <CurrentHeaderComponent />}
 
             <Routes>
                 {/* Ruta raíz: Página de aterrizaje para usuarios no autenticados */}
@@ -123,19 +123,19 @@ function App() {
 
                 {/* NUEVA RUTA PARA LA PÁGINA DE CONTACTO */}
                 <Route
-                    path="/contacto"
-                    element={<ContactPage />}
+                    path="/contacto" // Puedes elegir la ruta que prefieras, por ejemplo, /contacto
+                    element={<ContactPage />} // La página de contacto no necesita ser protegida por roles
                 />
 
                 {/* NUEVA RUTA PARA EL REGISTRO DE CLIENTES */}
                 <Route
-                    path="/register"
-                    element={<RegisterForm />}
+                    path="/register" // Ruta para el formulario de registro
+                    element={<RegisterForm />} // El componente de registro
                 />
 
                 {/* NUEVA RUTA PARA LAS COTIZACIONES DEL CLIENTE */}
                 <Route
-                    path="/my-cotizaciones"
+                    path="/my-cotizaciones" // La ruta que el cliente usará para ver sus cotizaciones
                     element={
                         <ProtectedRoute allowedRoles={['cliente']}>
                             <ClientCotizacionesPage/>
@@ -149,6 +149,7 @@ function App() {
                     path="/admin/dashboard"
                     element={
                         <ProtectedRoute allowedRoles={['admin', 'empleado', 'gerente']}>
+                            {/* ¡Aquí se renderiza el componente Dashboard! */}
                             <Dashboard/>
                         </ProtectedRoute>
                     }
@@ -198,7 +199,7 @@ function App() {
                 <Route
                     path="/admin/empleados"
                     element={
-                        <ProtectedRoute allowedRoles={['admin', 'gerente']}>
+                        <ProtectedRoute allowedRoles={['admin', 'gerente']}> {/* Solo admin y gerente pueden ver y gestionar empleados */}
                             <EmpleadosPage />
                         </ProtectedRoute>
                     }
@@ -208,7 +209,7 @@ function App() {
                 <Route
                     path="/admin/clientes"
                     element={
-                        <ProtectedRoute allowedRoles={['admin', 'gerente']}>
+                        <ProtectedRoute allowedRoles={['admin', 'gerente']}> {/* Solo admin y gerente pueden ver y gestionar clientes */}
                             <ClientesPage />
                         </ProtectedRoute>
                     }
@@ -256,7 +257,7 @@ function App() {
                         </div>
                 } />
                 {/* Ruta por defecto o "catch-all" */}
-                <Route path="*" element={<LandingPageContent />} />
+                <Route path="*" element={<LandingPageContent />} /> {/* Redirige a LandingPage si la ruta no existe */}
             </Routes>
         </Router>
     );
