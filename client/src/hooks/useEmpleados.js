@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 // Define la URL base de la API para consistencia
-const API_BASE_URL = process.env.VITE_API_HOOKS || 'http://localhost:3000/NOVO';
-
+const API_BASE_URL = import.meta.env.VITE_API_HOOKS || 'http://localhost:3000/NOVO';
 const useEmpleados = () => {
     const [empleados, setEmpleados] = useState([]);
     const [isLoadingEmpleados, setIsLoadingEmpleados] = useState(true);

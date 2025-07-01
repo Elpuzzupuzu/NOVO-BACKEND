@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.VITE_API_HOOKS || 'http://localhost:3000/NOVO';
-
+const API_BASE_URL = import.meta.env.VITE_API_HOOKS || 'http://localhost:3000/NOVO';
 const useClients = () => {
     const [clients, setClients] = useState([]);
     const [loadingClients, setLoadingClients] = useState(true);
