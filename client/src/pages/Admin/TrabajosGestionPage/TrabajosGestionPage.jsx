@@ -10,13 +10,17 @@ import {
     setSelectedTrabajo,
     clearSelectedTrabajo
 } from '../../../features/trabajos/trabajosSlice';
-import TrabajoDetailModal from './TrabajoDetailModal';
+// Importa TrabajoDetailModal directamente desde su ubicación si no está en la misma carpeta
+// Asegúrate que la ruta sea correcta, si TrabajoDetailModal está en el mismo nivel
+// que TrabajosGestionPage, entonces sería: import TrabajoDetailModal from './TrabajoDetailModal';
+// Si está en el directorio components, como se suele hacer, sería:
+import TrabajoDetailModal from '../../components/TrabajoDetailModal/TrabajoDetailModal'; // ASUMO esta ruta
 import SearchInput from '../../../components/SearchInput/SearchInput';
 import styles from './TrabajosGestionPage.module.css';
 
-// Importa solo el hook de empleados
+// Importa AMBOS hooks
 import useEmpleados from '../../../hooks/useEmpleados';
-// Eliminado: import useCotizaciones from '../../hooks/useCotizaciones';
+import useCotizaciones from '../../../hooks/useCotizaciones'; // <--- ¡NUEVO!
 
 const defaultPaginationState = {
     total: 0,
@@ -29,12 +33,12 @@ const defaultPaginationState = {
 
 const TrabajoGestionPage = () => {
     const dispatch = useDispatch();
-    const { 
-        data: trabajos = [], 
-        pagination = defaultPaginationState, 
-        status, 
-        error, 
-        selectedTrabajo 
+    const {
+        data: trabajos = [],
+        pagination = defaultPaginationState,
+        status,
+        error,
+        selectedTrabajo
     } = useSelector((state) => {
         console.log("Estado actual del slice 'trabajos':", state.trabajos);
         return state.trabajos;
@@ -47,13 +51,15 @@ const TrabajoGestionPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
 
-    // Usa solo el hook para obtener los datos de empleados
+    // ===========================================
+    // ¡AQUÍ ES DONDE USAMOS AMBOS HOOKS!
+    // ===========================================
     const { empleados, isLoadingEmpleados, errorEmpleados } = useEmpleados();
-    // Eliminado: const { cotizaciones, isLoadingCotizaciones, errorCotizaciones } = useCotizaciones();
+    const { cotizaciones, isLoadingCotizaciones, errorCotizaciones } = useCotizaciones(); // <--- ¡USANDO EL HOOK!
 
-    // El estado de carga y error ahora solo depende de los empleados
-    const isLoadingLookups = isLoadingEmpleados;
-    const lookupError = errorEmpleados;
+    // El estado de carga y error ahora depende de AMBOS lookups
+    const isLoadingLookups = isLoadingEmpleados || isLoadingCotizaciones;
+    const lookupError = errorEmpleados || errorCotizaciones; // Prioriza un error si hay varios
 
     const estadoOptions = [
         { value: '', label: 'Todos los Estados' },
@@ -67,18 +73,18 @@ const TrabajoGestionPage = () => {
     ];
 
     const loadTrabajos = useCallback(() => {
-        const limitToUse = pagination?.limit || 10; 
-        
+        const limitToUse = pagination?.limit || 10;
+
         console.log("Cargando trabajos con parámetros:", {
             page: currentPage,
-            limit: limitToUse, 
+            limit: limitToUse,
             searchTerm: searchTerm,
             estado: estadoFilter,
         });
 
         dispatch(fetchTrabajos({
             page: currentPage,
-            limit: limitToUse, 
+            limit: limitToUse,
             searchTerm: searchTerm,
             estado: estadoFilter,
         }));
@@ -125,7 +131,7 @@ const TrabajoGestionPage = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         dispatch(clearSelectedTrabajo());
-        loadTrabajos(); 
+        loadTrabajos();
     };
 
     const handleSaveTrabajo = async (trabajoData) => {
@@ -140,7 +146,10 @@ const TrabajoGestionPage = () => {
             handleCloseModal();
         } catch (err) {
             console.error('Error al guardar trabajo:', err);
-            alert(`Error: No se pudo guardar el trabajo. Detalles: ${err.message || err.toString()}`);
+            // Redux Toolkit unwrap() puede devolver un error con response.data.message
+            // o un simple string de error.
+            const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
+            alert(`Error: No se pudo guardar el trabajo. Detalles: ${errorMessage}`);
         }
     };
 
@@ -154,11 +163,27 @@ const TrabajoGestionPage = () => {
                 loadTrabajos();
             } catch (err) {
                 console.error('Error al eliminar trabajo:', err);
-                alert(`Error: No se pudo eliminar el trabajo. Detalles: ${err.message || err.toString()}`);
+                const errorMessage = err.response?.data?.message || err.message || 'Error desconocido';
+                alert(`Error: No se pudo eliminar el trabajo. Detalles: ${errorMessage}`);
             }
         }
     };
 
+    // ===========================================
+    // Manejo de estados de carga y error para los Lookups (Cotizaciones y Empleados)
+    // Se muestra un mensaje y se evita renderizar la tabla o el modal si los datos no están listos.
+    // ===========================================
+    if (isLoadingLookups) {
+        return <div className={styles.loadingContainer}>Cargando opciones para el formulario...</div>;
+    }
+
+    if (lookupError) {
+        return <div className={styles.errorContainer}>Error al cargar opciones: {lookupError}</div>;
+    }
+
+    // ===========================================
+    // Mantenemos los estados de carga y error para los Trabajos (Redux)
+    // ===========================================
     if (status === 'loading' && trabajos.length === 0) {
         return <div className={styles.loadingContainer}>Cargando trabajos...</div>;
     }
@@ -193,9 +218,12 @@ const TrabajoGestionPage = () => {
                 </button>
             </div>
 
-            {/* Mostrar mensajes de carga o error para los selectores */}
-            {isLoadingLookups && <p>Cargando opciones para empleados...</p>}
-            {lookupError && <p className={styles.errorText}>Error al cargar opciones: {lookupError}</p>}
+            {/* Ahora que isLoadingLookups y lookupError se manejan arriba,
+                este div se simplifica, ya que las opciones estarán cargadas
+                cuando se llegue a este punto del render. */}
+            {/* Antes: {isLoadingLookups && <p>Cargando opciones para empleados...</p>} */}
+            {/* Antes: {lookupError && <p className={styles.errorText}>Error al cargar opciones: {lookupError}</p>} */}
+
 
             {trabajos.length === 0 && status !== 'loading' ? (
                 <p className={styles.noResults}>No se encontraron trabajos que coincidan con los criterios de búsqueda.</p>
@@ -215,10 +243,10 @@ const TrabajoGestionPage = () => {
                         </thead>
                         <tbody>
                             {trabajos.map((trabajo) => (
-                                <tr 
-                                    key={trabajo.id_trabajo} 
-                                    onClick={() => handleViewEdit(trabajo)} 
-                                    className={styles.tableRow} 
+                                <tr
+                                    key={trabajo.id_trabajo}
+                                    onClick={() => handleViewEdit(trabajo)}
+                                    className={styles.tableRow}
                                 >
                                     <td>{trabajo.id_trabajo ? trabajo.id_trabajo.substring(0, 8) + '...' : 'N/A'}</td>
                                     <td>{trabajo.cotizacion_id ? trabajo.cotizacion_id.substring(0, 8) + '...' : 'N/A'}</td>
@@ -265,10 +293,12 @@ const TrabajoGestionPage = () => {
                     mode={modalMode}
                     initialData={selectedTrabajo}
                     onSave={handleSaveTrabajo}
-                    onDelete={handleDeleteTrabajo} 
-                    // Ya no pasamos cotizacionesOptions
-                    cotizacionesOptions={[]} // Pasa un array vacío o null si el select de cotizaciones no es dinámico
-                    empleadosOptions={empleados}
+                    onDelete={handleDeleteTrabajo}
+                    // ===========================================
+                    // ¡PASANDO AMBAS LISTAS DE OPCIONES COMO PROPS!
+                    // ===========================================
+                    cotizacionesOptions={cotizaciones} // Pasa las cotizaciones del hook
+                    empleadosOptions={empleados}     // Pasa los empleados del hook
                 />
             )}
         </div>
