@@ -1,9 +1,9 @@
-# client/render.yaml
+# client/render.yaml (o donde sea que esté la raíz de tu frontend)
 # Este archivo define cómo Render debe desplegar y servir tu aplicación frontend.
 
 services:
   - type: web
-    name: novo-peticiones-frontend # Debe coincidir con el nombre de tu servicio en Render
+    name: NOVO-FRONT # ¡IMPORTANTE! Este nombre DEBE coincidir con el nombre de tu servicio en Render
     rootDir: ./ # La raíz de tu proyecto frontend dentro del repositorio
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist # La carpeta donde Vite genera los archivos estáticos
