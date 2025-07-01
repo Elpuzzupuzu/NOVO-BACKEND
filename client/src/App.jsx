@@ -4,44 +4,44 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-route
 import { useSelector } from 'react-redux';
 
 // Importa los componentes de tus páginas
-import LandingPageContent from './pages/LandingPage/LandingPageContent';
-import Home from './pages/Home/Home';
-import ServicePage from './pages/ServicePage/ServicePage';
+import LandingPageContent from './pages/LandingPage/LandingPageContent.jsx'; // Añadido .jsx
+import Home from './pages/Home/Home.jsx'; // Añadido .jsx
+import ServicePage from './pages/ServicePage/ServicePage.jsx'; // Añadido .jsx
 // IMPORTA EL COMPONENTE DE LA PÁGINA DE CONTACTO
-import ContactPage from './pages/contacto/contactPage';
+import ContactPage from './pages/contacto/contactPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE REGISTRO
-import RegisterForm from './components/Auth/RegisterForm'; // <--- ¡Nueva importación!
+import RegisterForm from './components/Auth/RegisterForm.jsx'; // Añadido .jsx <--- ¡Nueva importación!
 
 // Importa ambos headers
-import AuthHeader from './components/User/AuthHeader/AuthHeader'; // Header para clientes
-import AdminHeader from './components/Admin/AdminHeader/AdminHeader'; // Header para admin/empleados
+import AuthHeader from './components/User/AuthHeader/AuthHeader.jsx'; // Añadido .jsx // Header para clientes
+import AdminHeader from './components/Admin/AdminHeader/AdminHeader.jsx'; // Añadido .jsx // Header para admin/empleados
 
 // Importa los componentes de gestión de cotizaciones
-import CotizacionesGestionPage from './pages/Admin/Cotizaciones/CotizacionesGestionPage';
-import CotizacionEditPage from './pages/Admin/Cotizaciones/CotizacionEditPage';
+import CotizacionesGestionPage from './pages/Admin/Cotizaciones/CotizacionesGestionPage.jsx'; // Añadido .jsx
+import CotizacionEditPage from './pages/Admin/Cotizaciones/CotizacionEditPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE TRABAJOS
-import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage';
+import TrabajoGestionPage from './pages/Admin/TrabajosGestionPage/TrabajosGestionPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE MATERIALES
-import MaterialesPage from './pages/Admin/Materiales/MaterialPage';
+import MaterialesPage from './pages/Admin/Materiales/MaterialPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL COMPONENTE DE GESTIÓN DE EMPLEADOS
-import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage';
+import EmpleadosPage from './pages/Admin/Empleados/EmpleadosPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE DE GESTIÓN DE CLIENTES
-import ClientesPage from './pages/Admin/Clientes/ClientesPage';
+import ClientesPage from './pages/Admin/Clientes/ClientesPage.jsx'; // Añadido .jsx
 
 // IMPORTA EL COMPONENTE DASHBOARD PRINCIPAL
-import Dashboard from './pages/dashboard/DashBoard';
+import Dashboard from './pages/dashboard/DashBoard.jsx'; // Añadido .jsx
 
 // IMPORTA EL NUEVO COMPONENTE PARA LAS COTIZACIONES DEL CLIENTE
-import ClientCotizacionesPage from './pages/clientes/cotizaciones/ClientCotizacionesPage';
+import ClientCotizacionesPage from './pages/clientes/cotizaciones/ClientCotizacionesPage.jsx'; // Añadido .jsx
 
 
 // Importa el selector de usuario desde tu slice de autenticación
-import { selectUser, selectIsAuthenticated } from './features/auth/authSlice';
+import { selectUser, selectIsAuthenticated } from './features/auth/authSlice.js'; // Añadido .js (asumiendo que es un archivo .js)
 
 
 // Componente para proteger rutas (ProtectedRoute)
