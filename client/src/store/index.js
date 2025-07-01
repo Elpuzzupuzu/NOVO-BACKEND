@@ -1,11 +1,11 @@
 // client/src/store/index.js
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../features/auth/authSlice';
-import cotizacionesReducer from '../features/cotizaciones/cotizacionesSlice';
-import materialsReducer from '../features/materiales/materialsSlice';
-import trabajosReducer from '../features/trabajos/trabajosSlice'; 
-import empleadosReducer from '../features/empleados/EmpleadosSlice'; 
-import clientesReducer from '../features/clientes/clientesSlice'; // ¡Importa el slice de clientes!
+import authReducer from '../features/auth/authSlice.js';
+import cotizacionesReducer from '../features/cotizaciones/cotizacionesSlice.js';
+import materialsReducer from '../features/materiales/materialsSlice.js';
+import trabajosReducer from '../features/trabajos/trabajosSlice.js'; 
+import empleadosReducer from '../features/empleados/EmpleadosSlice.js'; 
+import clientesReducer from '../features/clientes/ClientesSlice.js'; // ¡Importa el slice de clientes!
 
 const store = configureStore({
   reducer: {
